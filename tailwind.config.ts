@@ -10,7 +10,12 @@ export default {
     extend: {
       colors: {
         background: "var(--background)",
+        backgroundHover: "var(--background-hover)",
+        backgroundTransparent: "var(--background-transparent)",
+        dark: "var(--dark)",
+        darkHover: "var(--dark-hover)",
         foreground: "var(--foreground)",
+        foregroundHover: "var(--foreground-hover)",
       },
     },
   },
