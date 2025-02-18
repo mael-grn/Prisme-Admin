@@ -1,6 +1,5 @@
 "use server";
 
-import {login} from "@/app/controller/loginController";
 import {neon} from '@neondatabase/serverless';
 import {del} from "@vercel/blob";
 const sql = neon(`${process.env.DATABASE_URL}`);
@@ -20,7 +19,6 @@ export interface ElementType {
 
 
 export async function getTypes() : Promise<ElementType[]> {
-    await login(null);
     const result = await sql('SELECT * FROM element_type');
     return result as ElementType[];
 }
@@ -35,7 +33,6 @@ export async function getType(id: number) : Promise<ElementType | null> {
 }
 
 export async function getElementsForSection(id: number) : Promise<ElementBd[]> {
-    await login(null);
     const result = await sql('SELECT * FROM element WHERE section_id = $1 ORDER BY position', [id]);
     return result as ElementBd[];
 }
@@ -51,7 +48,6 @@ export async function getElement(id: number) : Promise<ElementBd | null>  {
 }
 
 export async function addElement(sectionId: number, typeId: number, content: string) : Promise<void> {
-    await login(null);
     let position;
     const elements = await getElementsForSection(sectionId);
     if (elements.length === 0) {
@@ -63,7 +59,6 @@ export async function addElement(sectionId: number, typeId: number, content: str
 }
 
 export async function updateElement(id: number, content: string) : Promise<ElementBd | null> {
-    await login(null);
     const elem = await getElement(id);
     if (!elem) {
         throw "Element not found";
@@ -83,7 +78,6 @@ export async function updateElement(id: number, content: string) : Promise<Eleme
 }
 
 export async function deleteElement(id: number) : Promise<boolean> {
-    await login(null);
     const elem = await getElement(id);
     if (!elem) {
         throw "Element not found";

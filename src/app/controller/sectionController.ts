@@ -1,6 +1,5 @@
 "use server";
 
-import {login} from "@/app/controller/loginController";
 import {neon} from '@neondatabase/serverless';
 import {deleteElement, getElementsForSection} from "@/app/controller/elementController";
 const sql = neon(`${process.env.DATABASE_URL}`);
@@ -19,19 +18,16 @@ export interface SectionType {
 }
 
 export async function getSectionsForPage(id: number) : Promise<Section[]> {
-    await login(null);
     const result = await sql('SELECT * FROM section WHERE page_id = $1 ORDER BY position', [id]);
     return result as Section[];
 }
 
 export async function getSectionTypes() : Promise<SectionType[]> {
-    await login(null);
     const result = await sql('SELECT * FROM section_type');
     return result as SectionType[];
 }
 
 export async function getSectionType(id: number) : Promise<SectionType | null> {
-    await login(null);
     const result = await sql('SELECT * FROM section_type WHERE id = $1', [id]);
     if (result.length === 0) {
         return null;
@@ -51,7 +47,6 @@ export async function getSection(id: number) : Promise<Section | null>  {
 }
 
 export async function addSection(pageId: number, title: string, type: number) : Promise<void> {
-    await login(null);
     let position;
     const sections = await getSectionsForPage(pageId);
     if (sections.length === 0) {
@@ -63,13 +58,11 @@ export async function addSection(pageId: number, title: string, type: number) : 
 }
 
 export async function updateSection(id: number, newTitle: string) : Promise<void> {
-    await login(null);
     await sql('UPDATE section SET title = $1 WHERE id = $2', [newTitle, id]);
 
 }
 
 export async function deleteSection(id: number) : Promise<boolean> {
-    await login(null);
     const elements = await getElementsForSection(id);
     for (const elem of elements) {
         await deleteElement(elem.id);

@@ -39,12 +39,10 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
     function deleteTagAction(id: number) {
         setLoading(true)
         deleteTag(id).then(() => {
-            getTagsForSection(sectionId).then((res) => {
-                setTags(res);
-            }).finally(() => {
-                setLoading(false);
-            })
-        });
+            setTags(tags.filter(t => !tags.find(st => st.id === t.id)));
+        }).finally(() => {
+            setLoading(false);
+        })
     }
 
     return (
@@ -63,12 +61,14 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
                                 {
                                     tags.map((tag) => {
                                         return (
-                                            <div key={tag.id} onClick={() => {
-                                                setNewTag(tag.name);
-                                                setTagIsNew(false)
-                                            }}
+                                            <div key={tag.id}
                                                  className={"cursor-pointer pt-2 pb-2 pl-4 pr-4 rounded-3xl bg-darkHover flex gap-2"}>
-                                                <p>{tag.name}</p>
+                                                <p
+                                                    onClick={() => {
+                                                        setNewTag(tag.name);
+                                                        setTagIsNew(false)
+                                                    }}
+                                                >{tag.name}</p>
                                                 <img src={"/ico/trash.svg"} alt={"trash"}
                                                      className={"p-1 h-6 invert rounded-3xl hover:bg-foreground"}
                                                      onClick={() => deleteTagAction(tag.id)}/>
