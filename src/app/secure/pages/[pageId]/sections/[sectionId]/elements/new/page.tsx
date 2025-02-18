@@ -113,28 +113,29 @@ export default function NewElement() {
     }
 
     return (
-        <main>
+        <main className={"justify-center items-center"}>
             <PageTitle title={"Nouvel élément"}/>
-            <h1 className={"text-center"}>Ajouter un élément</h1>
-            <h2 className={"text-center"}>Type</h2>
-            <select
-                className={"text-foreground bg-backgroundHover focus:outline-0 p-3 rounded-xl"}
-                value={selectedType?.id ?? ''}
-                onChange={(e) => setSelectedType(types.find((t) => t.id === parseInt(e.target.value)) ?? null)}
-            >
-                {types.map((type) => (
-                    <option key={type.id} value={type.id}>
-                        {type.name}
-                    </option>
-                ))}
-            </select>
-            <h2>Contenu</h2>
+            <div className={"flex gap-3 items-center"}>
+                <p>Type</p>
+                <select
+                    className={"text-foreground cursor-pointer hover:bg-darkHover bg-dark focus:outline-0 p-3 rounded-xl"}
+                    value={selectedType?.id ?? ''}
+                    onChange={(e) => setSelectedType(types.find((t) => t.id === parseInt(e.target.value)) ?? null)}
+                >
+                    {types.map((type) => (
+                        <option key={type.id} value={type.id}>
+                            {type.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
             {
                 selectedType?.name === 'image' ? <div>
                         <label htmlFor={"file-input"}>
                             <div
-                                className={"h-56 w-56 bg-backgroundHover rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer"}>
-                                <img className={"invert w-24 h-24"} src={"/ico/cloud.svg"} alt={"cloud"}/>
+                                className={"h-36 w-56 bg-dark rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer hover:bg-darkHover"}>
+                                <img className={"invert w-12 h-12"} src={"/ico/cloud.svg"} alt={"cloud"}/>
                                 {
                                     selectedFile ? <p>{selectedFile.name}</p> : <p>Choisir une image</p>
                                 }

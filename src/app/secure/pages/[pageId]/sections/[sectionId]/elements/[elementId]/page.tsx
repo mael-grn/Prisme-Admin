@@ -74,8 +74,9 @@ export default function ElementVisu() {
     return (
         <main className={"justify-start"}>
             <PageTitle title={"#" + element?.position + " " + elementType?.name}/>
-            <p>Type d&apos;élément :</p>
-            <h1 className={"mb-16"}>{elementType?.name}</h1>
+            <h3>Type</h3>
+            <p className={"pt-2 pb-2 pr-3 pl-3 rounded-xl bg-dark"}>{elementType?.name}</p>
+            <h3>Contenu</h3>
             <div className={"p-4 rounded-xl bg-dark"}>
                 {
                     elementType?.name === 'image' ? <img src={element?.content} alt={"image"}/> :
@@ -84,7 +85,7 @@ export default function ElementVisu() {
                 }
             </div>
 
-            <div className={"flex gap-3 mt-24 p-4 rounded-xl bg-backgroundHover"}>
+            <div className={"flex gap-3 p-4 rounded-xl bg-backgroundHover"}>
                 <button
                     onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elementId + "/edit")}>
                     Modifier

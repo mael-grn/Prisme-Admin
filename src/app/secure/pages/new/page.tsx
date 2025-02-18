@@ -45,7 +45,7 @@ export default function NewPage() {
     }
 
     return (
-        <main>
+        <main className={"justify-center items-center"}>
             <PageTitle title={"Nouvelle page"}/>
             <h1 className={"text-center"}>Ajouter une page</h1>
             <p  className={"text-center"}>Entrez ci-dessous le titre de la nouvelle page : </p>

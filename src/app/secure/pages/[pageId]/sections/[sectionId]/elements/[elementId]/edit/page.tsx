@@ -119,16 +119,16 @@ export default function EditElement() {
     }
 
     return (
-        <main>
+        <main className={"justify-center items-center"}>
             <PageTitle title={"Modification"}/>
 
-            <h2>#{element?.position} {type?.name}</h2>
+            <p>Nouveau contenu :</p>
             {
                 type?.name === 'image' ? <div>
                         <label htmlFor={"file-input"}>
                             <div
-                                className={"h-56 w-56 bg-backgroundHover rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer"}>
-                                <img className={"invert w-24 h-24"} src={"/ico/cloud.svg"} alt={"cloud"}/>
+                                className={"h-36 w-56 bg-dark rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer"}>
+                                <img className={"invert w-12 h-12"} src={"/ico/cloud.svg"} alt={"cloud"}/>
                                 {
                                     selectedFile ? <p>{selectedFile.name}</p> : <p>Choisir une image</p>
                                 }

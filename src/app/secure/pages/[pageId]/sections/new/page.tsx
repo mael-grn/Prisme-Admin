@@ -57,23 +57,27 @@ export default function NewSection() {
     }
 
     return (
-        <main>
+        <main className={"justify-center items-center"}>
             <PageTitle title={"Nouvelle section"}/>
-            <h1 className={"text-center"}>Ajouter une section</h1>
-            <h2 className={"text-center"}>Type</h2>
-            <select
-                className={"text-foreground bg-backgroundHover focus:outline-0 p-3 rounded-xl"}
-                value={selectedType?.id ?? ''}
-                onChange={(e) => setSelectedType(types.find((t) => t.id === parseInt(e.target.value)) ?? null)}
-            >
-                {types.map((type) => (
-                    <option key={type.id} value={type.id}>
-                        {type.name}
-                    </option>
-                ))}
-            </select>
-            <h2 className={"text-center"}>Titre</h2>
-            <input placeholder={"titre"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
+            <div className={"flex items-center gap-3"}>
+                <p>Type</p>
+                <select
+                    className={"text-foreground bg-backgroundHover focus:outline-0 p-3 rounded-xl"}
+                    value={selectedType?.id ?? ''}
+                    onChange={(e) => setSelectedType(types.find((t) => t.id === parseInt(e.target.value)) ?? null)}
+                >
+                    {types.map((type) => (
+                        <option key={type.id} value={type.id}>
+                            {type.name}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div className={"flex items-center gap-3"}>
+                <p>Titre</p>
+                <input placeholder={"titre"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
+
+            </div>
             <button disabled={!title || title === ""} onClick={addSectonAction}>
                 Valider
                 <img src={"/ico/check.svg"} alt={"check"}/>

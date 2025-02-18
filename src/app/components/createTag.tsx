@@ -15,6 +15,7 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
     const [loading, setLoading] = useState<boolean>(true);
     const [tagIsNew, setTagIsNew] = useState<boolean>(true);
     const [tags, setTags] = useState<Tag[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         async function loadData() {
@@ -40,6 +41,13 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
         setLoading(true)
         deleteTag(id).then(() => {
             setTags(tags.filter(t => !tags.find(st => st.id === t.id)));
+        }).catch((e : Error) => {
+            if (e.message === "update or delete on table \"tag\" violates foreign key constraint \"section_tag_tag_id_fkey\" on table \"section_tag\""){
+                setError("Ce tag est utilisé dans une section, impossible de le supprimer");
+            } else {
+                setError(e.message);
+
+            }
         }).finally(() => {
             setLoading(false);
         })
@@ -51,9 +59,9 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
             {
                 loading ? <PageLoading/> :
                     <div
-                        className={"p-6 md:rounded-2xl rounded-t-2xl bg-background flex flex-col gap-3 items-center justify-center md:w-2/3 md:h-fit w-full h-2/3"}>
-                        <h2>Ajouter un nouveau tag</h2>
-                        <div className={"flex flex-col gap-3 justify-center items-center p-4 rounded-xl bg-dark"}>
+                        className={"p-4 md:rounded-2xl rounded-t-2xl bg-dark flex flex-col gap-3 items-center justify-center md:w-fit md:h-fit w-full h-2/3"}>
+                        <h3>Ajouter un nouveau tag</h3>
+                        <div className={"flex flex-col gap-3 justify-center items-center p-4 rounded-xl bg-darkHover"}>
                             <p>Entrez le nouveau tag ci-dessous :</p>
                             <input placeholder={"nouveau tag"} type={"text"} value={newTag}
                                    onChange={handleValueChange}/>
@@ -62,7 +70,7 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
                                     tags.map((tag) => {
                                         return (
                                             <div key={tag.id}
-                                                 className={"cursor-pointer pt-2 pb-2 pl-4 pr-4 rounded-3xl bg-darkHover flex gap-2"}>
+                                                 className={"cursor-pointer pt-1 pb-1 pl-2 pr-1 rounded-3xl bg-backgroundHover flex gap-2"}>
                                                 <p
                                                     onClick={() => {
                                                         setNewTag(tag.name);
@@ -79,6 +87,9 @@ export default function CreateTag({onValidate, sectionId}: PopupProps) {
                             </div>
                         </div>
 
+                        {
+                            error && <p className={"bg-red-500 pt-1 pb-1 pl-2 pr-2 rounded-[100px]"}>{error}</p>
+                        }
 
                         <div className={"flex gap-3"}>
                             <button className={"bg-red-500 hover:bg-red-400"} onClick={() => onValidate(null)}>

@@ -18,9 +18,13 @@ import {
 } from "@/app/controller/tagController";
 import CreateTag from "@/app/components/createTag";
 import {getElementsForSection} from "@/app/controller/elementController";
+import DivLoading from "@/app/components/divLoading";
 
+const maxContentLength = 75;
 export default function SectionVisu() {
     const [loading, setLoading] = useState(true);
+    const [tagsLoading, setTagsLoading] = useState(true);
+    const [elementsLoading, setElementsLoading] = useState(true);
     const [type, setType] = useState<ElementType | null>(null);
     const [section, setSection] = useState<Section | null>(null);
     const [tags, setTags] = useState<Tag[]>([]);
@@ -39,16 +43,16 @@ export default function SectionVisu() {
     useEffect(() => {
         async function loadData() {
             const sect = await getSection(parseInt(sectionId as string))
+            if (sect) setType(await getSectionType(sect.type_id));
             setSection(sect);
+            setLoading(false);
             setTags(await getTagsForSection(parseInt(sectionId as string)));
+            setTagsLoading(false);
             setElementTypes(await getTypes());
             setElements(await getElementsForSection(parseInt(sectionId as string)));
-            if (sect) setType(await getSectionType(sect.type_id))
+            setElementsLoading(false);
         }
-
-        loadData().finally(() => {
-            setLoading(false);
-        })
+        loadData();
     }, [pageId, sectionId]);
 
     function onCreateTag(newTag: string | null) {
@@ -74,19 +78,19 @@ export default function SectionVisu() {
         }
 
         setCreateTagPopup(false);
-        setLoading(true)
+        setTagsLoading(true)
         allTheStuffToDo().finally(() => {
-            setLoading(false);
+            setTagsLoading(false);
         })
     }
 
     function removeTagAction(id: number) {
-        setLoading(true);
+        setTagsLoading(true);
         removeTagFromSection(parseInt(sectionId as string), id).then(() => {
             getTagsForSection(parseInt(sectionId as string)).then((res) => {
                 setTags(res);
             }).finally(() => {
-                setLoading(false);
+                setTagsLoading(false);
             })
         });
     }
@@ -111,7 +115,7 @@ export default function SectionVisu() {
     if (loading || !section) {
         return (
             <div>
-                <PageTitle title={"..."}/>
+                <PageTitle title={""}/>
                 <PageLoading/>
             </div>
         )
@@ -120,90 +124,83 @@ export default function SectionVisu() {
     return (
         <main className={"justify-start"}>
             <PageTitle title={section.title}/>
-            <div className={"flex flex-col items-center gap-3 w-full"}>
-                <h1>Type</h1>
-                <div className={"flex flex-col justify-center items-center gap-3 p-4 rounded-xl bg-dark"}>
-                    <p>{type?.name}</p>
-                </div>
+            <h3>Type</h3>
+            <div className={"flex flex-col justify-center items-center gap-3 p-2 rounded-xl bg-dark"}>
+                <p>{type?.name}</p>
             </div>
-                <div className={"flex flex-col items-center gap-3 w-full"}>
-                    <h1>Tags</h1>
-                    <div className={"flex flex-col justify-center items-center gap-3 p-4 rounded-xl bg-dark"}>
-
-                        <div className={"flex flex-wrap gap-2"}>
-                            {
-                                tags.map((tag) => {
-                                    return (
-                                        <div key={tag.id}
-                                             className={"pt-2 pb-2 pl-4 pr-4 rounded-3xl bg-darkHover flex gap-2"}>
-                                            <p>{tag.name}</p>
-                                            <img src={"/ico/trash.svg"} alt={"trash"}
-                                                 className={"cursor-pointer p-1 h-6 invert rounded-3xl hover:bg-foreground"}
-                                                 onClick={() => removeTagAction(tag.id)}/>
-                                        </div>
-                                    )
-                                })
-                            }
-                            {
-                                tags.length === 0 && <p>Aucun tag</p>
-                            }
-                        </div>
-                    </div>
-                    <button className={"w-fit"} onClick={() => setCreateTagPopup(true)}>
-                        Ajouter un tag
-                        <img src={"/ico/plus.svg"} alt={"plus"}/>
-                    </button>
-                    <h1 className={"mt-12"}>Éléments</h1>
-                    <div className={"flex flex-col justify-center items-center gap-3 p-4 rounded-xl bg-dark"}>
-
-                        <div className={"flex w-full justify-center items-center flex-col gap-3"}>
-                            {
-                                elements?.map((elem) => {
-                                    return (
-                                        <div
-                                            onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
-                                            className={"w-full cursor-pointer p-3 rounded-xl hover:bg-darkHover flex gap-3"}
-                                            key={elem.id}>
-                                            <div className={"flex gap-3 items-center"}>
-                                                <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>#{elem.position}</p>
-                                                <h2>{elementTypes.find(t => t.id === elem.type_id)?.name}</h2>
-                                            </div>
-                                        </div>
-                                    )
-                                })
-                            }
-
-                            {
-                                !elements || elements.length === 0 &&
-                                <p>Pas d&apos;éléments</p>
-                            }
-                        </div>
-                    </div>
-                    <button className={"w-fit"}
-                            onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/new")}>
-                        Ajouter un nouvel élément
-                        <img src={"/ico/plus.svg"} alt={"plus"}/>
-                    </button>
-                </div>
-
-
-                <div className={"flex gap-3 mt-24 p-4 rounded-xl bg-backgroundHover"}>
-                    <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/edit")}>
-                        Modifier
-                        <img src={"/ico/edit.svg"} alt={"edit"}/>
-                    </button>
-                    <button className={"bg-red-500 hover:bg-red-400"} onClick={() => setShowPopupDelete(true)}>
-                        Supprimer
-                        <img src={"/ico/trash.svg"} alt={"trash"}/>
-                    </button>
-
-                </div>
-                <ValidationPopup showValidationPopup={showPopupDelete} onClose={deleteSectionAction}
-                                 objectToDelete={"section #" + section.position}/>
-                <Popup showPopup={showPopup} onClose={() => setShowPopup(false)} titre={popupTitle} texte={popupText}/>
+            <h3>Tags</h3>
+            <div className={"flex flex-wrap gap-2"}>
                 {
-                    createTagPopup && <CreateTag onValidate={onCreateTag} sectionId={section.id}/>
+                    tagsLoading ? <DivLoading/> :
+                        tags.map((tag) => {
+                            return (
+                                <div key={tag.id}
+                                     className={"pt-1 pb-1 pl-2 pr-2 rounded-3xl bg-dark flex gap-2"}>
+                                    <p>{tag.name}</p>
+                                    <img src={"/ico/trash.svg"} alt={"trash"}
+                                         className={"cursor-pointer p-1 h-6 invert rounded-3xl hover:bg-foreground"}
+                                         onClick={() => removeTagAction(tag.id)}/>
+                                </div>
+                            )
+                        })
                 }
+                {
+                    tags.length === 0 && !tagsLoading && <p>Aucun tag</p>
+                }
+            </div>
+            <button className={"w-fit"} onClick={() => setCreateTagPopup(true)}>
+                Ajouter un tag
+                <img src={"/ico/plus.svg"} alt={"plus"}/>
+            </button>
+            <h3>Éléments</h3>
+            <div className={"flex w-full justify-center items-center flex-col gap-3 p-2 bg-dark rounded-[10px]"}>
+                {
+                    elementsLoading ? <DivLoading/> :
+                        elements?.map((elem) => {
+                            return (
+                                <div
+                                    onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
+                                    className={"w-full cursor-pointer p-2 rounded-[5px] hover:bg-darkHover flex gap-3"}
+                                    key={elem.id}>
+                                    <div className={"flex gap-3 items-center flex-wrap overflow-hidden"}>
+                                        <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>#{elem.position}</p>
+                                        <p className={"h-10 flex w-fit rounded-[100px] pl-3 pr-3 bg-backgroundHover  justify-center items-center"}>{elementTypes.find(t => t.id === elem.type_id)?.name}</p>
+                                        <p>{elem.content.length > maxContentLength ? elem.content.slice(0, maxContentLength) + "..." : elem.content}</p>
+                                    </div>
+                                </div>
+                            )
+                        })
+                }
+
+                {
+                    (!elementsLoading && (!elements || elements.length === 0)) &&
+                    <p>Pas d&apos;éléments</p>
+                }
+            </div>
+            <button className={"w-fit"}
+                    onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/new")}>
+                Ajouter un nouvel élément
+                <img src={"/ico/plus.svg"} alt={"plus"}/>
+            </button>
+
+
+            <div className={"flex gap-3 p-4 rounded-xl bg-backgroundHover"}>
+                <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/edit")}>
+                    Modifier
+                    <img src={"/ico/edit.svg"} alt={"edit"}/>
+                </button>
+                <button className={"bg-red-500 hover:bg-red-400"} onClick={() => setShowPopupDelete(true)}>
+                    Supprimer
+                    <img src={"/ico/trash.svg"} alt={"trash"}/>
+                </button>
+
+            </div>
+            <ValidationPopup showValidationPopup={showPopupDelete} onClose={deleteSectionAction}
+                             objectToDelete={section.title}/>
+            <Popup showPopup={showPopup} onClose={() => setShowPopup(false)} titre={popupTitle} texte={popupText}/>
+            {
+                createTagPopup && <CreateTag onValidate={onCreateTag} sectionId={section.id}/>
+            }
         </main>
-);
+    );
 }

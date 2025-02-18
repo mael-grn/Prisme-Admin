@@ -59,9 +59,8 @@ export default function NewPage() {
     }
 
     return (
-        <main>
+        <main className={"justify-center items-center"}>
             <PageTitle title={"Modification"}/>
-            <h1 className={"text-center"}>{section?.title}</h1>
             <p  className={"text-center"}>Entrez ci-dessous le nouveau titre : </p>
             <input placeholder={"titre"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
             <button disabled={!title || title === ""} onClick={updateSectionAction}>

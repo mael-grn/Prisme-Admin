@@ -8,9 +8,11 @@ import PageLoading from "@/app/components/pageLoading";
 import {getSectionsForPage, getSectionTypes, Section, SectionType} from "@/app/controller/sectionController";
 import Popup from "@/app/components/popup";
 import ValidationPopup from "@/app/components/validationPopup";
+import DivLoading from "@/app/components/divLoading";
 
 export default function PageVisu() {
     const [loading, setLoading] = useState(true);
+    const [sectionsLoading, setSectionsLoading] = useState(true);
     const [page, setPage] = useState<Page | null>(null);
     const [sectionTypes, setSectionTypes] = useState<SectionType[] | null>([]);
     const [sections, setSections] = useState<Section[] | null>([]);
@@ -25,10 +27,12 @@ export default function PageVisu() {
     useEffect(() => {
         async function loadData() {
             setPage(await getPage(parseInt(pageId as string)))
+            setLoading(false);
             setSections(await getSectionsForPage(parseInt(pageId as string)));
             setSectionTypes(await getSectionTypes());
+            setSectionsLoading(false);
         }
-        loadData().finally(() => setLoading(false));
+        loadData();
     }, [pageId]);
 
     function deletePageAction(validation : boolean) {
@@ -51,7 +55,7 @@ export default function PageVisu() {
     if (loading || !page) {
         return (
             <div>
-                <PageTitle title={"..."}/>
+                <PageTitle title={""}/>
                 <PageLoading/>
             </div>
         )
@@ -60,17 +64,19 @@ export default function PageVisu() {
     return (
         <main>
             <PageTitle title={page.title}/>
-            <div className={"flex md:w-2/3 w-full flex-col gap-3 bg-dark p-4 rounded-xl"}>
+            <h3>Sections</h3>
+            <div className={"flex md:w-2/3 w-full flex-col gap-3 bg-dark p-2 rounded-xl"}>
                 {
+                    sectionsLoading ? <DivLoading/> :
                     sections?.map((sect) => {
                         return (
                             <div
                                 onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sect.id)}
-                                className={"cursor-pointer p-3 rounded-xl hover:bg-darkHover"} key={sect.id}>
+                                className={"cursor-pointer p-2 rounded-xl hover:bg-darkHover"} key={sect.id}>
                                 <div className={"flex gap-1 items-center"}>
                                     <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>#{sect.position}</p>
                                     <p className={"h-10 mr-4 w-fit pl-4 pr-4 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{(sectionTypes?.find(t => t.id === sect.type_id)?.name)}</p>
-                                    <h2>{sect.title}</h2>
+                                    <p className={"font-bold"}>{sect.title}</p>
                                 </div>
                             </div>
                         )
@@ -78,10 +84,10 @@ export default function PageVisu() {
                 }
 
                 {
-                    !sections || sections.length === 0 && <h2 className={"w-full text-center p-12"}>Pas de sections</h2>
+                    (!sections || sections.length === 0) && !sectionsLoading && <h2 className={"w-full text-center p-12"}>Pas de sections</h2>
                 }
             </div>
-            <button className={"mb-16"} onClick={() => router.push("/secure/pages/" + pageId + "/sections/new")}>
+            <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/new")}>
                 Nouvelle section
                 <img src={"/ico/plus.svg"} alt={"plus"}/>
             </button>
