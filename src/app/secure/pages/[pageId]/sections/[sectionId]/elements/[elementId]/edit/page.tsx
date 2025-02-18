@@ -8,7 +8,6 @@ import Popup from "@/app/components/popup";
 import {
     ElementType,
     getElement,
-    ElementBd,
     getType, updateElement
 } from "@/app/controller/elementController";
 import {put} from "@vercel/blob";
@@ -16,7 +15,6 @@ import {put} from "@vercel/blob";
 export default function EditElement() {
 
     const [type, setType] = useState<ElementType | null>(null);
-    const [element, setElement] = useState<ElementBd | null>(null);
     const [content, setContent] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -31,7 +29,6 @@ export default function EditElement() {
     useEffect(() => {
         async function loadData() {
             const elem = await getElement(parseInt(elementId as string))
-            setElement(elem);
             setType(await getType(elem?.type_id || 0));
             setContent(elem?.content || '');
         }

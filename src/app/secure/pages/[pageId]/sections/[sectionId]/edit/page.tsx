@@ -5,7 +5,7 @@ import {useParams, useRouter} from "next/navigation";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
 import Popup from "@/app/components/popup";
-import {getSection, Section, updateSection} from "@/app/controller/sectionController";
+import {getSection, updateSection} from "@/app/controller/sectionController";
 
 export default function NewPage() {
 
@@ -14,7 +14,6 @@ export default function NewPage() {
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
-    const [section, setSection] = useState<Section | null>(null);
 
     const router = useRouter();
     const { sectionId } = useParams();
@@ -22,7 +21,6 @@ export default function NewPage() {
     useEffect(() => {
         const id = parseInt(sectionId as string);
         getSection(id).then((res) => {
-            setSection(res)
             setTitle(res ? res.title : "");
         }).finally(() => {
             setLoading(false);
