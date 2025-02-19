@@ -9,7 +9,7 @@ import Popup from "@/app/components/popup";
 
 export default function NewPage() {
 
-    const [title, setTitle] = useState<string>('');
+    const [title, setTitle] = useState<string>('/');
     const [loading, setLoading] = useState<boolean>(false);
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
@@ -52,9 +52,9 @@ export default function NewPage() {
     return (
         <main className={"justify-center items-center"}>
             <PageTitle title={"Modification"}/>
-            <p  className={"text-center"}>Entrez ci-dessous le nouveau titre : </p>
-            <input placeholder={"titre"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
-            <button disabled={!title || title === ""} onClick={updatePageAction}>
+            <p  className={"text-center"}>Entrez ci-dessous le nouvel endpoint : </p>
+            <input placeholder={"endpoint"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
+            <button disabled={!title || !title.startsWith("/")} onClick={updatePageAction}>
                 Valider
                 <img src={"/ico/check.svg"} alt={"check"}/>
             </button>

@@ -48,9 +48,9 @@ export default function NewPage() {
         <main className={"justify-center items-center"}>
             <PageTitle title={"Nouvelle page"}/>
             <h1 className={"text-center"}>Ajouter une page</h1>
-            <p  className={"text-center"}>Entrez ci-dessous le titre de la nouvelle page : </p>
-            <input placeholder={"titre"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
-            <button disabled={!title || title === ""} onClick={addPageAction}>
+            <p  className={"text-center"}>Entrez ci-dessous l&apos;endpoint de la nouvelle page : </p>
+            <input placeholder={"endpoint"} type={"text"} value={title} onChange={(e) => setTitle(e.target.value)}/>
+            <button disabled={!title || !title.startsWith("/")} onClick={addPageAction}>
                 Valider
                 <img src={"/ico/check.svg"} alt={"check"}/>
             </button>
