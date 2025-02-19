@@ -14,6 +14,7 @@ export default function NewElement() {
     const [selectedType, setSelectedType] = useState<ElementType | null>(null);
     const [content, setContent] = useState<string>('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isDragging, setIsDragging] = useState<boolean>(false);
 
     const [loading, setLoading] = useState<boolean>(true);
     const [showPopup, setShowPopup] = useState<boolean>(false);
@@ -38,6 +39,27 @@ export default function NewElement() {
         if (file) {
             setSelectedFile(file);
         }
+    };
+
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        setIsDragging(false);
+        const file = event.dataTransfer.files?.[0];
+        if (file && file.type.startsWith("image/")) {
+            setSelectedFile(file);
+        }
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+    };
+
+    const handleDragEnter = () => {
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
     };
 
     function addElementAction() {
@@ -103,15 +125,6 @@ export default function NewElement() {
         }
     }
 
-    const handleDrop = (event : React.DragEvent) => {
-        event.preventDefault();
-
-        const files : FileList = event.dataTransfer.files;
-        if (files.length > 0) {
-            setSelectedFile(files[0]);
-        }
-    };
-
     if (loading) {
         return (
             <div>
@@ -144,7 +157,10 @@ export default function NewElement() {
                         <label htmlFor={"file-input"}>
                             <div
                                 onDrop={handleDrop}
-                                className={"h-36 w-56 bg-dark rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer hover:bg-darkHover"}>
+                                onDragOver={handleDragOver}
+                                onDragEnter={handleDragEnter}
+                                onDragLeave={handleDragLeave}
+                                className={`h-36 w-56  rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer hover:bg-darkHover ${isDragging ? "bg-darkHover" : "bg-dark"}`}>
                                 <img className={"invert w-12 h-12"} src={"/ico/cloud.svg"} alt={"cloud"}/>
                                 {
                                     selectedFile ? <p>{selectedFile.name}</p> : <p>Choisir une image</p>
