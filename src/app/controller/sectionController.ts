@@ -22,6 +22,11 @@ export async function getSectionsForPage(id: number) : Promise<Section[]> {
     return result as Section[];
 }
 
+export async function getSections() : Promise<Section[]> {
+    const result = await sql('SELECT * FROM section');
+    return result as Section[];
+}
+
 export async function getSectionTypes() : Promise<SectionType[]> {
     const result = await sql('SELECT * FROM section_type');
     return result as SectionType[];

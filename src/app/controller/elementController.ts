@@ -37,6 +37,11 @@ export async function getElementsForSection(id: number) : Promise<ElementBd[]> {
     return result as ElementBd[];
 }
 
+export async function getElements() : Promise<ElementBd[]> {
+    const result = await sql('SELECT * FROM element');
+    return result as ElementBd[];
+}
+
 export async function getElement(id: number) : Promise<ElementBd | null>  {
     const result = await sql('SELECT * FROM element WHERE id = $1', [id]);
     if (result.length === 0) {

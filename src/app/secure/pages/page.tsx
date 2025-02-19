@@ -22,7 +22,7 @@ export default function Pages() {
     return (
         <main>
             <PageTitle title={"Pages"}/>
-            <h1>Vos pages</h1>
+            <h3>Vos pages</h3>
             {
                 loading ? <DivLoading/> :
                     <div className={"flex w-full flex-col gap-3 p-2 bg-dark rounded-[10px]"}>
