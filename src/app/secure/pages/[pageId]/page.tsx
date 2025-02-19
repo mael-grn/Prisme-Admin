@@ -153,7 +153,7 @@ export default function PageVisu() {
                             <div
                                 onClick={() => !modifySectionOrder && router.push("/secure/pages/" + pageId + "/sections/" + sect.id)}
                                 className={`p-2 rounded-xl hover:bg-darkHover ${!modifySectionOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"}`} key={sect.id}>
-                                <div className={"flex gap-1 items-center relative"}>
+                                <div className={"flex gap-1 items-center relative flex-wrap"}>
                                     {
                                         modifySectionOrder &&
                                         <div className={"flex gap-1"}>
@@ -166,7 +166,7 @@ export default function PageVisu() {
                                         </div>
                                     }
                                     <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{sect.position}</p>
-                                    <p className={"h-10 mr-4 w-fit pl-4 pr-4 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{(sectionTypes?.find(t => t.id === sect.type_id)?.name)}</p>
+                                    <p className={"min-h-10 pt-2 pb-2 mr-4 w-fit pl-4 pr-4 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{(sectionTypes?.find(t => t.id === sect.type_id)?.name)}</p>
                                     <p>{sect.title}</p>
                                 </div>
                             </div>

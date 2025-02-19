@@ -82,6 +82,10 @@ export async function updateElement(id: number, content: string) : Promise<Eleme
     return getElement(id);
 }
 
+export async function changeElementPosition(id: number, newPosition: number) : Promise<void> {
+    await sql('UPDATE element SET position = $1 WHERE id = $2', [newPosition, id]);
+}
+
 export async function deleteElement(id: number) : Promise<boolean> {
     const elem = await getElement(id);
     if (!elem) {

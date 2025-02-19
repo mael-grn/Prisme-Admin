@@ -1,11 +1,16 @@
 "use client"
 
-import {ElementBd, ElementType, getTypes} from "@/app/controller/elementController";
+import {changeElementPosition, ElementBd, ElementType, getTypes} from "@/app/controller/elementController";
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
-import {deleteSection, getSection, getSectionType, Section} from "@/app/controller/sectionController";
+import {
+    changeSectionPosition,
+    deleteSection,
+    getSection, getSectionType,
+    Section
+} from "@/app/controller/sectionController";
 import Popup from "@/app/components/popup";
 import ValidationPopup from "@/app/components/validationPopup";
 import {
@@ -30,7 +35,8 @@ export default function SectionVisu() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [elementTypes, setElementTypes] = useState<ElementType[]>([]);
     const [elements, setElements] = useState<ElementBd[]>([]);
-
+    const [modifyElementOrder, setModifyElementOrder] = useState<boolean>(false);
+    const [modifiedElements, setModifiedElements] = useState<number[]>([]);
     const [createTagPopup, setCreateTagPopup] = useState<boolean>(false);
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
@@ -112,6 +118,80 @@ export default function SectionVisu() {
         })
     }
 
+    function beginModifyElementOrder() {
+        setModifyElementOrder(true);
+    }
+
+    function cancelModifyElementOrder() {
+        setElementsLoading(true);
+        async function loadData() {
+            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElementsLoading(false);
+        }
+        loadData();
+        setModifyElementOrder(false);
+    }
+
+    function validateModifyElementOrder() {
+        setElementsLoading(true);
+        async function loadData() {
+            if (!elements) {
+                return;
+            }
+            for (const elem of elements) {
+                if (modifiedElements && modifiedElements.includes(elem.id)) {
+                    await changeElementPosition(elem.id, elem.position);
+                }
+            }
+            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElementsLoading(false);
+        }
+        loadData();
+        setModifyElementOrder(false);
+    }
+
+    function moveElementUp(elem : ElementBd) {
+        if (!elements) {
+            return;
+        }
+        const newElements : ElementBd[] = [...elements];
+
+        if (elem.position === 1) {
+            return;
+        }
+
+        const modElem : number[] = [...modifiedElements];
+        modElem?.push(newElements.find(s => s.position === elem.position - 1)!.id);
+        modElem?.push(elem.id);
+        setModifiedElements(modElem)
+
+        newElements.find(s => s.position === elem.position - 1)!.position++;
+        newElements.find(s => s.id === elem.id)!.position--;
+        newElements.sort((a, b) => a.position - b.position);
+        setElements(newElements);
+    }
+
+    function moveElementDown(elem : ElementBd) {
+        if (!elements) {
+            return;
+        }
+        const newElements : ElementBd[] = [...elements];
+
+        if (elem.position === elements.length) {
+            return;
+        }
+
+        const modElem : number[] = [...modifiedElements];
+        modElem?.push(newElements.find(s => s.position === elem.position + 1)!.id);
+        modElem?.push(elem.id);
+        setModifiedElements(modElem)
+
+        newElements.find(s => s.position === elem.position + 1)!.position--;
+        newElements.find(s => s.id === elem.id)!.position++;
+        newElements.sort((a, b) => a.position - b.position);
+        setElements(newElements);
+    }
+
     if (loading || !section) {
         return (
             <div>
@@ -153,17 +233,28 @@ export default function SectionVisu() {
                 <img src={"/ico/plus.svg"} alt={"plus"}/>
             </button>
             <h3>Éléments</h3>
-            <div className={"flex w-full justify-center items-center flex-col gap-3 p-2 bg-dark rounded-[10px]"}>
+            <div className={"flex w-full flex-wrap justify-center items-center flex-col gap-3 p-2 bg-dark rounded-[10px]"}>
                 {
                     elementsLoading ? <DivLoading/> :
                         elements?.map((elem) => {
                             return (
                                 <div
-                                    onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
-                                    className={"w-full cursor-pointer p-2 rounded-[5px] hover:bg-darkHover flex gap-3"}
+                                    onClick={() => !modifyElementOrder && router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
+                                    className={`w-full p-2 rounded-[5px] ${!modifyElementOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"} flex gap-3`}
                                     key={elem.id}>
                                     <div className={"flex gap-3 items-center flex-wrap overflow-hidden"}>
-                                        <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>#{elem.position}</p>
+                                        {
+                                            modifyElementOrder &&
+                                            <div className={"flex gap-1"}>
+                                                <div onClick={() => moveElementUp(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                    <img className={"w-4 h-4 invert"} src={"/ico/up.svg"} alt={"up"}/>
+                                                </div>
+                                                <div onClick={() => moveElementDown(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                    <img className={"w-4 h-4 invert"} src={"/ico/down.svg"} alt={"down"}/>
+                                                </div>
+                                            </div>
+                                        }
+                                        <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{elem.position}</p>
                                         <p className={"h-10 flex w-fit rounded-[100px] pl-3 pr-3 bg-backgroundHover  justify-center items-center"}>{elementTypes.find(t => t.id === elem.type_id)?.name}</p>
                                         <p>{elem.content.length > maxContentLength ? elem.content.slice(0, maxContentLength) + "..." : elem.content}</p>
                                     </div>
@@ -177,12 +268,34 @@ export default function SectionVisu() {
                     <p>Pas d&apos;éléments</p>
                 }
             </div>
-            <button className={"w-fit"}
-                    onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/new")}>
-                Ajouter un nouvel élément
-                <img src={"/ico/plus.svg"} alt={"plus"}/>
-            </button>
 
+            <div className={"flex gap-3"}>
+                {
+                    modifyElementOrder &&
+                    <button className={"bg-red-500 hover:bg-red-400"} onClick={cancelModifyElementOrder}>
+                        Annuler
+                        <img src={"/ico/close.svg"} alt={"close"}/>
+
+                    </button>
+                }
+                <button onClick={modifyElementOrder ? validateModifyElementOrder : beginModifyElementOrder}>
+                    {
+                        modifyElementOrder ? "Valider le nouvel ordre" : "Modifier l'ordre"
+                    }
+                    {
+                        modifyElementOrder ? <img src={"/ico/check.svg"} alt={"validate"}/> :
+                            <img src={"/ico/edit.svg"} alt={"edit"}/>
+                    }
+                </button>
+                {
+                    !modifyElementOrder &&
+                    <button className={"w-fit"}
+                            onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/new")}>
+                        Ajouter un nouvel élément
+                        <img src={"/ico/plus.svg"} alt={"plus"}/>
+                    </button>
+                }
+            </div>
 
             <div className={"flex gap-3 p-4 rounded-xl bg-backgroundHover"}>
                 <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/edit")}>
