@@ -5,7 +5,11 @@ import {cookies} from "next/headers";
 
 const sql = neon(`${process.env.DATABASE_URL}`);
 
-
+export async function logout() {
+    const requestCookies = await cookies();
+    requestCookies.delete('token');
+    return true;
+}
 
 export async function login(password: string | null) {
     const requestCookies = await cookies();

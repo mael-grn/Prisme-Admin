@@ -45,7 +45,7 @@ export default function Elements() {
                         return (
                             <div
                                 onClick={() => router.push("/secure/pages/" + getPageForElement(elem)?.id + "/sections/" + getSectionForElement(elem)?.id + "/elements/" + elem.id)}
-                                className={"cursor-pointer flex gap-3 items-center p-2 rounded-[5px] hover:bg-darkHover"}
+                                className={"cursor-pointer flex gap-3 items-center p-2 rounded-[5px] active:bg-darkHover md:hover:bg-darkHover"}
                                 key={elem.id}>
                                 <p className={"min-h-10 rounded-[20px] bg-backgroundHover w-fit pl-3 pr-3 flex justify-center items-center"}>{getPageForElement(elem)?.title}</p>
                                 <p className={"min-h-10 rounded-[20px] bg-backgroundHover w-fit pl-3 pr-3 flex justify-center items-center"}>{getSectionForElement(elem)?.title}</p>

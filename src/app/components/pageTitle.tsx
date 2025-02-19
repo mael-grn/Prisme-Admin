@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import {logout} from "@/app/controller/loginController";
 
 interface PageTitleProps {
     title: string;
@@ -32,7 +33,10 @@ export default function PageTitle({ title }: PageTitleProps) {
                      onClick={() => router.back()}/>
                 <h2>{title}</h2>
             </div>
-
+            <button onClick={logout} className={"bg-red-500 md:hover:bg-red-400 active:scale-90 rounded-3xl absolute top-2 right-2"}>
+                Déconnexion
+                <img src={"/ico/power.svg"} alt={"power"}/>
+            </button>
         </div>
     );
 }

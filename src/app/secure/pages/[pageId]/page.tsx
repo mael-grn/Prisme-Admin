@@ -152,15 +152,15 @@ export default function PageVisu() {
                         return (
                             <div
                                 onClick={() => !modifySectionOrder && router.push("/secure/pages/" + pageId + "/sections/" + sect.id)}
-                                className={`p-2 rounded-xl hover:bg-darkHover ${!modifySectionOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"}`} key={sect.id}>
+                                className={`p-2 rounded-xl active:bg-darkHover md:hover:bg-darkHover ${!modifySectionOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"}`} key={sect.id}>
                                 <div className={"flex gap-1 items-center relative flex-wrap"}>
                                     {
                                         modifySectionOrder &&
                                         <div className={"flex gap-1"}>
-                                            <div onClick={() => moveSectionUp(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                            <div onClick={() => moveSectionUp(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
                                                 <img className={"w-4 h-4 invert"} src={"/ico/up.svg"} alt={"up"}/>
                                             </div>
-                                            <div onClick={() => moveSectionDown(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                            <div onClick={() => moveSectionDown(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
                                                 <img className={"w-4 h-4 invert"} src={"/ico/down.svg"} alt={"down"}/>
                                             </div>
                                         </div>

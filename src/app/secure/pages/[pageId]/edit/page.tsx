@@ -10,7 +10,7 @@ import Popup from "@/app/components/popup";
 export default function NewPage() {
 
     const [title, setTitle] = useState<string>('');
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');

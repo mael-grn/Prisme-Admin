@@ -217,7 +217,7 @@ export default function SectionVisu() {
                                      className={"pt-1 pb-1 pl-2 pr-2 rounded-3xl bg-dark flex gap-2"}>
                                     <p>{tag.name}</p>
                                     <img src={"/ico/trash.svg"} alt={"trash"}
-                                         className={"cursor-pointer p-1 h-6 invert rounded-3xl hover:bg-foreground"}
+                                         className={"cursor-pointer p-1 h-6 invert rounded-3xl active:bg-foreground md:hover:bg-foreground"}
                                          onClick={() => removeTagAction(tag.id)}/>
                                 </div>
                             )
@@ -239,16 +239,16 @@ export default function SectionVisu() {
                             return (
                                 <div
                                     onClick={() => !modifyElementOrder && router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
-                                    className={`w-full p-2 rounded-[5px] ${!modifyElementOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"} flex gap-3`}
+                                    className={`w-full p-2 rounded-[5px] ${!modifyElementOrder ? "cursor-pointer active:bg-darkHover md:hover:bg-darkHover" : "cursor-default"} flex gap-3`}
                                     key={elem.id}>
                                     <div className={"flex gap-3 items-center flex-wrap overflow-hidden"}>
                                         {
                                             modifyElementOrder &&
                                             <div className={"flex gap-1"}>
-                                                <div onClick={() => moveElementUp(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                <div onClick={() => moveElementUp(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
                                                     <img className={"w-4 h-4 invert"} src={"/ico/up.svg"} alt={"up"}/>
                                                 </div>
-                                                <div onClick={() => moveElementDown(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                <div onClick={() => moveElementDown(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
                                                     <img className={"w-4 h-4 invert"} src={"/ico/down.svg"} alt={"down"}/>
                                                 </div>
                                             </div>

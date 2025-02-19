@@ -37,7 +37,7 @@ export default function Sections() {
                             sections.map((section) => {
                                 return (
                                     <div onClick={() => router.push("/secure/pages/" + getPageForSection(section)?.id + "/sections/" + section.id)}
-                                         className={"cursor-pointer flex gap-3 items-center p-2 rounded-[5px] hover:bg-darkHover"}
+                                         className={"cursor-pointer flex gap-3 items-center p-2 rounded-[5px] active:bg-darkHover md:hover:bg-darkHover"}
                                          key={section.id}>
                                         <p className={"h-10 rounded-[100px] bg-backgroundHover w-fit pl-3 pr-3 flex justify-center items-center"}>{getPageForSection(section)?.title}</p>
                                         <p>{section.title}</p>
