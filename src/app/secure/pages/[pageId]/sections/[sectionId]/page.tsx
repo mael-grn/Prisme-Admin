@@ -6,7 +6,6 @@ import {useEffect, useState} from "react";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
 import {
-    changeSectionPosition,
     deleteSection,
     getSection, getSectionType,
     Section

@@ -1,7 +1,7 @@
 "use client"
 
-import {useEffect, useState} from "react";
-import {getPage, Page, updatePage} from "@/app/controller/pageController";
+import { useState} from "react";
+import { updatePage} from "@/app/controller/pageController";
 import {useParams, useRouter} from "next/navigation";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
@@ -14,20 +14,11 @@ export default function NewPage() {
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
-    const [page, setPage] = useState<Page | null>(null);
 
     const router = useRouter();
     const { pageId } = useParams();
 
-    useEffect(() => {
-        const id = parseInt(pageId as string);
-        getPage(id).then((res) => {
-            setPage(res)
-            setTitle(res ? res.title : "");
-        }).finally(() => {
-            setLoading(false);
-        })
-    }, [pageId]);
+
 
     function updatePageAction() {
         const id = parseInt(pageId as string);
