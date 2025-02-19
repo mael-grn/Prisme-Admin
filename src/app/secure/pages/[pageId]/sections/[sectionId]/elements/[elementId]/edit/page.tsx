@@ -106,6 +106,15 @@ export default function EditElement() {
         }
     }
 
+    const handleDrop = (event : React.DragEvent) => {
+        event.preventDefault();
+
+        const files : FileList = event.dataTransfer.files;
+        if (files.length > 0) {
+            setSelectedFile(files[0]);
+        }
+    };
+
     if (loading) {
         return (
             <div>
@@ -124,6 +133,7 @@ export default function EditElement() {
                 type?.name === 'image' ? <div>
                         <label htmlFor={"file-input"}>
                             <div
+                                onDrop={handleDrop}
                                 className={"h-36 w-56 bg-dark rounded-2xl flex flex-col justify-center items-center gap-3 cursor-pointer"}>
                                 <img className={"invert w-12 h-12"} src={"/ico/cloud.svg"} alt={"cloud"}/>
                                 {
