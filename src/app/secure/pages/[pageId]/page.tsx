@@ -5,7 +5,13 @@ import {useEffect, useState} from "react";
 import {deletePage, getPage, Page} from "@/app/controller/pageController";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
-import {getSectionsForPage, getSectionTypes, Section, SectionType} from "@/app/controller/sectionController";
+import {
+    changeSectionPosition,
+    getSectionsForPage,
+    getSectionTypes,
+    Section,
+    SectionType
+} from "@/app/controller/sectionController";
 import Popup from "@/app/components/popup";
 import ValidationPopup from "@/app/components/validationPopup";
 import DivLoading from "@/app/components/divLoading";
@@ -20,6 +26,8 @@ export default function PageVisu() {
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
+    const [modifySectionOrder, setModifySectionOrder] = useState<boolean>(false);
+    const [modifiedSections, setModifiedSections] = useState<number[]>([]);
 
     const router = useRouter();
     const { pageId } = useParams();
@@ -52,6 +60,78 @@ export default function PageVisu() {
         })
     }
 
+    function beginModifySectionOrder() {
+        setModifySectionOrder(true);
+    }
+
+    function cancelModifySectionOrder() {
+        setSectionsLoading(true);
+        async function loadData() {
+            setSections(await getSectionsForPage(parseInt(pageId as string)));
+            setSectionsLoading(false);
+        }
+        loadData();
+        setModifySectionOrder(false);
+    }
+
+    function validateModifySectionOrder() {
+        setSectionsLoading(true);
+        async function loadData() {
+            if (!sections) {
+                return;
+            }
+            for (const sect of sections) {
+                if (modifiedSections && modifiedSections.includes(sect.id)) {
+                    await changeSectionPosition(sect.id, sect.position);
+                }
+            }
+            setSections(await getSectionsForPage(parseInt(pageId as string)));
+            setSectionsLoading(false);
+        }
+        loadData();
+        setModifySectionOrder(false);
+    }
+
+    function moveSectionUp(section : Section) {
+        if (!sections) {
+            return;
+        }
+        const newSections : Section[] = [...sections];
+        if (section.position === 1) {
+            return;
+        }
+
+        const modSect : number[] = [...modifiedSections];
+        modSect?.push(newSections.find(s => s.position === section.position - 1)!.id);
+        modSect?.push(section.id);
+        setModifiedSections(modSect)
+
+        newSections.find(s => s.position === section.position - 1)!.position++;
+        newSections.find(s => s.id === section.id)!.position--;
+        newSections.sort((a, b) => a.position - b.position);
+        setSections(newSections);
+    }
+
+    function moveSectionDown(section : Section) {
+        if (!sections) {
+            return;
+        }
+        const newSections : Section[] = [...sections];
+        if (section.position === sections.length) {
+            return;
+        }
+
+        const modSect : number[] = [...modifiedSections];
+        modSect?.push(newSections.find(s => s.position === section.position + 1)!.id);
+        modSect?.push(section.id);
+        setModifiedSections(modSect)
+
+        newSections.find(s => s.position === section.position + 1)!.position--;
+        newSections.find(s => s.id === section.id)!.position++;
+        newSections.sort((a, b) => a.position - b.position);
+        setSections(newSections);
+    }
+
     if (loading || !page) {
         return (
             <div>
@@ -65,18 +145,29 @@ export default function PageVisu() {
         <main>
             <PageTitle title={page.title}/>
             <h3>Sections</h3>
-            <div className={"flex md:w-2/3 w-full flex-col gap-3 bg-dark p-2 rounded-xl"}>
+            <div className={"flex w-full flex-col gap-3 bg-dark p-2 rounded-xl"}>
                 {
                     sectionsLoading ? <DivLoading/> :
                     sections?.map((sect) => {
                         return (
                             <div
-                                onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sect.id)}
-                                className={"cursor-pointer p-2 rounded-xl hover:bg-darkHover"} key={sect.id}>
-                                <div className={"flex gap-1 items-center"}>
-                                    <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>#{sect.position}</p>
+                                onClick={() => !modifySectionOrder && router.push("/secure/pages/" + pageId + "/sections/" + sect.id)}
+                                className={`p-2 rounded-xl hover:bg-darkHover ${!modifySectionOrder ? "cursor-pointer hover:bg-darkHover" : "cursor-default"}`} key={sect.id}>
+                                <div className={"flex gap-1 items-center relative"}>
+                                    {
+                                        modifySectionOrder &&
+                                        <div className={"flex gap-1"}>
+                                            <div onClick={() => moveSectionUp(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                <img className={"w-4 h-4 invert"} src={"/ico/up.svg"} alt={"up"}/>
+                                            </div>
+                                            <div onClick={() => moveSectionDown(sect)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover hover:bg-dark cursor-pointer"}>
+                                                <img className={"w-4 h-4 invert"} src={"/ico/down.svg"} alt={"down"}/>
+                                            </div>
+                                        </div>
+                                    }
+                                    <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{sect.position}</p>
                                     <p className={"h-10 mr-4 w-fit pl-4 pr-4 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{(sectionTypes?.find(t => t.id === sect.type_id)?.name)}</p>
-                                    <p className={"font-bold"}>{sect.title}</p>
+                                    <p>{sect.title}</p>
                                 </div>
                             </div>
                         )
@@ -87,16 +178,39 @@ export default function PageVisu() {
                     (!sections || sections.length === 0) && !sectionsLoading && <h2 className={"w-full text-center p-12"}>Pas de sections</h2>
                 }
             </div>
-            <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/new")}>
-                Nouvelle section
-                <img src={"/ico/plus.svg"} alt={"plus"}/>
-            </button>
+            <div className={"flex gap-3"}>
+                {
+                    modifySectionOrder &&
+                    <button className={"bg-red-500 hover:bg-red-400"} onClick={cancelModifySectionOrder}>
+                        Annuler
+                        <img src={"/ico/close.svg"} alt={"close"}/>
+
+                    </button>
+                }
+                <button onClick={modifySectionOrder ? validateModifySectionOrder : beginModifySectionOrder}>
+                    {
+                        modifySectionOrder ? "Valider le nouvel ordre" : "Modifier l'ordre"
+                    }
+                    {
+                        modifySectionOrder ? <img src={"/ico/check.svg"} alt={"validate"}/> :
+                            <img src={"/ico/edit.svg"} alt={"edit"}/>
+                    }
+                </button>
+                {
+                    !modifySectionOrder &&
+                    < button onClick={() => router.push("/secure/pages/" + pageId + "/sections/new")}>
+                    Nouvelle section
+                    <img src={"/ico/plus.svg"} alt={"plus"}/>
+                    </button>
+                }
+
+            </div>
+
 
             <div className={"flex gap-3  p-4 rounded-xl bg-backgroundHover"}>
                 <button onClick={() => router.push("/secure/pages/" + pageId + "/edit")}>
-                    Modifier
+                Modifier
                     <img src={"/ico/edit.svg"} alt={"edit"}/>
-
                 </button>
                 <button className={"bg-red-500 hover:bg-red-400"} onClick={() => setShowPopupDelete(true)}>
                     Supprimer

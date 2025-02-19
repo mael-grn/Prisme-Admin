@@ -64,7 +64,10 @@ export async function addSection(pageId: number, title: string, type: number) : 
 
 export async function updateSection(id: number, newTitle: string) : Promise<void> {
     await sql('UPDATE section SET title = $1 WHERE id = $2', [newTitle, id]);
+}
 
+export async function changeSectionPosition(id: number, newPosition: number) : Promise<void> {
+    await sql('UPDATE section SET position = $1 WHERE id = $2', [newPosition, id]);
 }
 
 export async function deleteSection(id: number) : Promise<boolean> {

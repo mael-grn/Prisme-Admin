@@ -32,7 +32,7 @@ export default function Pages() {
                                     <div onClick={() => router.push("/secure/pages/" + page.id)}
                                          className={"cursor-pointer p-2 rounded-[5px] hover:bg-darkHover"}
                                          key={page.id}>
-                                        <p className={"font-bold"}>{page.title}</p>
+                                        <p>{page.title}</p>
                                     </div>
                                 )
                             })
