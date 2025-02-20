@@ -1,7 +1,6 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {logout} from "@/app/controller/loginController";
 
 interface PageTitleProps {
     title: string;
@@ -15,8 +14,14 @@ export default function PageTitle({ title }: PageTitleProps) {
     const pathParts = pathname.split('/').filter(Boolean); // On découpe le pathname par les "/" et on retire les éléments vides
 
     return (
-        <div className={"overflow-hidden z-20 fixed top-[30px] left-[30px] p-4 rounded-2xl bg-backgroundTransparent box-border backdrop-blur"} style={{ width: 'calc(100% - 60px)' }}>
-            <div className={"flex gap-1 flex-wrap"}>
+        <div
+            className={"overflow-hidden z-20 fixed top-2 left-2 p-3 rounded-3xl bg-backgroundTransparent box-border backdrop-blur w-fit flex gap-3 items-center"} style={{maxWidth: "calc(100% - 1rem)"}}>
+            <div className={"flex gap-3 items-center justify-start mr-3"}>
+                <img src={"/ico/arrow-left.svg"} alt={"arrow"} className={"invert h-6 cursor-pointer hover:opacity-50"}
+                     onClick={() => router.back()}/>
+                <p className={"font-bold text-xl"}>{title}</p>
+            </div>
+            <div className={"flex gap-1 flex-wrap pt-1 pb-1 pl-2 pr-2 rounded-3xl bg-dark"}>
                 {pathParts.map((part, index) => {
                     const link = `/secure/${pathParts.slice(0, index + 1).join('/')}`; // Crée un lien pour chaque partie du pathname
                     return (
@@ -28,15 +33,6 @@ export default function PageTitle({ title }: PageTitleProps) {
                     );
                 })}
             </div>
-            <div className={"flex gap-3 items-center justify-start"}>
-                <img src={"/ico/arrow-left.svg"} alt={"arrow"} className={"invert h-8 cursor-pointer hover:opacity-50"}
-                     onClick={() => router.back()}/>
-                <h2>{title}</h2>
-            </div>
-            <button onClick={logout} className={"bg-red-500 md:hover:bg-red-400 active:scale-90 rounded-3xl absolute top-2 right-2"}>
-                Déconnexion
-                <img src={"/ico/power.svg"} alt={"power"}/>
-            </button>
         </div>
     );
 }

@@ -175,7 +175,7 @@ export default function PageVisu() {
                 }
 
                 {
-                    (!sections || sections.length === 0) && !sectionsLoading && <h2 className={"w-full text-center p-12"}>Pas de sections</h2>
+                    (!sections || sections.length === 0) && !sectionsLoading && <p className={"w-full p-2"}>Pas de sections</p>
                 }
             </div>
             <div className={"flex gap-3"}>
