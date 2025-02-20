@@ -23,6 +23,13 @@ export async function getTagId(name: string) : Promise<number | null> {
     }
 }
 
+export async function getTagsNotInSection(id: number) : Promise<Tag[]> {
+    const result = await sql('SELECT * FROM section_tag WHERE section_id = $1', [id]);
+    let allTags = await getTags() as Tag[];
+    allTags = allTags.filter(tag => result.some(sectionTag => tag.id !== sectionTag.tag_id));
+    return allTags as Tag[];
+}
+
 export async function getTagsForSection(id: number) : Promise<Tag[]> {
     const result = await sql('SELECT * FROM section_tag WHERE section_id = $1', [id]);
     let allTags = await getTags() as Tag[];

@@ -13,9 +13,7 @@ import {
 import Popup from "@/app/components/popup";
 import ValidationPopup from "@/app/components/validationPopup";
 import {
-    addTag,
     addTagToSection,
-    getTagId, getTags,
     getTagsForSection,
     removeTagFromSection,
     Tag
@@ -60,24 +58,11 @@ export default function SectionVisu() {
         loadData();
     }, [pageId, sectionId]);
 
-    function onCreateTag(newTag: string | null) {
-        if (newTag === null) {
-            setCreateTagPopup(false);
-            return;
-        }
-
+    function onCreateTag(newTags: Tag[]) {
         async function allTheStuffToDo() {
-            if (newTag === null) {
-                setCreateTagPopup(false);
-                return;
+            for (const newTag of newTags) {
+                await addTagToSection(parseInt(sectionId as string), newTag.id as number);
             }
-            const tags = await getTags();
-            if (!tags.find(t => t.name === newTag)) {
-                await addTag(newTag);
-            }
-
-            const tagId = await getTagId(newTag);
-            await addTagToSection(parseInt(sectionId as string), tagId as number);
             const tagsForSection = await getTagsForSection(parseInt(sectionId as string));
             setTags(tagsForSection);
         }
@@ -311,7 +296,7 @@ export default function SectionVisu() {
                              objectToDelete={section.title}/>
             <Popup showPopup={showPopup} onClose={() => setShowPopup(false)} titre={popupTitle} texte={popupText}/>
             {
-                createTagPopup && <CreateTag onValidate={onCreateTag} sectionId={section.id}/>
+                createTagPopup && <CreateTag onCancel={() => setCreateTagPopup(false)} onValidate={onCreateTag} sectionId={section.id}/>
             }
         </main>
     );

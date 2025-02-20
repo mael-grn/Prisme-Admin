@@ -47,7 +47,7 @@ export default function Sections() {
                         }
 
                         {
-                            sections.length === 0 && <h2 className={"w-full text-center p-12"}>Pas de sections</h2>
+                            sections.length === 0 && <p className={"w-full text-center p-12"}>Pas de sections</p>
                         }
                     </div>
             }
