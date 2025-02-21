@@ -61,11 +61,11 @@ export default function CreateTag({onValidate, onCancel, sectionId}: PopupProps)
 
     return (
         <div
-            className={"z-50 fixed top-0 left-1/6 w-2/3 h-[100vh] bg-backgroundTransparent backdrop-blur flex justify-center md:items-center items-end"}>
+            className={"z-50 fixed top-0 left-0 w-full h-[100vh] bg-backgroundTransparent backdrop-blur flex justify-center md:items-center items-center"}>
             {
                 loading ? <PageLoading/> :
                     <div
-                        className={"p-4 md:rounded-2xl rounded-t-2xl bg-dark flex flex-col gap-3 items-center justify-center md:w-fit md:h-fit w-full h-2/3"}>
+                        className={"p-4 md:rounded-2xl rounded-t-2xl bg-dark flex flex-col gap-3 items-center justify-center md:h-fit w-2/3 h-2/3"}>
                         <h3>Ajouter des tags</h3>
 
                         {
