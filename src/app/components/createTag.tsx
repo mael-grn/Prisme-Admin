@@ -17,6 +17,7 @@ export default function CreateTag({onValidate, onCancel, sectionId}: PopupProps)
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     const [addNewTag, setAddNewTag] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [filter, setFilter] = useState<string>("");
 
     useEffect(() => {
         async function loadData() {
@@ -61,11 +62,11 @@ export default function CreateTag({onValidate, onCancel, sectionId}: PopupProps)
 
     return (
         <div
-            className={"z-50 fixed top-0 left-0 w-full h-[100vh] bg-backgroundTransparent backdrop-blur flex justify-center md:items-center items-center"}>
+            className={"z-50 fixed top-0 left-0 w-full h-[100vh] bg-backgroundTransparent backdrop-blur flex justify-center md:items-center items-end"}>
             {
                 loading ? <PageLoading/> :
                     <div
-                        className={"p-4 md:rounded-2xl rounded-t-2xl bg-dark flex flex-col gap-3 items-center justify-center md:h-fit w-2/3 h-2/3"}>
+                        className={"p-4 md:rounded-2xl rounded-t-2xl bg-dark flex flex-col gap-3 items-center justify-center md:h-fit md:w-2/3 w-full h-2/3"}>
                         <h3>Ajouter des tags</h3>
 
                         {
@@ -88,33 +89,42 @@ export default function CreateTag({onValidate, onCancel, sectionId}: PopupProps)
 
                         }
 
+                        {
+                            !addNewTag && <input placeholder={"Filtre"} type={"text"} value={filter} onChange={(e) => setFilter(e.target.value)}/>
+                        }
+
                         <div className={"flex flex-col gap-3 justify-center items-center p-4 rounded-xl bg-darkHover"}>
 
-                            <div className={"flex gap-3 flex-wrap"}>
-                                {
-                                    tags.map((tag) => {
-                                        return (
-                                            <div key={tag.id}
-                                                 className={`cursor-pointer pt-1 pb-1 pl-2 pr-1 rounded-3xl ${selectedTags.find(t => t.id === tag.id) ? "bg-dark" : "bg-backgroundHover"} flex gap-2`}>
-                                                <p
-                                                    onClick={() => {
-                                                        if (selectedTags.find(t => t.id === tag.id)) {
-                                                            setSelectedTags(selectedTags.filter(t => t.id !== tag.id));
-                                                        } else {
-                                                            setSelectedTags([...selectedTags, tag]);
-                                                        }
-                                                    }}
-                                                >{tag.name}</p>
-                                                <img src={`/ico/${selectedTags.find(t => t.id === tag.id) ? "check" : "trash"}.svg`} alt={"trash"}
-                                                     className={`p-1 h-6 invert rounded-3xl ${selectedTags.find(t => t.id === tag.id) ? "cursor-default" : "hover:bg-foreground"} `}
-                                                     onClick={() => !selectedTags.find(t => t.id === tag.id) && deleteTagAction(tag.id)}/>
-                                            </div>
-                                        )
-                                    })
-                                }
-                            </div>
-                        </div>
+                            {
+                                tags.length === 0 || tags.filter(t => t.name.includes(filter)).length === 0 ? <p>Aucun tag disponible.</p> :
+                                    <div className={"flex gap-3 flex-wrap max-h-36 overflow-auto"}>
+                                        {
+                                            tags.filter(t => t.name.includes(filter)).map((tag) => {
+                                                return (
+                                                    <div key={tag.id}
+                                                         className={`cursor-pointer pt-1 pb-1 pl-2 pr-1 rounded-3xl ${selectedTags.find(t => t.id === tag.id) ? "bg-dark" : "bg-backgroundHover"} flex gap-2`}>
+                                                        <p
+                                                            onClick={() => {
+                                                                if (selectedTags.find(t => t.id === tag.id)) {
+                                                                    setSelectedTags(selectedTags.filter(t => t.id !== tag.id));
+                                                                } else {
+                                                                    setSelectedTags([...selectedTags, tag]);
+                                                                }
+                                                            }}
+                                                        >{tag.name}</p>
+                                                        <img
+                                                            src={`/ico/${selectedTags.find(t => t.id === tag.id) ? "check" : "trash"}.svg`}
+                                                            alt={"trash"}
+                                                            className={`p-1 h-6 invert rounded-3xl ${selectedTags.find(t => t.id === tag.id) ? "cursor-default" : "hover:bg-foreground"} `}
+                                                            onClick={() => !selectedTags.find(t => t.id === tag.id) && deleteTagAction(tag.id)}/>
+                                                    </div>
+                                                )
+                                            })
+                                        }
+                                    </div>
+                            }
 
+                        </div>
 
 
                         {
