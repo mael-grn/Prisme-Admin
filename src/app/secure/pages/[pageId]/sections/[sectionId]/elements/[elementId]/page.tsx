@@ -6,12 +6,12 @@ import {
     ElementType,
     getElement,
     getType,
-} from "@/app/controller/elementController";
+} from "@/app/service/elementService";
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
 import PageTitle from "@/app/components/pageTitle";
 import PageLoading from "@/app/components/pageLoading";
-import { getSection, Section} from "@/app/controller/sectionController";
+import { getSection, Section} from "@/app/service/sectionService";
 import Popup from "@/app/components/popup";
 import ValidationPopup from "@/app/components/validationPopup";
 

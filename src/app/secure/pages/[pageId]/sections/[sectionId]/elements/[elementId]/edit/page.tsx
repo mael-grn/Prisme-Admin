@@ -9,7 +9,7 @@ import {
     ElementType,
     getElement,
     getType, updateElement
-} from "@/app/controller/elementController";
+} from "@/app/service/elementService";
 import {put} from "@vercel/blob";
 
 export default function EditElement() {

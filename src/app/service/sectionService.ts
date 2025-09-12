@@ -1,7 +1,7 @@
 "use server";
 
 import {neon} from '@neondatabase/serverless';
-import {deleteElement, getElementsForSection} from "@/app/controller/elementController";
+import {deleteElement, getElementsForSection} from "@/app/service/elementService";
 const sql = neon(`${process.env.DATABASE_URL}`);
 
 export interface Section {
@@ -10,6 +10,7 @@ export interface Section {
     page_id: number;
     position: number;
     type_id: number;
+    is_canada: boolean;
 }
 
 export interface SectionType {
@@ -62,8 +63,8 @@ export async function addSection(pageId: number, title: string, type: number) : 
     await sql('INSERT INTO section (title, page_id, position, type_id) VALUES ($1, $2, $3, $4)', [title, pageId, position, type]);
 }
 
-export async function updateSection(id: number, newTitle: string) : Promise<void> {
-    await sql('UPDATE section SET title = $1 WHERE id = $2', [newTitle, id]);
+export async function updateSection(id: number, newTitle: string, newType: SectionType) : Promise<void> {
+    await sql('UPDATE section SET title = $1, type_id = $2 WHERE id = $3', [newTitle, newType.id, id]);
 }
 
 export async function changeSectionPosition(id: number, newPosition: number) : Promise<void> {

@@ -1,26 +1,41 @@
 "use client"
 
-import {changeElementPosition, ElementBd, ElementType, getTypes} from "@/app/controller/elementController";
+import {
+    addElement,
+    changeElementPosition,
+    ElementBd,
+    ElementType,
+    getElementsForSection,
+    getTypes
+} from "@/app/service/elementService";
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
-import PageTitle from "@/app/components/pageTitle";
-import PageLoading from "@/app/components/pageLoading";
 import {
     deleteSection,
-    getSection, getSectionType,
-    Section
-} from "@/app/controller/sectionController";
-import Popup from "@/app/components/popup";
-import ValidationPopup from "@/app/components/validationPopup";
+    getSection,
+    getSectionType, getSectionTypes,
+    Section,
+    SectionType,
+    updateSection
+} from "@/app/service/sectionService";
 import {
+    addTag,
     addTagToSection,
+    deleteTag,
+    getTags,
     getTagsForSection,
     removeTagFromSection,
     Tag
-} from "@/app/controller/tagController";
-import CreateTag from "@/app/components/createTag";
-import {getElementsForSection} from "@/app/controller/elementController";
-import DivLoading from "@/app/components/divLoading";
+} from "@/app/service/tagService";
+import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
+import SectionElem, {SectionWeight, SectionWidth} from "@/app/components/sectionElem";
+import {ActionTypeEnum} from "@/app/components/Button";
+import List from "@/app/components/list";
+import AdvancedPopup from "@/app/components/advancedPopup";
+import LoadingPopup from "@/app/components/loadingPopup";
+import Input from "@/app/components/Input";
+import DropDown from "@/app/components/DropDown";
+import {put} from "@vercel/blob";
 
 const maxContentLength = 75;
 export default function SectionVisu() {
@@ -30,26 +45,45 @@ export default function SectionVisu() {
     const [type, setType] = useState<ElementType | null>(null);
     const [section, setSection] = useState<Section | null>(null);
     const [tags, setTags] = useState<Tag[]>([]);
+    const [sectionTags, setSectionTags] = useState<Tag[]>([]);
+    const [sectionTypes, setSectionTypes] = useState<SectionType[]>([]);
     const [elementTypes, setElementTypes] = useState<ElementType[]>([]);
     const [elements, setElements] = useState<ElementBd[]>([]);
     const [modifyElementOrder, setModifyElementOrder] = useState<boolean>(false);
     const [modifiedElements, setModifiedElements] = useState<number[]>([]);
-    const [createTagPopup, setCreateTagPopup] = useState<boolean>(false);
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
-
+    const [showPopupEditSection, setShowPopupEditPage] = useState<boolean>(false);
+    const [showPopupNewElement, setShowPopupNewElement] = useState<boolean>(false);
+    const [showPopupCreateTag, setShowPopupCreateTag] = useState<boolean>(false);
+    const [newTag, setNewTag] = useState<string>("");
+    const [deployTagList, setDeployTagList] = useState<boolean>(false);
+    const [newSectionTitle, setNewSectionTitle] = useState<string>('');
+    const [selectedSectionNewType, setSelectedSectionNewType] = useState<SectionType | null>(null);
+    const [selectedElementType, setSelectedElementType] = useState<ElementType | null>(null);
+    const [newElementContent, setNewElementContent] = useState<string>('');
+    const [newElementSelectedFile, setNewElementSelectedFile] = useState<File | null>(null);
+    const [newElementImageSrc, setNewElementImageSrc] = useState<string | null>(null);
+    const [newElementIsDragging, setNewElementIsDragging] = useState<boolean>(false);
     const router = useRouter();
     const { pageId, sectionId } = useParams();
 
     useEffect(() => {
         async function loadData() {
             const sect = await getSection(parseInt(sectionId as string))
-            if (sect) setType(await getSectionType(sect.type_id));
+            if (sect) {
+                const sectType = await getSectionType(sect.type_id);
+                setType(sectType)
+                setNewSectionTitle(sect.title)
+                setSelectedSectionNewType(sectType)
+            }
             setSection(sect);
+            setSectionTypes(await getSectionTypes());
             setLoading(false);
-            setTags(await getTagsForSection(parseInt(sectionId as string)));
+            setTags(await getTags())
+            setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
             setTagsLoading(false);
             setElementTypes(await getTypes());
             setElements(await getElementsForSection(parseInt(sectionId as string)));
@@ -58,38 +92,184 @@ export default function SectionVisu() {
         loadData();
     }, [pageId, sectionId]);
 
-    function onCreateTag(newTags: Tag[]) {
-        async function allTheStuffToDo() {
-            for (const newTag of newTags) {
-                await addTagToSection(parseInt(sectionId as string), newTag.id as number);
-            }
-            const tagsForSection = await getTagsForSection(parseInt(sectionId as string));
-            setTags(tagsForSection);
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && file.type.startsWith("image/")) {
+            setNewElementSelectedFile(file);
+            const tempUrl = URL.createObjectURL(file);
+            setNewElementImageSrc(tempUrl);
         }
+    };
 
-        setCreateTagPopup(false);
-        setTagsLoading(true)
-        allTheStuffToDo().finally(() => {
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        setNewElementIsDragging(false);
+        const file = event.dataTransfer.files?.[0];
+        if (file && file.type.startsWith("image/")) {
+            setNewElementSelectedFile(file);
+            const tempUrl = URL.createObjectURL(file);
+            setNewElementImageSrc(tempUrl);
+        }
+    };
+
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+    };
+
+    const handleDragEnter = () => {
+        setNewElementIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setNewElementIsDragging(false);
+    };
+
+    function addElementAction() {
+        setElementsLoading(true);
+        if (selectedElementType?.name === 'image') {
+            if (newElementSelectedFile === null) {
+                setPopupTitle("Erreur");
+                setPopupText("Il manque une image");
+                setShowPopup(true);
+                setElementsLoading(false);
+                return;
+            }
+            uploadImage().then((res) => {
+                if (res) {
+                    addElement(parseInt(sectionId as string), selectedElementType.id, res).then(() => {
+                        router.back();
+                    }).catch((error : Error) => {
+                        setElementsLoading(false);
+                        setPopupTitle("Erreur");
+                        setPopupText(error.message);
+                        setShowPopup(true);
+                    })
+                } else {
+                    return;
+                }
+            });
+        } else {
+            if (!selectedElementType || newElementContent === '') {
+                setPopupTitle("Erreur");
+                setPopupText("Il faut sélectionner un type et entrer du contenu.");
+                setShowPopup(true);
+                setElementsLoading(false);
+                return;
+            }
+
+            addElement(parseInt(sectionId as string), selectedElementType.id, newElementContent).then(() => {
+                router.back();
+            }).catch((error : Error) => {
+                setElementsLoading(false);
+                setPopupTitle("Erreur");
+                setPopupText(error.message);
+                setShowPopup(true);
+            })
+        }
+    }
+
+    async function uploadImage() : Promise<string | null> {
+        if (!newElementSelectedFile) {
+            return null;
+        }
+        const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
+        try {
+            const blobRes = await put(newElementSelectedFile.name, newElementSelectedFile, {
+                access: 'public',
+                token: token,
+            });
+            return blobRes.url;
+        } catch (error) {
+            setPopupTitle("Erreur");
+            setPopupText((error as Error).message);
+            setShowPopup(true);
+            return null;
+        }
+    }
+
+    function updateSectionAction() {
+        const id = parseInt(sectionId as string);
+        setLoading(true);
+        if (newSectionTitle === '' || !selectedSectionNewType) {
+            return;
+        }
+        setShowPopupEditPage(false)
+        updateSection(id, newSectionTitle, selectedSectionNewType).then(async () => {
+            const sect = await getSection(parseInt(sectionId as string))
+            if (sect) setType(await getSectionType(sect.type_id));
+            setSection(sect);
+        }).catch((error) => {
+            setLoading(false);
+            setPopupTitle("Erreur");
+            setPopupText(error);
+            setShowPopup(true);
+        }).finally(() => {setLoading(false);});
+    }
+
+    function addTagAction(newTag: Tag) {
+        setTagsLoading(true);
+        addTagToSection(parseInt(sectionId as string), newTag.id).then( async () => {
+            setTags(await getTags())
+            setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
+        }).catch(() => {
+            setPopupTitle("Erreur");
+            setPopupText("Une erreur est survenue lors de l'ajout du tag à la section");
+            setShowPopup(true);
+        }).finally( () => {
             setTagsLoading(false);
         })
     }
 
     function removeTagAction(id: number) {
         setTagsLoading(true);
-        removeTagFromSection(parseInt(sectionId as string), id).then(() => {
-            getTagsForSection(parseInt(sectionId as string)).then((res) => {
-                setTags(res);
-            }).finally(() => {
-                setTagsLoading(false);
-            })
-        });
+        removeTagFromSection(parseInt(sectionId as string), id).then(async () => {
+            setTags(await getTags())
+            setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
+        }).catch(() => {
+            setPopupTitle("Erreur");
+            setPopupText("Une erreur est survenue lors de l'ajout du tag à la section");
+            setShowPopup(true);
+        }).finally( () => {
+            setTagsLoading(false);
+        })
     }
 
-    function deleteSectionAction(validation: boolean) {
-        if (!validation) {
-            setShowPopupDelete(false);
+    function deleteTagAction(id: number) {
+        if (sectionTags.find(tag => tag.id === id)) {
+            setPopupTitle("Erreur");
+            setPopupText("Impossible de supprimer un tag utilisé par cette section");
+            setShowPopup(true);
             return;
         }
+        setTagsLoading(false)
+        deleteTag(id).then(async () => {
+            setTags(await getTags())
+            setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
+        }).catch((e : Error) => {
+            setPopupTitle("Erreur");
+            setPopupText(e.message);
+            setShowPopup(true);
+        }).finally( () => {
+            setTagsLoading(false);
+        })
+    }
+
+    function addNewTagAction() {
+        setTagsLoading(true)
+        addTag(newTag).then(async () => {
+            setTags(await getTags())
+            setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
+            setNewTag("");
+        }).catch((e : Error) => {
+            setPopupTitle("Erreur");
+            setPopupText(e.message);
+            setShowPopup(true);
+        }).finally(() => {
+            setTagsLoading(false);
+        })
+    }
+
+    function deleteSectionAction() {
         setLoading(true);
         const id = parseInt(sectionId as string);
         deleteSection(id).then(() => {
@@ -179,125 +359,263 @@ export default function SectionVisu() {
     if (loading || !section) {
         return (
             <div>
-                <PageTitle title={""}/>
-                <PageLoading/>
+                <LoadingPopup show={true} message={"Récuperation des informations..."}/>
             </div>
         )
     }
 
     return (
-        <main className={"justify-start"}>
-            <PageTitle title={section.title}/>
-            <h3>Type</h3>
-            <div className={"flex flex-col justify-center items-center gap-3 p-2 rounded-xl bg-dark"}>
-                <p>{type?.name}</p>
-            </div>
-            <h3>Tags</h3>
-            <div className={"flex flex-wrap gap-2"}>
-                {
-                    tagsLoading ? <DivLoading/> :
-                        tags.map((tag) => {
-                            return (
-                                <div key={tag.id}
-                                     className={"pt-1 pb-1 pl-2 pr-2 rounded-3xl bg-dark flex gap-2"}>
-                                    <p>{tag.name}</p>
+        <MainPage title={section.title} pageAlignment={PageAlignmentEnum.tileStart}>
+            <SectionElem
+                title={"Informations"}
+                actions={[
+                    { iconName: "edit", text: "Modifier", onClick: () => setShowPopupEditPage(true) },
+                    {
+                        text: "Supprimer",
+                        iconName: "trash",
+                        onClick: () => setShowPopupDelete(true),
+                        actionType: ActionTypeEnum.dangerous
+                    },
+                ]}
+            >
+                <p>Titre {section.title}</p>
+                <p>Type : {type?.name}</p>
+            </SectionElem>
+
+
+
+            <SectionElem
+                weight={SectionWeight.HEAVY}
+                title={"Tags"}
+                loading={tagsLoading}
+                actions={[
+                    { iconName: "add", text: "Créer", onClick: () => setShowPopupCreateTag(true) },
+                ]}
+            >
+                <div className={`${deployTagList ? "max-h-fit  overflow-auto pb-20" : "max-h-48 overflow-hidden pb-0"} flex gap-2 flex-wrap  relative`}>
+                    {tags.map((tag) => {
+                        return (
+                            <div key={tag.id}
+                                 onClick={() => {
+                                     if (sectionTags.find((sectTag) => sectTag.id == tag.id)) {
+                                         removeTagAction(tag.id);
+                                     } else {
+                                         addTagAction(tag);
+                                     }
+                                 }}
+                                 className={`p-1 gap-1 justify-center items-center w-fit cursor-pointer rounded-3xl ${sectionTags.find((sectTag) => sectTag.id == tag.id) ? "bg-safe active:bg-safeHover md:hover:bg-safeHover" : "bg-background md:hover:bg-onBackgroundHover active:bg-onBackgroundHover"} flex`}>
+                                {
+                                    sectionTags.find((sectTag) => sectTag.id == tag.id) &&
+                                    <img src={"/ico/check.svg"} alt={"check"}
+                                         className={` p-1 h-6`}/>
+                                }
+                                <p className={`${sectionTags.find((sectTag) => sectTag.id == tag.id) ? "text-background mr-2" : "text-foreground mr-1 ml-2"}`}>{tag.name}</p>
+                                {
+                                    !sectionTags.find((sectTag) => sectTag.id == tag.id) &&
                                     <img src={"/ico/trash.svg"} alt={"trash"}
-                                         className={"cursor-pointer p-1 h-6 invert rounded-3xl active:bg-foreground md:hover:bg-foreground"}
-                                         onClick={() => removeTagAction(tag.id)}/>
-                                </div>
-                            )
-                        })
-                }
-                {
-                    tags.length === 0 && !tagsLoading && <p>Aucun tag</p>
-                }
-            </div>
-            <button className={"w-fit"} onClick={() => setCreateTagPopup(true)}>
-                Ajouter un tag
-                <img src={"/ico/plus.svg"} alt={"plus"}/>
-            </button>
-            <h3>Éléments</h3>
-            <div className={"flex w-full flex-wrap justify-center items-center flex-col gap-3 p-2 bg-dark rounded-[10px]"}>
-                {
-                    elementsLoading ? <DivLoading/> :
-                        elements?.map((elem) => {
-                            return (
-                                <div
-                                    onClick={() => !modifyElementOrder && router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/" + elem.id)}
-                                    className={`w-full p-2 rounded-[5px] ${!modifyElementOrder ? "cursor-pointer active:bg-darkHover md:hover:bg-darkHover" : "cursor-default"} flex gap-3`}
-                                    key={elem.id}>
-                                    <div className={"flex gap-3 items-center flex-wrap overflow-hidden"}>
+                                         className={`cursor-pointer p-1 h-6 rounded-3xl bg-dangerous active:bg-dangerousHover md:hover:bg-dangerousHover`}
+                                         onClick={(e) => {
+                                             e.stopPropagation();
+                                             deleteTagAction(tag.id);
+                                         }}/>
+                                }
+
+                            </div>
+                        )
+                    })}
+                    <div className={"absolute bottom-0 left-0 h-16 w-full flex justify-center items-center bg-gradient-to-t from-onBackground to-transparent"}>
+                        <div onClick={() => setDeployTagList(!deployTagList)} className={"flex justify-center items-center gap-1 rounded-3xl bg-foreground md:hover:bg-onForegroundHover active:bg-onForegroundHover p-2 cursor-pointer"}>
+                            <img className={"h-4"} src={deployTagList ? "/ico/up.svg" : "/ico/down.svg"} alt={"deploy tags"}/>
+                            <p className={"text-background text-sm"}>
+                                {deployTagList ? "Réduire" : "Voir plus"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </SectionElem>
+
+
+            <SectionElem loading={elementsLoading} title={"Elements"} width={SectionWidth.FULL}
+                         actions={modifyElementOrder ? [
+                             {
+                                 text: "Annuler",
+                                 iconName: "close",
+                                 onClick: cancelModifyElementOrder,
+                                 actionType: ActionTypeEnum.dangerous
+                             },
+                             {
+                                 text: "Valider",
+                                 iconName: "check",
+                                 onClick: validateModifyElementOrder,
+                                 actionType: ActionTypeEnum.safe
+                             }
+                         ] : [
+                             {
+                                 text: "Réorganiser",
+                                 iconName: "order",
+                                 onClick: beginModifyElementOrder,
+                             },
+                             {
+                                 text: "Ajouter",
+                                 iconName: "add",
+                                 actionType: ActionTypeEnum.safe,
+                                    onClick: () => setShowPopupNewElement(true)
+                             }
+                         ]}>
+
+                <List elements={elements?.map((elem) => {
+                    return {text: elem.content, onClick: () => router.push("/secure/pages/" + pageId + "/sections/" + section.id + "/elements/" + elem.id),
+                        actions: modifyElementOrder ? [{iconName: "up", onClick: () => moveElementUp(elem)}, {iconName: "down", onClick: () => moveElementDown(elem)}] : undefined}
+                }) ?? []}/>
+
+            </SectionElem>
+
+
+
+
+            <AdvancedPopup
+                show={showPopup}
+                message={popupText}
+                title={popupTitle}
+                closePopup={() => setShowPopup(false)}
+            />
+
+            <AdvancedPopup
+                actions={[{iconName: "trash", text: "Supprimer", actionType: ActionTypeEnum.dangerous, onClick: deleteSectionAction}]}
+                icon={"warning"}
+                show={showPopupDelete}
+                message={"Cette action est irreversible. Vous perdrez également les elements que cette section contient."}
+                title={`Voulez-vous vraiment supprimer la section "${section.title}" ?`}
+                closePopup={() => setShowPopupDelete(false)}
+            />
+
+            <form onSubmit={ updateSectionAction }>
+                <AdvancedPopup
+                    icon={'edit'}
+                    show={showPopupEditSection}
+                    message={"Saisissez le nouveau type et titre de la section ci-dessous :"}
+                    title={'Modifier la section'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={ () => setShowPopupEditPage(false)}
+                >
+                    <Input key={1} placeholder={"Nom"} value={newSectionTitle} setValueAction={setNewSectionTitle}/>
+                    <DropDown
+                        items={sectionTypes.map((sectionType) => sectionType.name)}
+                        selectedItem={selectedSectionNewType?.name || 'Type de la section'}
+                        setSelectedItemAction={(newValue) => setSelectedSectionNewType(sectionTypes.find((st) => st.name === newValue) || null)}
+                    />
+                </AdvancedPopup>
+            </form>
+
+            <form onSubmit={ addNewTagAction }>
+                <AdvancedPopup
+                    icon={'add'}
+                    show={showPopupCreateTag}
+                    message={"Saisissez le tag à créer :"}
+                    title={'Créer un tag'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={ () => setShowPopupCreateTag(false)}
+                >
+                    <Input key={1} placeholder={"tag"} value={newTag} setValueAction={setNewTag}/>
+                </AdvancedPopup>
+            </form>
+
+            <form onSubmit={ addElementAction }>
+                <AdvancedPopup
+                    icon={'add'}
+                    show={showPopupNewElement}
+                    message={"Saisissez le type et le contenu de l'élément ci-dessous :"}
+                    title={'Créer un élément'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={ () => setShowPopupNewElement(false)}
+                >
+                    <div className={"flex gap-2 items-center"}>
+                        <p>Type d'élément : </p>
+                        <DropDown
+                            items={elementTypes.map((elem) => elem.name)}
+                            selectedItem={selectedElementType?.name || "Selectionner un type"}
+                            setSelectedItemAction={(newValue) => setSelectedElementType(elementTypes.find((et) => et.name === newValue) || null)}
+                        />
+                    </div>
+
+                    {
+                        selectedElementType?.name === 'image' ?
+
+                            <div>
+                                <label htmlFor={"file-input"}>
+                                    <div
+
+                                        className={`h-fit w-full relative p-3 rounded-lg flex justify-center items-center gap-3 cursor-pointer hover:bg-onBackgroundHover ${newElementIsDragging ? "bg-onBackgroundHover pt-10 pb-10" : "bg-background"}`}>
+
                                         {
-                                            modifyElementOrder &&
-                                            <div className={"flex gap-1"}>
-                                                <div onClick={() => moveElementUp(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
-                                                    <img className={"w-4 h-4 invert"} src={"/ico/up.svg"} alt={"up"}/>
-                                                </div>
-                                                <div onClick={() => moveElementDown(elem)} className={"rounded-3xl flex justify-center items-center h-10 w-10 bg-backgroundHover active:bg-dark md:hover:bg-dark cursor-pointer"}>
-                                                    <img className={"w-4 h-4 invert"} src={"/ico/down.svg"} alt={"down"}/>
-                                                </div>
-                                            </div>
+                                            newElementSelectedFile ?
+
+                                                <>
+                                                    <img src={newElementImageSrc ||  ""} alt={"new image"} className={"h-12 rounded-lg"}/>
+                                                    <p>{newElementSelectedFile.name}</p>
+                                                </>
+
+
+                                                :
+
+                                                <>
+                                                    <img className={"invert w-6 h-6"} src={"/ico/cloud.svg"} alt={"cloud"}/>
+                                                    <p>Choisir une image</p>
+                                                </>
+
+
                                         }
-                                        <p className={"h-10 w-10 rounded-[100px] bg-backgroundHover flex justify-center items-center"}>{elem.position}</p>
-                                        <p className={"h-10 flex w-fit rounded-[100px] pl-3 pr-3 bg-backgroundHover  justify-center items-center"}>{elementTypes.find(t => t.id === elem.type_id)?.name}</p>
-                                        <p>{elem.content.length > maxContentLength ? elem.content.slice(0, maxContentLength) + "..." : elem.content}</p>
+                                        <span
+                                            className={"absolute w-full h-full top-0 left-0 bg-transparent"}
+                                            onDrop={handleDrop}
+                                            onDragOver={handleDragOver}
+                                            onDragEnter={handleDragEnter}
+                                            onDragLeave={handleDragLeave}
+                                        />
                                     </div>
-                                </div>
-                            )
-                        })
-                }
+                                </label>
+                                <input
+                                    className={"hidden"}
+                                    type={"file"}
+                                    id={"file-input"}
+                                    onChange={handleFileChange}
+                                    accept={"image/*"}/>
+                            </div>
 
-                {
-                    (!elementsLoading && (!elements || elements.length === 0)) &&
-                    <p>Pas d&apos;éléments</p>
-                }
-            </div>
+                            :
 
-            <div className={"flex gap-3"}>
-                {
-                    modifyElementOrder &&
-                    <button className={"bg-red-500 hover:bg-red-400"} onClick={cancelModifyElementOrder}>
-                        Annuler
-                        <img src={"/ico/close.svg"} alt={"close"}/>
+                            selectedElementType?.name === 'texte' ?
 
-                    </button>
-                }
-                <button onClick={modifyElementOrder ? validateModifyElementOrder : beginModifyElementOrder}>
-                    {
-                        modifyElementOrder ? "Valider le nouvel ordre" : "Modifier l'ordre"
+                                <textarea
+                                    className={"bg-background focus:bg-onBackgroundHover md:hover:bg-onBackgroundHover active:bg-onBackgroundHover rounded-lg outline-0 p-2 w-full h-64 min-h-64 max-h-64 resize-none"}
+                                    placeholder={"Contenu"}
+                                    value={newElementContent || ''}
+                                    onChange={(e) => setNewElementContent(e.target.value)}
+                                />
+
+                                :
+
+                                selectedElementType?.name === 'lien' || selectedElementType?.name === 'titre' ?
+
+                                    <Input
+                                        placeholder={selectedElementType.name}
+                                        value={newElementContent || ''}
+                                        setValueAction={setNewElementContent}
+                                    />
+
+                                    :
+
+                                    <p>Selectionnez un type d'élément</p>
                     }
-                    {
-                        modifyElementOrder ? <img src={"/ico/check.svg"} alt={"validate"}/> :
-                            <img src={"/ico/edit.svg"} alt={"edit"}/>
-                    }
-                </button>
-                {
-                    !modifyElementOrder &&
-                    <button className={"w-fit"}
-                            onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/elements/new")}>
-                        Ajouter un nouvel élément
-                        <img src={"/ico/plus.svg"} alt={"plus"}/>
-                    </button>
-                }
-            </div>
-
-            <div className={"flex gap-3 p-4 rounded-xl bg-backgroundHover"}>
-                <button onClick={() => router.push("/secure/pages/" + pageId + "/sections/" + sectionId + "/edit")}>
-                    Modifier
-                    <img src={"/ico/edit.svg"} alt={"edit"}/>
-                </button>
-                <button className={"bg-red-500 hover:bg-red-400"} onClick={() => setShowPopupDelete(true)}>
-                    Supprimer
-                    <img src={"/ico/trash.svg"} alt={"trash"}/>
-                </button>
-
-            </div>
-            <ValidationPopup showValidationPopup={showPopupDelete} onClose={deleteSectionAction}
-                             objectToDelete={section.title}/>
-            <Popup showPopup={showPopup} onClose={() => setShowPopup(false)} titre={popupTitle} texte={popupText}/>
-            {
-                createTagPopup && <CreateTag onCancel={() => setCreateTagPopup(false)} onValidate={onCreateTag} sectionId={section.id}/>
-            }
-        </main>
+                </AdvancedPopup>
+            </form>
+        </MainPage>
     );
 }

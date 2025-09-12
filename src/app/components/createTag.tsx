@@ -1,6 +1,6 @@
 
 import {useEffect, useState} from "react";
-import {addTag, deleteTag, getTagsNotInSection, Tag} from "@/app/controller/tagController";
+import {addTag, deleteTag, getTagsNotInSection, Tag} from "@/app/service/tagService";
 import PageLoading from "@/app/components/pageLoading";
 
 interface PopupProps {

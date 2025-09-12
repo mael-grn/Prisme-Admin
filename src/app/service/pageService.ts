@@ -1,7 +1,7 @@
 "use server";
 
 import {neon} from '@neondatabase/serverless';
-import {deleteSection, getSectionsForPage} from "@/app/controller/sectionController";
+import {deleteSection, getSectionsForPage} from "@/app/service/sectionService";
 const sql = neon(`${process.env.DATABASE_URL}`);
 
 export interface Page {

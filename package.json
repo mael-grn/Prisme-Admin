@@ -12,11 +12,13 @@
     "@neondatabase/serverless": "^0.10.4",
     "@vercel/blob": "^0.27.1",
     "bcryptjs": "^3.0.0",
+    "framer-motion": "^12.23.12",
     "jsonwebtoken": "^9.0.2",
     "next": "15.1.7",
     "pnpm": "^10.4.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tailwind": "^4.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

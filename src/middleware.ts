@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import {login} from "@/app/controller/loginController";
+import {login} from "@/app/service/loginService";
 
 export async function middleware(req : Request) {
     try {

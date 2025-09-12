@@ -1,12 +1,12 @@
 "use client"
 
 import {useEffect, useState} from "react";
-import {getPages, Page} from "@/app/controller/pageController";
+import {getPages, Page} from "@/app/service/pageService";
 import {useRouter} from "next/navigation";
 import PageTitle from "@/app/components/pageTitle";
 import DivLoading from "@/app/components/divLoading";
-import {getSections, Section} from "@/app/controller/sectionController";
-import {ElementBd, getElements} from "@/app/controller/elementController";
+import {getSections, Section} from "@/app/service/sectionService";
+import {ElementBd, getElements} from "@/app/service/elementService";
 
 export default function Elements() {
 
