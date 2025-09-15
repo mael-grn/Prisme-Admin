@@ -32,6 +32,27 @@ export async function getType(id: number) : Promise<ElementType | null> {
     }
 }
 
+export async function normalizeElementPositions(sectionId: number): Promise<void> {
+    const elements = await getElementsForSection(sectionId);
+    // Trie par position croissante
+    const sorted = elements.sort((a, b) => a.position - b.position);
+
+    // Vérifie si les positions sont déjà consécutives
+    let needUpdate = false;
+    sorted.forEach((elem, idx) => {
+        if (elem.position !== idx + 1) {
+            needUpdate = true;
+        }
+    });
+    if (!needUpdate) return;
+
+    for (const [idx, elem] of sorted.entries()) {
+        if (elem.position !== idx + 1) {
+            await sql(`UPDATE element SET position = ${idx + 1} WHERE id = ${elem.id}`);
+        }
+    }
+}
+
 export async function getElementsForSection(id: number) : Promise<ElementBd[]> {
     const result = await sql('SELECT * FROM element WHERE section_id = $1 ORDER BY position', [id]);
     return result as ElementBd[];

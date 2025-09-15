@@ -6,7 +6,7 @@ import {
     ElementBd,
     ElementType,
     getElementsForSection,
-    getTypes
+    getTypes, normalizeElementPositions
 } from "@/app/service/elementService";
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
@@ -36,6 +36,7 @@ import LoadingPopup from "@/app/components/loadingPopup";
 import Input from "@/app/components/Input";
 import DropDown from "@/app/components/DropDown";
 import {put} from "@vercel/blob";
+import Form from "@/app/components/form";
 
 const maxContentLength = 75;
 export default function SectionVisu() {
@@ -126,6 +127,7 @@ export default function SectionVisu() {
 
     function addElementAction() {
         setElementsLoading(true);
+        setShowPopupNewElement(false);
         if (selectedElementType?.name === 'image') {
             if (newElementSelectedFile === null) {
                 setPopupTitle("Erreur");
@@ -256,6 +258,7 @@ export default function SectionVisu() {
 
     function addNewTagAction() {
         setTagsLoading(true)
+        setShowPopupCreateTag(false);
         addTag(newTag).then(async () => {
             setTags(await getTags())
             setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
@@ -283,6 +286,13 @@ export default function SectionVisu() {
     }
 
     function beginModifyElementOrder() {
+        setElementsLoading(true);
+        async function loadData() {
+            await normalizeElementPositions(parseInt(sectionId as string))
+            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElementsLoading(false);
+        }
+        loadData();
         setModifyElementOrder(true);
     }
 
@@ -490,7 +500,7 @@ export default function SectionVisu() {
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <form onSubmit={ updateSectionAction }>
+            <Form onSubmit={ updateSectionAction }>
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditSection}
@@ -508,9 +518,9 @@ export default function SectionVisu() {
                         setSelectedItemAction={(newValue) => setSelectedSectionNewType(sectionTypes.find((st) => st.name === newValue) || null)}
                     />
                 </AdvancedPopup>
-            </form>
+            </Form>
 
-            <form onSubmit={ addNewTagAction }>
+            <Form onSubmit={ addNewTagAction }>
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupCreateTag}
@@ -523,9 +533,9 @@ export default function SectionVisu() {
                 >
                     <Input key={1} placeholder={"tag"} value={newTag} setValueAction={setNewTag}/>
                 </AdvancedPopup>
-            </form>
+            </Form>
 
-            <form onSubmit={ addElementAction }>
+            <Form onSubmit={ addElementAction }>
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupNewElement}
@@ -615,7 +625,7 @@ export default function SectionVisu() {
                                     <p>Selectionnez un type d'élément</p>
                     }
                 </AdvancedPopup>
-            </form>
+            </Form>
         </MainPage>
     );
 }
