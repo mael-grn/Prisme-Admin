@@ -7,7 +7,7 @@ import PageLoading from "@/app/components/pageLoading";
 import Popup from "@/app/components/popup";
 import {
     ElementType,
-    getElement,
+    getElementById,
     getType, updateElement
 } from "@/app/service/elementService";
 import {put} from "@vercel/blob";
@@ -29,7 +29,7 @@ export default function EditElement() {
 
     useEffect(() => {
         async function loadData() {
-            const elem = await getElement(parseInt(elementId as string))
+            const elem = await getElementById(parseInt(elementId as string))
             setType(await getType(elem?.type_id || 0));
             setContent(elem?.content || '');
         }

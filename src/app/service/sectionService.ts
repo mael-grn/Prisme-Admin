@@ -1,82 +1,71 @@
-"use server";
+import {InsertableSection, Section, SectionType} from "@/app/models/section";
 
-import {neon} from '@neondatabase/serverless';
-import {deleteElement, getElementsForSection} from "@/app/service/elementService";
-const sql = neon(`${process.env.DATABASE_URL}`);
+export default class SectionService {
 
-export interface Section {
-    id: number;
-    title: string;
-    page_id: number;
-    position: number;
-    type_id: number;
-    is_canada: boolean;
-}
+    /**
+     * Get all sections for a given page id
+     * @param pageId
+     */
+    static async getSectionsForPageId(pageId: number) : Promise<Section[]> {
+        throw  new Error("Method not implemented.");
+    }
 
-export interface SectionType {
-    id: number;
-    name: string;
-}
+    /**
+     * Get all available section types
+     */
+    static async getSectionTypes() : Promise<SectionType[]> {
+        throw  new Error("Method not implemented.");
+    }
 
-export async function getSectionsForPage(id: number) : Promise<Section[]> {
-    const result = await sql('SELECT * FROM section WHERE page_id = $1 ORDER BY position', [id]);
-    return result as Section[];
-}
+    /**
+     * Get a section by its id
+     * @param sectionId
+     */
+    static async getSectionById(sectionId: number) : Promise<Section>  {
+        throw  new Error("Method not implemented.");
+    }
 
-export async function getSections() : Promise<Section[]> {
-    const result = await sql('SELECT * FROM section');
-    return result as Section[];
-}
+    /**
+     * Insert a new section and return the newly created section
+     * @param newSection
+     */
+    static async insertSection(newSection : InsertableSection) : Promise<Section> {
+        throw  new Error("Method not implemented.");
+    }
 
-export async function getSectionTypes() : Promise<SectionType[]> {
-    const result = await sql('SELECT * FROM section_type');
-    return result as SectionType[];
-}
+    /**
+     * Update a section and return the updated section
+     * @param updatedSection
+     */
+    static async updateSection(updatedSection : Section) : Promise<Section> {
+        throw  new Error("Method not implemented.");
+    }
 
-export async function getSectionType(id: number) : Promise<SectionType | null> {
-    const result = await sql('SELECT * FROM section_type WHERE id = $1', [id]);
-    if (result.length === 0) {
-        return null;
-    } else {
-        return result[0] as SectionType;
+
+    /**
+     * Move a section by its id and an offset
+     * The offset can be positive or negative
+     * If the offset is positive, the section will be moved down
+     * If the offset is negative, the section will be moved up
+     * @param id
+     * @param offset
+     */
+    static async moveSection(id: number, offset: number) : Promise<void> {
+        throw  new Error("Method not implemented.");
+    }
+
+    /**
+     * Delete a section
+     * Deletes all descendant elements
+     * Normalizes the position of other sections
+     * return the number of deleted sections (1 or 0)
+     * @param section
+     */
+    static async deleteSection(section: Section) : Promise<number> {
+        //TODO supprimer tous les elements descendant
+        //TODO normaliser la position des autres sections
+        throw  new Error("Method not implemented.");
     }
 }
 
-export async function getSection(id: number) : Promise<Section | null>  {
-    const result = await sql('SELECT * FROM section WHERE id = $1', [id]);
-    if (result.length === 0) {
-        return null;
-    } else {
-        const section = result.find(sect => sect.id === id);
-        return section as Section;
-    }
-}
 
-export async function addSection(pageId: number, title: string, type: number) : Promise<void> {
-    let position;
-    const sections = await getSectionsForPage(pageId);
-    if (sections.length === 0) {
-        position = 1;
-    } else {
-        position = sections[sections.length - 1].position + 1;
-    }
-    await sql('INSERT INTO section (title, page_id, position, type_id) VALUES ($1, $2, $3, $4)', [title, pageId, position, type]);
-}
-
-export async function updateSection(id: number, newTitle: string, newType: SectionType) : Promise<void> {
-    await sql('UPDATE section SET title = $1, type_id = $2 WHERE id = $3', [newTitle, newType.id, id]);
-}
-
-export async function changeSectionPosition(id: number, newPosition: number) : Promise<void> {
-    await sql('UPDATE section SET position = $1 WHERE id = $2', [newPosition, id]);
-}
-
-export async function deleteSection(id: number) : Promise<boolean> {
-    const elements = await getElementsForSection(id);
-    for (const elem of elements) {
-        await deleteElement(elem.id);
-    }
-    await sql('DELETE FROM section_tag WHERE section_id = $1', [id]);
-    const result = await sql('DELETE FROM section WHERE id = $1', [id]);
-    return result.length !== 0;
-}

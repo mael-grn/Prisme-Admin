@@ -1,129 +1,82 @@
-"use server";
+import {ElementType, InsertableElement} from "@/app/models/element";
 
-import {neon} from '@neondatabase/serverless';
-import {del} from "@vercel/blob";
-const sql = neon(`${process.env.DATABASE_URL}`);
+export default class ElementService {
 
-export interface ElementBd {
-    id: number;
-    section_id: number;
-    type_id: number;
-    position: number;
-    content: string;
-}
-
-export interface ElementType {
-    id: number;
-    name: string;
-}
-
-
-export async function getTypes() : Promise<ElementType[]> {
-    const result = await sql('SELECT * FROM element_type');
-    return result as ElementType[];
-}
-
-export async function getType(id: number) : Promise<ElementType | null> {
-    const result = await sql('SELECT * FROM element_type WHERE id = $1', [id]);
-    if (result.length === 0) {
-        return null;
-    } else {
-        return result[0] as ElementType;
-    }
-}
-
-export async function normalizeElementPositions(sectionId: number): Promise<void> {
-    const elements = await getElementsForSection(sectionId);
-    // Trie par position croissante
-    const sorted = elements.sort((a, b) => a.position - b.position);
-
-    // Vérifie si les positions sont déjà consécutives
-    let needUpdate = false;
-    sorted.forEach((elem, idx) => {
-        if (elem.position !== idx + 1) {
-            needUpdate = true;
-        }
-    });
-    if (!needUpdate) return;
-
-    for (const [idx, elem] of sorted.entries()) {
-        if (elem.position !== idx + 1) {
-            await sql(`UPDATE element SET position = ${idx + 1} WHERE id = ${elem.id}`);
-        }
-    }
-}
-
-export async function getElementsForSection(id: number) : Promise<ElementBd[]> {
-    const result = await sql('SELECT * FROM element WHERE section_id = $1 ORDER BY position', [id]);
-    return result as ElementBd[];
-}
-
-export async function getElements() : Promise<ElementBd[]> {
-    const result = await sql('SELECT * FROM element');
-    return result as ElementBd[];
-}
-
-export async function getElement(id: number) : Promise<ElementBd | null>  {
-    const result = await sql('SELECT * FROM element WHERE id = $1', [id]);
-    if (result.length === 0) {
-        return null;
-    } else {
-        const element = result.find(elem => elem.id === id);
-        return element as ElementBd;
-    }
-}
-
-export async function addElement(sectionId: number, typeId: number, content: string) : Promise<void> {
-    let position;
-    const elements = await getElementsForSection(sectionId);
-    if (elements.length === 0) {
-        position = 1;
-    } else {
-        position = elements[elements.length - 1].position + 1;
-    }
-    await sql('INSERT INTO element (section_id, type_id, position, content) VALUES ($1, $2, $3, $4)', [sectionId, typeId, position, content]);
-}
-
-export async function updateElement(id: number, content: string) : Promise<ElementBd | null> {
-    const elem = await getElement(id);
-    if (!elem) {
-        throw "Element not found";
-    }
-    const type = await getType(elem.type_id);
-    if (!type) {
-        throw "Type not found";
+    /**
+     * Récupère tous les types de d'element possible
+     */
+    static async getTypes() : Promise<ElementType[]> {
+        throw new Error("Function not implemented.");
     }
 
-    if (type.name === 'image') {
-        await del(elem.content, {
-            token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
-        });
+    /**
+     * Recupere un type d'element par son id
+     * @param id
+     */
+    static async getTypeById(id: number) : Promise<ElementType | null> {
+        throw new Error("Function not implemented.");
     }
-    await sql('UPDATE element SET content = $1 WHERE id = $2', [content, id]);
-    return getElement(id);
+
+    /**
+     * Récupère tous les éléments dont la section correspond à l'id passé en paramètre
+     * @param sectionId
+     */
+    static async getElementsFromSectionId(sectionId: number) : Promise<Element[]> {
+        throw new Error("Function not implemented.");
+    }
+
+    /**
+     * Récupère un élément par son id. Ne peut pas récupérer un élément n'appartenant pas à l'utilisateur connecté
+     * @param elementId
+     */
+    static async getElementById(elementId: number) : Promise<Element>  {
+        throw new Error("Function not implemented.");
+    }
+
+    /**
+     * Insère un nouvel élément dans la base de données.
+     * Retourne l'élément inséré avec son id.
+     * @param newElement
+     */
+    static async insertElement(newElement : InsertableElement) : Promise<Element> {
+        throw new Error("Function not implemented.");
+    }
+
+    /**
+     * Met à jour le contenu d'un élément.
+     * Se base sur l'id de l'élément passé en paramètre.
+     * Ne change pas la position.
+     * @param updatedElement
+     */
+    static async updateElement(updatedElement: Element) : Promise<Element> {
+        throw new Error("Function not implemented.");
+    }
+
+    /**
+     * Déplace un élément dans une section en modifiant sa position.
+     * Le paramètre offset peut être positif ou négatif.
+     * Si l'offset est positif, l'élément sera déplacé vers le bas.
+     * Si l'offset est négatif, l'élément sera déplacé vers le haut.
+     * Ne fait rien si l'élément n'existe pas ou si l''offset est nul.
+     * Ne fait rien si l'élément ne peut pas être déplacé (déplacement hors des limites de la section).
+     * Modifie egalement la position des autres elements pour que les positions restent cohérentes.
+     * @param id
+     * @param offset
+     */
+    static async moveElement(id: number, offset: number) : Promise<void> {
+        throw new Error("Function not implemented.");
+    }
+
+
+    /**
+     * Supprime un élément et ses fichiers associés
+     * Retourne le nombre d'éléments supprimés (0 ou 1)
+     * @param element
+     */
+    static async deleteElement(element: Element) : Promise<number> {
+
+        //TODO Normaliser la position des autres éléments de la section
+        //TODO Supprimer les fichiers associés à l'élément s'il y en a
+        throw new Error("Function not implemented.");
+    }
 }
-
-export async function changeElementPosition(id: number, newPosition: number) : Promise<void> {
-    await sql('UPDATE element SET position = $1 WHERE id = $2', [newPosition, id]);
-}
-
-export async function deleteElement(id: number) : Promise<boolean> {
-    const elem = await getElement(id);
-    if (!elem) {
-        throw "Element not found";
-    }
-    const type = await getType(elem.type_id);
-    if (!type) {
-        throw "Type not found";
-    }
-
-    if (type.name === 'image') {
-        await del(elem.content, {
-            token: process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN,
-        });
-    }
-
-    const result = await sql('DELETE FROM element WHERE id = $1', [id]);
-    return result.length !== 0;
-}
-

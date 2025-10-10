@@ -1,11 +1,11 @@
 "use client"
 
 import {
-    addElement,
+    insertElement,
     changeElementPosition,
     ElementBd,
     ElementType,
-    getElementsForSection,
+    getElementsFromSection,
     getTypes, normalizeElementPositions
 } from "@/app/service/elementService";
 import {useParams, useRouter} from "next/navigation";
@@ -87,7 +87,7 @@ export default function SectionVisu() {
             setSectionTags(await getTagsForSection(parseInt(sectionId as string)));
             setTagsLoading(false);
             setElementTypes(await getTypes());
-            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElements(await getElementsFromSection(parseInt(sectionId as string)));
             setElementsLoading(false);
         }
         loadData();
@@ -138,7 +138,7 @@ export default function SectionVisu() {
             }
             uploadImage().then((res) => {
                 if (res) {
-                    addElement(parseInt(sectionId as string), selectedElementType.id, res).then(() => {
+                    insertElement(parseInt(sectionId as string), selectedElementType.id, res).then(() => {
                         router.back();
                     }).catch((error : Error) => {
                         setElementsLoading(false);
@@ -159,7 +159,7 @@ export default function SectionVisu() {
                 return;
             }
 
-            addElement(parseInt(sectionId as string), selectedElementType.id, newElementContent).then(() => {
+            insertElement(parseInt(sectionId as string), selectedElementType.id, newElementContent).then(() => {
                 router.back();
             }).catch((error : Error) => {
                 setElementsLoading(false);
@@ -289,7 +289,7 @@ export default function SectionVisu() {
         setElementsLoading(true);
         async function loadData() {
             await normalizeElementPositions(parseInt(sectionId as string))
-            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElements(await getElementsFromSection(parseInt(sectionId as string)));
             setElementsLoading(false);
         }
         loadData();
@@ -299,7 +299,7 @@ export default function SectionVisu() {
     function cancelModifyElementOrder() {
         setElementsLoading(true);
         async function loadData() {
-            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElements(await getElementsFromSection(parseInt(sectionId as string)));
             setElementsLoading(false);
         }
         loadData();
@@ -317,7 +317,7 @@ export default function SectionVisu() {
                     await changeElementPosition(elem.id, elem.position);
                 }
             }
-            setElements(await getElementsForSection(parseInt(sectionId as string)));
+            setElements(await getElementsFromSection(parseInt(sectionId as string)));
             setElementsLoading(false);
         }
         loadData();
