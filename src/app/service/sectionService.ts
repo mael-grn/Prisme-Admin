@@ -1,4 +1,4 @@
-import {InsertableSection, Section, SectionType} from "@/app/models/section";
+import {InsertableSection, Section, SectionType} from "@/app/models/Section";
 
 export default class SectionService {
 

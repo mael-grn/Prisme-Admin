@@ -1,4 +1,4 @@
-import {ElementType, InsertableElement} from "@/app/models/element";
+import {ElementType, InsertableElement} from "@/app/models/Element";
 
 export default class ElementService {
 

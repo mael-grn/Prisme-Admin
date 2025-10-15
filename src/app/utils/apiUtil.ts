@@ -1,6 +1,6 @@
 import {neon} from "@neondatabase/serverless";
 import {cookies} from "next/headers";
-import {User} from "@/app/models/user";
+import {User} from "@/app/models/User";
 import {getIdFromToken} from "@/app/utils/tokenUtil";
 
 export async function isUserAdmin() : Promise<boolean> {

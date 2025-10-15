@@ -1,4 +1,4 @@
-import {InsertableUser, User} from "@/app/models/user";
+import {InsertableUser, User} from "@/app/models/User";
 
 export default class UserService {
 

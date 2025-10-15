@@ -1,6 +1,6 @@
 import {getConnectedUser} from "@/app/utils/apiUtil";
 import {NextResponse} from "next/server";
-import {InsertableUser} from "@/app/models/user";
+import {InsertableUser} from "@/app/models/User";
 import {neon} from "@neondatabase/serverless";
 import {hashPassword} from "@/app/utils/passwordUtil";
 

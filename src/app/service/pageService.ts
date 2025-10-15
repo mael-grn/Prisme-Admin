@@ -1,4 +1,4 @@
-import {InsertablePage, Page} from "@/app/models/page";
+import {InsertablePage, Page} from "@/app/models/Page";
 
 export default class PageService {
 
