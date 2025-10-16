@@ -3,22 +3,22 @@ import {Element} from "@/app/models/Element";
 
 export interface Section {
     id: number;
-    pageId: number;
+    page_id: number;
     position: number;
-    sectionType: number;
+    section_type: string;
 }
 
 export interface InsertableSection {
-    pageId: number;
+    page_id: number;
     position: number;
-    sectionType: number;
+    section_type: string;
 }
 
 export interface RecursiveSection {
     id: number;
-    pageId: number;
+    page_id: number;
     position: number;
-    sectionType: number;
+    section_type: string;
     categories: RecursiveCategory[];
     elements: Element[];
 }

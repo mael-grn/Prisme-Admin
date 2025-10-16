@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import {cookies} from "next/headers";
-import {verifyToken} from "@/app/utils/tokenUtil";
+import TokenUtil from "@/app/utils/tokenUtil";
 
 export async function middleware(request: NextRequest) {
 
@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     if (!token || !token.value || token.value.length === 0) return NextResponse.json("Non autorisé", { status: 401 });
 
     // On vérifie le token
-    const res = await verifyToken(token.value);
+    const res = await TokenUtil.verifyToken(token.value);
 
     // Si le token est invalide ou expiré, on supprime le cookie et retourne une erreur 401
     if (!res) {

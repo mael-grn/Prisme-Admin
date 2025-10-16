@@ -2,26 +2,26 @@ import {RecursivePage} from "@/app/models/Page";
 
 export interface DisplayWebsite {
     id: number;
-    ownerId: number;
-    domain: string;
-    authToken: string;
-    heroImageUrl: string;
-    heroTitle: string;
+    owner_id: number;
+    website_domain: string;
+    auth_token: string;
+    hero_image_url: string;
+    hero_title: string;
 }
 
 export interface InsertableDisplayWebsite {
-    ownerId: number;
-    domain: string;
-    heroImageUrl: string;
-    heroTitle: string;
+    owner_id: number;
+    website_domain: string;
+    hero_image_url: string;
+    hero_title: string;
 }
 
 export interface RecursiveWebsite {
     id: number;
-    ownerId: number;
-    domain: string;
-    authToken: string;
-    heroImageUrl: string;
-    heroTitle: string;
+    owner_id: number;
+    website_domain: string;
+    auth_token: string;
+    hero_image_url: string;
+    hero_title: string;
     pages: RecursivePage[];
 }

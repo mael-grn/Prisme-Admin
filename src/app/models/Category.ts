@@ -1,4 +1,4 @@
-import {SubCategory} from "@/app/models/SubCategory";
+import {Subcategory} from "@/app/models/Subcategory";
 
 export interface Category {
     id: number;
@@ -12,5 +12,5 @@ export interface InsertableCategory {
 export interface RecursiveCategory {
     id: number;
     name: string;
-    subCategories: SubCategory[];
+    subcategories: Subcategory[];
 }

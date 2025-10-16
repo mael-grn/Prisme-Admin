@@ -20,7 +20,11 @@ create table display_websites(
 create table pages(
     id serial primary key,
     path varchar not null,
-    website_id integer references display_websites(id)
+    website_id integer references display_websites(id),
+    icon_svg text,
+    title varchar not null,
+    description text,
+    position int not null
 );
 
 create table categories(
@@ -38,7 +42,6 @@ create table sections(
     id serial primary key,
     page_id integer references pages(id),
     section_type varchar not null,
-    subcategory_id integer references subcategories(id),
     position int not null
 );
 
