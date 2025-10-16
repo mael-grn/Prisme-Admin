@@ -6,12 +6,12 @@ import TokenUtil from "@/app/utils/tokenUtil";
 export async function middleware(request: NextRequest) {
 
     // On exclue les requetes POST sur /api/user permettant de créer un utilisateur
-    if (request.nextUrl.pathname === '/api/user' && request.method === 'POST') {
+    if (request.nextUrl.pathname === '/api/users' && request.method === 'POST') {
         return NextResponse.next();
     }
 
     // On exclue les requetes POST sur /session permettant de se logger
-    if (request.nextUrl.pathname === '/api/session' && request.method === 'POST') {
+    if (request.nextUrl.pathname === '/api/sessions' && request.method === 'POST') {
         return NextResponse.next();
     }
 

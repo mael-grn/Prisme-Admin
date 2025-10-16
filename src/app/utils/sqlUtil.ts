@@ -1,5 +1,3 @@
-"use server";
-
 import {neon, NeonQueryFunction} from "@neondatabase/serverless";
 
 export default class SqlUtil {

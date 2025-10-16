@@ -33,7 +33,7 @@ export default class UserService {
      */
     static async insertUser(newUser : InsertableUser) : Promise<User> {
         try {
-            const response = await axios.post('/api/user/', newUser, {withCredentials: true});
+            const response = await axios.post('/api/users/', newUser);
             return response.data as User;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
