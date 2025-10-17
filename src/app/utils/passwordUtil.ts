@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from "crypto";
 
-export default class PasswordUtil {
+export class PasswordUtil {
 
     static saltRounds = 10;
 

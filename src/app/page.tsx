@@ -8,7 +8,8 @@ import SectionElem from "@/app/components/sectionElem";
 import LoadingPopup from "@/app/components/loadingPopup";
 import UserService from "@/app/service/UserService";
 import SessionService from "@/app/service/SessionService";
-import Popup from "@/app/components/popup";
+import Form from "@/app/components/form";
+import AdvancedPopup from "@/app/components/advancedPopup";
 
 export default function Home() {
     const [password, setPassword] = useState("");
@@ -32,12 +33,12 @@ export default function Home() {
         }).catch(() => {
             setInitialLoading(false)
         })
-    }, [password, router]);
+    }, [router]);
 
     function onClickLogin() {
         setLoading(true)
         SessionService.createSession(email, password).then(() => {
-            router.push("/secure/pages");
+            router.push("/secure/");
 
         }).catch((errorMsg) => {
             setPopupTitle("Une erreur s'est produite");
@@ -50,12 +51,18 @@ export default function Home() {
     }
   return (
       <div className={"flex items-center justify-center min-h-screen"}>
-          <SectionElem title="Connexion" actions={[{text: "Connexion", iconName: "key", onClick: onClickLogin, isLoading: loading}]}>
-              <Input iconName={"mail"} type={"email"} placeholder={"adresse mail"} value={email} setValueAction={setEmail}/>
-              <Input iconName={"lock"} type={"password"} placeholder={"mot de passe"} value={password} setValueAction={setPassword}/>
-          </SectionElem>
+          <Form onSubmitAction={onClickLogin}>
+              <SectionElem title="Connexion" actions={[
+                  {text: "Pas encore de compte ?", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },
+                  {text: "Connexion", iconName: "key", isLoading: loading, isForm: true}
+              ]}>
+                  <Input iconName={"mail"} type={"email"} placeholder={"adresse mail"} value={email} setValueAction={setEmail}/>
+                  <Input iconName={"lock"} type={"password"} placeholder={"mot de passe"} value={password} setValueAction={setPassword}/>
+              </SectionElem>
+          </Form>
+
           <LoadingPopup show={initialLoading} message={"Verification des accès..."}/>
-          <Popup showPopup={showPopup} onClose={() => setShowPopup(false)} titre={popupTitle} texte={popupText}/>
+          <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle} message={popupText}/>
       </div>
   );
 }

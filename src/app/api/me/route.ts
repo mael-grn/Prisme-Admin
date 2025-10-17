@@ -1,10 +1,9 @@
 import {NextResponse} from "next/server";
 import {InsertableUser} from "@/app/models/User";
-import {neon} from "@neondatabase/serverless";
-import ApiUtil from "@/app/utils/apiUtil";
-import PasswordUtil from "@/app/utils/passwordUtil";
-import FieldsUtil from "@/app/utils/fieldsUtil";
-import SqlUtil from "@/app/utils/sqlUtil";
+import {ApiUtil} from "@/app/utils/apiUtil";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import {PasswordUtil} from "@/app/utils/passwordUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
 
 export async function GET() {
     const user = await ApiUtil.getConnectedUser();

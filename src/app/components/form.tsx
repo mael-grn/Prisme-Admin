@@ -1,11 +1,16 @@
-import {FormEvent} from "react";
 
-export default function Form({onSubmit, children}: {onSubmit: () => void, children: React.ReactNode}) {
+import {FormEvent, useRef} from "react";
+
+export default function Form({onSubmitAction, children}: {onSubmitAction: () => void, children: React.ReactNode}) {
+
+    const formRef = useRef<HTMLFormElement>(null);
+
+    const onSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        onSubmitAction();
+    }
     return (
-        <form onSubmit={(e: FormEvent) => {
-            e.preventDefault();
-            onSubmit();
-        }}>
+        <form ref={formRef} onSubmit={onSubmit}>
             {children}
         </form>
     )

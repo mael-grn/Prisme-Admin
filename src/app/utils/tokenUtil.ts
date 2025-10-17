@@ -1,6 +1,7 @@
+
 import { jwtVerify, SignJWT, JWTPayload } from 'jose';
 
-export default class TokenUtil {
+export class TokenUtil {
 
     static secret = process.env.JWT_SECRET!;
 

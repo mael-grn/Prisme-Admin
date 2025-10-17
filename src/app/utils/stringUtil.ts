@@ -1,4 +1,4 @@
-export default class StringUtil {
+export class StringUtil {
     static getErrorMessageFromStatus(
         status: number,
         customMessage?: { code: number, message: string }
@@ -47,6 +47,28 @@ export default class StringUtil {
     static passwordStringValidator(password: string): string | null {
         if (password.length < 8) return "Le mot de passe doit contenir au moins 8 caractères.";
         return null;
+    }
+
+    static emailStringValidator(email: string): string | null {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) return "L'adresse email n'est pas valide.";
+        return null;
+    }
+
+    static httpsDomainValidator(domain: string): string | null {
+        if (!domain.startsWith("https://")) return "L'URL doit commencer par `https://`.";
+        try {
+            const url = new URL(domain);
+            if (url.protocol !== "https:") return "L'URL doit utiliser le protocole HTTPS.";
+            const hostname = url.hostname;
+            if (!hostname) return "Nom d'hôte manquant dans l'URL.";
+            // autorise 'localhost' ou un hostname contenant un point (ex: example.com)
+            const isHostValid = hostname === "localhost" || hostname.includes(".");
+            if (!isHostValid) return "Le domaine n'est pas valide.";
+            return null;
+        } catch {
+            return "Le format de l'URL est invalide.";
+        }
     }
 
     static truncateString(str: string, num: number): string {

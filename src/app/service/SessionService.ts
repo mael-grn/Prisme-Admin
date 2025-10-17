@@ -1,5 +1,5 @@
 import axios, {AxiosError} from "axios";
-import StringUtil from "@/app/utils/stringUtil";
+import {StringUtil} from "@/app/utils/stringUtil";
 
 export default class SessionService {
     static async createSession(email: string, password: string): Promise<void> {

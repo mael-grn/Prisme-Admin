@@ -1,6 +1,6 @@
 import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
 import axios, {AxiosError} from "axios";
-import StringUtil from "@/app/utils/stringUtil";
+import {StringUtil} from "@/app/utils/stringUtil";
 
 export default class DisplayWebsiteService {
 

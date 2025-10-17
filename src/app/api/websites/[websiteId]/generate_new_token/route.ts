@@ -1,7 +1,7 @@
-import ApiUtil from "@/app/utils/apiUtil";
 import {NextResponse} from "next/server";
-import SqlUtil from "@/app/utils/sqlUtil";
-import PasswordUtil from "@/app/utils/passwordUtil";
+import {ApiUtil} from "@/app/utils/apiUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
+import {PasswordUtil} from "@/app/utils/passwordUtil";
 
 export async function GET({ params }: { params: Promise<{ websiteId: string }> }) {
     const { websiteId } = await params;

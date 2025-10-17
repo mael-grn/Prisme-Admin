@@ -1,8 +1,8 @@
 import {NextResponse} from "next/server";
-import SqlUtil from "@/app/utils/sqlUtil";
-import ApiUtil from "@/app/utils/apiUtil";
-import FieldsUtil from "@/app/utils/fieldsUtil";
 import {InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
+import {SqlUtil} from "@/app/utils/sqlUtil";
+import {ApiUtil} from "@/app/utils/apiUtil";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
 
 export async function GET({ params }: { params: Promise<{ websiteId: string }> }) {
 

@@ -500,7 +500,7 @@ export default function SectionVisu() {
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <Form onSubmit={ updateSectionAction }>
+            <Form onSubmitAction={ updateSectionAction }>
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditSection}
@@ -520,7 +520,7 @@ export default function SectionVisu() {
                 </AdvancedPopup>
             </Form>
 
-            <Form onSubmit={ addNewTagAction }>
+            <Form onSubmitAction={ addNewTagAction }>
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupCreateTag}
@@ -535,7 +535,7 @@ export default function SectionVisu() {
                 </AdvancedPopup>
             </Form>
 
-            <Form onSubmit={ addElementAction }>
+            <Form onSubmitAction={ addElementAction }>
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupNewElement}

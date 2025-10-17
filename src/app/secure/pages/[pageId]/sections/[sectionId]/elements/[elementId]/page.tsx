@@ -279,7 +279,7 @@ export default function ElementVisu() {
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <Form onSubmit={ editContentAction }>
+            <Form onSubmitAction={ editContentAction }>
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditContent}
@@ -363,7 +363,7 @@ export default function ElementVisu() {
                 </AdvancedPopup>
             </Form>
 
-            <Form onSubmit={ editTypeAction }>
+            <Form onSubmitAction={ editTypeAction }>
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditType}

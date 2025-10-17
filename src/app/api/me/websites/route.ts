@@ -1,9 +1,10 @@
-import ApiUtil from "@/app/utils/apiUtil";
 import {NextResponse} from "next/server";
-import FieldsUtil from "@/app/utils/fieldsUtil";
 import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
-import SqlUtil from "@/app/utils/sqlUtil";
-import PasswordUtil from "@/app/utils/passwordUtil";
+import {ApiUtil} from "@/app/utils/apiUtil";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import {PasswordUtil} from "@/app/utils/passwordUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
+
 
 export async function POST(request: Request) {
     const user = await ApiUtil.getConnectedUser();

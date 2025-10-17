@@ -1,6 +1,6 @@
 import {InsertableUser, User} from "@/app/models/User";
-import StringUtil from "@/app/utils/stringUtil";
 import axios, {AxiosError} from "axios";
+import {StringUtil} from "@/app/utils/stringUtil";
 
 export default class UserService {
 

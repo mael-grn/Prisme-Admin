@@ -1,10 +1,9 @@
-import {neon} from "@neondatabase/serverless";
 import {cookies} from "next/headers";
 import {User} from "@/app/models/User";
-import TokenUtil from "@/app/utils/tokenUtil";
-import SqlUtil from "@/app/utils/sqlUtil";
+import {TokenUtil} from "@/app/utils/tokenUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
 
-export default class ApiUtil {
+export class ApiUtil {
 
     /**
      * Récupère l'utilisateur connecté à partir du token dans les cookies

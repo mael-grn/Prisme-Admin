@@ -9,7 +9,7 @@ import { InsertableSubcategory } from "@/app/models/Subcategory";
 
 export type ValidationResult = { valid: boolean; errors: string[] };
 
-export default class FieldsUtil {
+export class FieldsUtil {
     private static isNonEmptyString(v: unknown) {
         return typeof v === "string" && v.trim().length > 0;
     }

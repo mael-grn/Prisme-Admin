@@ -1,9 +1,8 @@
 import {NextResponse} from "next/server";
-import ApiUtil from "@/app/utils/apiUtil";
-import SqlUtil from "@/app/utils/sqlUtil";
-import {InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
-import FieldsUtil from "@/app/utils/fieldsUtil";
 import {InsertablePage} from "@/app/models/Page";
+import {ApiUtil} from "@/app/utils/apiUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
 
 export async function POST(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
 

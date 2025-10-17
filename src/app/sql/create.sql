@@ -11,7 +11,7 @@ create table users(
 create table display_websites(
     id serial primary key,
     owner_id integer references users(id),
-    website_domain varchar not null,
+    website_domain varchar not null unique,
     auth_token varchar not null,
     hero_image_url varchar,
     hero_title varchar
