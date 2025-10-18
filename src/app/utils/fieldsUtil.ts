@@ -81,6 +81,10 @@ export class FieldsUtil {
             errors.push("ownerId est requis et doit être un entier positif (référence utilisateurs)");
         }
 
+        if (!this.isNonEmptyString(w.hero_title)) {
+            errors.push("le site doit avoir un titre");
+        }
+
         if (!this.isNonEmptyString(w.website_domain)) {
             errors.push("domain est requis et doit être une chaîne non vide");
         } else if (!this.isValidDomain(w.website_domain) && !this.isValidUrl(w.website_domain)) {

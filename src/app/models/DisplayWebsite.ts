@@ -12,7 +12,7 @@ export interface DisplayWebsite {
 export interface InsertableDisplayWebsite {
     owner_id: number;
     website_domain: string;
-    hero_image_url: string;
+    hero_image_url?: string;
     hero_title: string;
 }
 

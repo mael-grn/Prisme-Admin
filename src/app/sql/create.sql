@@ -14,7 +14,7 @@ create table display_websites(
     website_domain varchar not null unique,
     auth_token varchar not null,
     hero_image_url varchar,
-    hero_title varchar
+    hero_title varchar not null
 );
 
 create table pages(

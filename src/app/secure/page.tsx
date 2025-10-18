@@ -107,7 +107,7 @@ export default function Home() {
         }
     };
 
-    const createWebsite = () => {
+    const createWebsite = async () => {
 
         setShowPopupCreateWebsite(false);
 
@@ -115,7 +115,6 @@ export default function Home() {
             owner_id: user!.id,
             website_domain: newWebsiteDomain,
             hero_title: newWebsiteHeroTitle,
-            hero_image_url: newWebsiteDomain, // temporaire, sera mis à jour après l'upload de l'image
         };
 
         const validation = FieldsUtil.checkDisplayWebsite(displayWebsite);
@@ -125,32 +124,27 @@ export default function Home() {
             setShowPopup(true);
             return;
         }
-
         setLoading(true);
-        setLoadingMessage("Envoie de l'image...");
-        uploadImage().then((imageUrl) => {
-            if (imageUrl) {
-                displayWebsite.hero_image_url = imageUrl
-                setLoadingMessage("Création de la page web...");
-                DisplayWebsiteService.createNewWebsite(displayWebsite).then(() =>{
-                    setWebsiteLoading(true);
-                    DisplayWebsiteService.getMyWebsites().then((websites) => {
-                        setWebsites(websites);
-                    }).catch((e) => {
-                        setPopupTitle("Une erreur s'est produite lors de la récupération de vos pages web");
-                        setPopupText(e);
-                        setShowPopup(true);
-                    }).finally(() => setWebsiteLoading(false));
-                }).catch((e) => {
-                    setPopupTitle("Une erreur s'est produite lors de la création de votre pages web");
-                    setPopupText(e);
-                    setShowPopup(true);
-                }).finally(() => setLoading(false));
-            } else {
-                setLoading(false);
-                return;
-            }
-        })
+        setLoadingMessage("Création de la page web...");
+        if (newSelectedFileHeroImage) {
+            setLoadingMessage("Envoie de l'image...");
+            displayWebsite.hero_image_url =await uploadImage() || undefined;
+        }
+
+        setLoadingMessage("Création de la page web...");
+        try {
+            await DisplayWebsiteService.createNewWebsite(displayWebsite)
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite lors de la création de votre pages web");
+            setPopupText(e as string || "Pas de détails disponibles.");
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+
+        setWebsiteLoading(true);
+        setWebsites(await DisplayWebsiteService.getMyWebsites());
+        setWebsiteLoading(false);
     }
 
     return (
@@ -161,7 +155,7 @@ export default function Home() {
             ]}
             >
 
-                <List elements={websites.map((website) => { return {text: website.website_domain, onClick: () => router.push("/secure/websites/" + website.id)}})}/>
+                <List elements={websites.map((website) => { return {text: `${website.hero_title} - ${website.website_domain}`, onClick: () => router.push("/secure/websites/" + website.id)}})}/>
 
             </SectionElem>
             <LoadingPopup show={loading} message={"Chargement du profil..."}/>
