@@ -16,7 +16,6 @@ export interface InsertablePage {
     icon_svg?: string;
     title: string;
     description?: string;
-    position: number;
 }
 
 export interface RecursivePage {

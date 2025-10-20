@@ -49,6 +49,11 @@ export class StringUtil {
         return null;
     }
 
+    static pathStringValidator(path: string): string | null {
+        if (!path.startsWith("/") || path.length < 2 || path.includes(' ')) return "Le chemin doit commencer par '/' et ne pas contenir d'espaces.";
+        return null;
+    }
+
     static emailStringValidator(email: string): string | null {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) return "L'adresse email n'est pas valide.";

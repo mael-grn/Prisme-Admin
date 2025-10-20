@@ -11,11 +11,12 @@ import List from "@/app/components/list";
 import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
 import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 import {useRouter} from "next/navigation";
-import {put} from "@vercel/blob";
 import Form from "@/app/components/form";
 import Input from "../components/Input";
 import {StringUtil} from "@/app/utils/stringUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import {ImageUtil} from "@/app/utils/ImageUtil";
+import ImageInput from "@/app/components/imageInput";
 
 export default function Home() {
 
@@ -32,8 +33,6 @@ export default function Home() {
     const [newWebsiteDomain, setNewWebsiteDomain] = useState<string>('');
     const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
     const [newSelectedFileHeroImage, setNewSelectedFileHeroImage] = useState<File | null>(null);
-    const [newHeroImageSrc, setNewHeroImageSrc] = useState<string | null>(null);
-    const [isDraggingNewWebsite, setIsDraggingNewWebsite] = useState<boolean>(false);
 
     useEffect(() => {
 
@@ -51,61 +50,12 @@ export default function Home() {
             setPopupTitle("Une erreur s'est produite lors de la récupération de vos pages web");
             setPopupText(e);
             setShowPopup(true);
-        })
+        }).finally(() => setWebsiteLoading(false));
     }, [])
 
     const router = useRouter();
 
-    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-    };
 
-    const handleDragEnter = () => {
-        setIsDraggingNewWebsite(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDraggingNewWebsite(false);
-    };
-
-    async function uploadImage() : Promise<string | null> {
-        if (!newSelectedFileHeroImage) {
-            return null;
-        }
-        const token = process.env.NEXT_PUBLIC_BLOB_READ_WRITE_TOKEN;
-        try {
-            const blobRes = await put(newSelectedFileHeroImage.name, newSelectedFileHeroImage, {
-                access: 'public',
-                token: token,
-            });
-            return blobRes.url;
-        } catch (error) {
-            setPopupTitle("Erreur");
-            setPopupText((error as Error).message);
-            setShowPopup(true);
-            return null;
-        }
-    }
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && file.type.startsWith("image/")) {
-            setNewSelectedFileHeroImage(file);
-            const tempUrl = URL.createObjectURL(file);
-            setNewHeroImageSrc(tempUrl);
-        }
-    };
-
-    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        setIsDraggingNewWebsite(false);
-        const file = event.dataTransfer.files?.[0];
-        if (file && file.type.startsWith("image/")) {
-            setNewSelectedFileHeroImage(file);
-            const tempUrl = URL.createObjectURL(file);
-            setNewHeroImageSrc(tempUrl);
-        }
-    };
 
     const createWebsite = async () => {
 
@@ -120,7 +70,7 @@ export default function Home() {
         const validation = FieldsUtil.checkDisplayWebsite(displayWebsite);
         if (!validation.valid) {
             setPopupTitle("Erreur lors de la saisie des informations");
-            setPopupText(validation.errors.map((e) => "- " + e).join("\n"));
+            setPopupText(validation.errors.join(", "));
             setShowPopup(true);
             return;
         }
@@ -128,7 +78,7 @@ export default function Home() {
         setLoadingMessage("Création de la page web...");
         if (newSelectedFileHeroImage) {
             setLoadingMessage("Envoie de l'image...");
-            displayWebsite.hero_image_url =await uploadImage() || undefined;
+            displayWebsite.hero_image_url =await ImageUtil.uploadImage(newSelectedFileHeroImage) || undefined;
         }
 
         setLoadingMessage("Création de la page web...");
@@ -150,15 +100,16 @@ export default function Home() {
     return (
         <MainPage title={user ? `Bonjour, ${user.first_name}` : "Accueil"}>
             <SectionElem title={"Vos pages web"}
+                         loading={websiteLoading}
             actions={[
                 {text: "Ajouter une page web", iconName: "add", onClick: () => setShowPopupCreateWebsite(true) },
             ]}
             >
 
-                <List elements={websites.map((website) => { return {text: `${website.hero_title} - ${website.website_domain}`, onClick: () => router.push("/secure/websites/" + website.id)}})}/>
+                <List elements={websites.map((website) => { return {text: `${website.hero_title} - ${website.website_domain}`, onClick: () => router.push("/secure/" + website.id)}})}/>
 
             </SectionElem>
-            <LoadingPopup show={loading} message={"Chargement du profil..."}/>
+            <LoadingPopup show={loading} message={loadingMessage}/>
             <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle} message={popupText}/>
 
             <Form onSubmitAction={createWebsite}>
@@ -176,46 +127,8 @@ export default function Home() {
 
                     <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
 
-                    <div>
-                        <label htmlFor={"file-input"}>
-                            <div
+                    <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
 
-                                className={`h-fit w-full relative p-3 rounded-lg flex justify-center items-center gap-3 cursor-pointer hover:bg-onBackgroundHover ${isDraggingNewWebsite ? "bg-onBackgroundHover pt-10 pb-10" : "bg-background"}`}>
-
-                                {
-                                    newSelectedFileHeroImage ?
-
-                                        <>
-                                            <img src={newHeroImageSrc ||  ""} alt={"new image"} className={"h-12 rounded-lg"}/>
-                                            <p>{newSelectedFileHeroImage.name}</p>
-                                        </>
-
-
-                                        :
-
-                                        <>
-                                            <img className={"invert w-6 h-6"} src={"/ico/cloud.svg"} alt={"cloud"}/>
-                                            <p>Choisir une image</p>
-                                        </>
-
-
-                                }
-                                <span
-                                    className={"absolute w-full h-full top-0 left-0 bg-transparent"}
-                                    onDrop={handleDrop}
-                                    onDragOver={handleDragOver}
-                                    onDragEnter={handleDragEnter}
-                                    onDragLeave={handleDragLeave}
-                                />
-                            </div>
-                        </label>
-                        <input
-                            className={"hidden"}
-                            type={"file"}
-                            id={"file-input"}
-                            onChange={handleFileChange}
-                            accept={"image/*"}/>
-                    </div>
                 </AdvancedPopup>
             </Form>
         </MainPage>

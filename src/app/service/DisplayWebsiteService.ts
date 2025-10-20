@@ -21,4 +21,30 @@ export default class DisplayWebsiteService {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
     }
+
+    static async deleteWebsite(websiteId: number): Promise<void> {
+        try {
+            await axios.delete(`/api/websites/${websiteId}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async updateWebsite(editedWebsite: DisplayWebsite) {
+        try {
+            const response = await axios.put(`/api/websites/${editedWebsite.id}`, editedWebsite);
+            return response.data as DisplayWebsite;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getWebsiteById(websiteId: number): Promise<DisplayWebsite> {
+        try {
+            const response = await axios.get(`/api/websites/${websiteId}`);
+            return response.data as DisplayWebsite;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
 }

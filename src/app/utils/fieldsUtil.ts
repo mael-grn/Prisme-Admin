@@ -87,9 +87,14 @@ export class FieldsUtil {
 
         if (!this.isNonEmptyString(w.website_domain)) {
             errors.push("domain est requis et doit être une chaîne non vide");
-        } else if (!this.isValidDomain(w.website_domain) && !this.isValidUrl(w.website_domain)) {
-            // accepter domaine simple ou URL
-            errors.push("domain doit être un nom de domaine valide (ex: example.com) ou une URL");
+        } else {
+            const domain = w.website_domain;
+            if (!this.isValidDomain(domain) && !this.isValidUrl(domain)) {
+                errors.push("domain doit être un nom de domaine valide (ex: example.com) ou une URL");
+            }
+            if (domain.endsWith("/")) {
+                errors.push("domain ne doit pas se terminer par '/'");
+            }
         }
 
         if (w.hero_image_url !== undefined && w.hero_image_url !== null && w.hero_image_url !== "") {
@@ -148,8 +153,13 @@ export class FieldsUtil {
         if (p.icon_svg !== undefined && p.icon_svg !== null && p.icon_svg !== "") {
             if (typeof p.icon_svg !== "string") {
                 errors.push("icon_svg doit être une chaîne si fournie");
-            } else if (p.icon_svg.length > 2000) {
-                errors.push("icon_svg est trop long");
+            } else {
+                const svgRe = /^\s*(<\?xml[\s\S]*?\?>\s*)?(<svg\b[^>]*>[\s\S]*?<\/svg>|<svg\b[^>]*\/>)\s*$/i;
+                if (!svgRe.test(p.icon_svg)) {
+                    errors.push("icon_svg doit être un SVG valide");
+                } else if (p.icon_svg.length > 2000) {
+                    errors.push("icon_svg est trop long");
+                }
             }
         }
 
@@ -160,13 +170,6 @@ export class FieldsUtil {
             } else if (p.description.length > 2000) {
                 errors.push("description est trop longue");
             }
-        }
-
-        // position (obligatoire)
-        if (!this.isInteger(p.position)) {
-            errors.push("position est requis et doit être un entier");
-        } else if ((p.position as number) < 0) {
-            errors.push("position doit être >= 0");
         }
 
         return { valid: errors.length === 0, errors };

@@ -39,9 +39,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ web
         return NextResponse.json({message: validationResult.errors}, {status: 400});
     }
 
+    const [maxPositionReq] = await sql`SELECT MAX(position) as max_position FROM pages WHERE website_id = ${website.id}`;
+    const maxPosition = maxPositionReq?.max_position || 0;
+    const pagePosition = maxPosition + 1;
     const [inserted] = await sql`INSERT INTO pages (path, website_id, icon_svg, title, description, position)
-              VALUES (${insertablePage.path}, ${website.id}, ${insertablePage.icon_svg}, ${insertablePage.title}, ${insertablePage.description}, ${insertablePage.position})
+              VALUES (${insertablePage.path}, ${website.id}, ${insertablePage.icon_svg}, ${insertablePage.title}, ${insertablePage.description}, ${pagePosition})
               RETURNING *`;
 
     return NextResponse.json((inserted), {status: 200});
+}
+
+export async function GET(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
+
+    const { websiteId } = await params;
+
+    if (!websiteId) {
+        return NextResponse.json({message: "Website ID or domain is required"}, {status: 400});
+    }
+
+    const sql = SqlUtil.getSql()
+    const res = await sql`
+        SELECT pages.* FROM display_websites, pages WHERE (display_websites.id = ${websiteId} or website_domain = ${websiteId}) and pages.website_id = display_websites.id ORDER BY pages.position
+    `;
+    return NextResponse.json((res), {status: 200});
 }

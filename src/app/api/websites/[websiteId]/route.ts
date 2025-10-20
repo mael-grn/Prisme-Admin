@@ -4,7 +4,7 @@ import {SqlUtil} from "@/app/utils/sqlUtil";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 
-export async function GET({ params }: { params: Promise<{ websiteId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
 
     const { websiteId } = await params;
 
@@ -16,10 +16,13 @@ export async function GET({ params }: { params: Promise<{ websiteId: string }> }
     const [res] = await sql`
         SELECT * FROM display_websites WHERE id = ${websiteId} or website_domain = ${websiteId} LIMIT 1
     `;
+    if (!res) {
+        return NextResponse.json({message: "Website not found"}, {status: 404});
+    }
     return NextResponse.json((res), {status: 200});
 }
 
-export async function DELETE({ params }: { params: Promise<{ websiteId: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
 
     const { websiteId } = await params;
 
@@ -46,11 +49,11 @@ export async function DELETE({ params }: { params: Promise<{ websiteId: string }
     }
 
     //On supprime le site
-    const [res] = await sql`
+    await sql`
         DELETE FROM display_websites WHERE id = ${website.id}
     `;
 
-    return NextResponse.json((res), {status: 200});
+    return NextResponse.json((1), {status: 200});
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
@@ -89,7 +92,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ webs
     }
 
     await sql`UPDATE display_websites
-              SET website_domain = ${website.domain},
+              SET website_domain = ${insertableWebsite.website_domain},
                     hero_image_url = ${insertableWebsite.hero_image_url},
                     hero_title = ${insertableWebsite.hero_title}
               WHERE id = ${website.id}`;

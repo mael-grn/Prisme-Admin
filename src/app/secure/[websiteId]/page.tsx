@@ -1,0 +1,263 @@
+"use client"
+
+import {useEffect, useState} from "react";
+import {useParams, useRouter} from "next/navigation";
+import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
+import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
+import List from "@/app/components/list";
+import AdvancedPopup from "@/app/components/advancedPopup";
+import Input from "@/app/components/Input";
+import {DisplayWebsite} from "@/app/models/DisplayWebsite";
+import {InsertablePage, Page} from "@/app/models/Page";
+import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
+import PageService from "@/app/service/pageService";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import Form from "@/app/components/form";
+import {StringUtil} from "@/app/utils/stringUtil";
+import LoadingPopup from "@/app/components/loadingPopup";
+import {ActionTypeEnum} from "@/app/components/Button";
+import Textarea from "@/app/components/textarea";
+import ImageInput from "@/app/components/imageInput";
+import {ImageUtil} from "@/app/utils/ImageUtil";
+
+export default function Pages() {
+
+    const [pages, setPages] = useState<Page[]>([]);
+    const [website, setWebsite] = useState<DisplayWebsite | null>(null);
+
+    const [loading, setLoading] = useState<boolean>(true);
+    const [loadingMessage, setLoadingMessage] = useState<string>("Chargement de votre site...");
+    const [pagesLoading, setPagesLoading] = useState<boolean>(true);
+
+    const [showPopupForm, setShowPopupForm] = useState<boolean>(false);
+
+    const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
+
+    const [showPopupEditDomain, setShowPopupEditDomain] = useState<boolean>(false);
+
+    const [showPopupEditHero, setShowPopupEditHero] = useState<boolean>(false);
+
+    const [showPopup, setShowPopup] = useState<boolean>(false);
+    const [popupText, setPopupText] = useState<string>('');
+    const [popupTitle, setPopupTitle] = useState<string>('');
+
+    const [newPageTitle, setNewPageTitle] = useState<string>('');
+    const [newPagePath, setNewPagePath] = useState<string>('');
+    const [newPageIcon, setNewPageIcon] = useState<string>('');
+    const [newPageDescription, setNewPageDescription] = useState<string>('');
+
+    const [newWebsiteDomain, setNewWebsiteDomain] = useState<string>('');
+
+    const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
+    const [newWebsiteHeroFile, setNewWebsiteHeroFile] = useState<File | null>(null);
+
+    const router = useRouter();
+    const {websiteId} = useParams();
+
+
+    useEffect(() => {
+        DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string))
+            .then((website) => setWebsite(website))
+            .catch((e) => {
+                setPopupTitle("Une erreur s'est produite");
+                setPopupText(e);
+                setShowPopup(true);
+            }).finally(() => setLoading(false));
+
+        PageService.getMyPagesFromWebsite(parseInt(websiteId as string))
+            .then((p) => setPages(p))
+            .catch((e) => {
+                setPopupTitle("Une erreur s'est produite");
+                setPopupText(e);
+                setShowPopup(true);
+            }).finally(() => setPagesLoading(false));
+    }, []);
+
+    async function deleteWebsiteAction() {
+        setShowPopupDelete(false);
+
+        setLoadingMessage("Suppression du site...");
+        setLoading(true);
+
+        try {
+            await DisplayWebsiteService.deleteWebsite(parseInt(websiteId as string))
+            router.push("/secure");
+        }  catch (e) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(e));
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function addPageAction() {
+
+        setShowPopupForm(false);
+
+        const newPage: InsertablePage = {
+            title: newPageTitle,
+            website_id: website!.id,
+            path: newPagePath,
+        }
+
+        const validation = FieldsUtil.checkPage(newPage)
+        if (!validation.valid) {
+            setShowPopup(true)
+            setPopupTitle("La nouvelle page n'est pas valide");
+            setPopupText(validation.errors.join(", "));
+            return;
+        }
+
+        setLoadingMessage("Ajout de la nouvelle page...");
+        setLoading(true);
+
+        try {
+            await PageService.insertPage(newPage)
+            setLoading(false);
+            setPagesLoading(true);
+            setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)))
+            setPagesLoading(false)
+        } catch (error) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(error));
+            setShowPopup(true);
+        }
+
+    }
+
+    const editDomainAction = async () => {
+        setShowPopupEditDomain(false);
+        if (StringUtil.httpsDomainValidator(newWebsiteDomain)) {
+            setShowPopup(true);
+            setPopupTitle("Domaine invalide");
+            setPopupText("Le domaine saisi n'est pas valide.");
+            return;
+        }
+        setLoadingMessage("Modification du domaine...");
+        setLoading(true);
+
+        try {
+            const newWebsite : DisplayWebsite = {...website!, website_domain: newWebsiteDomain};
+            await DisplayWebsiteService.updateWebsite(newWebsite)
+            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
+        } catch (error) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(error));
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const editHeroAction = async () => {
+        setShowPopupEditHero(false);
+
+        if (!newWebsiteHeroTitle || newWebsiteHeroTitle.length === 0) {
+            setShowPopup(true);
+            setPopupTitle("Informations manquantes");
+            setPopupText("Veuillez renseigner un titre et une image pour la landing page.");
+            return;
+        }
+
+        const newWebsite : DisplayWebsite = {...website!, hero_title: newWebsiteHeroTitle};
+
+        setLoading(true);
+
+        if (newWebsiteHeroFile) {
+            setLoadingMessage("Upload de l'image...");
+            newWebsite.hero_image_url = await ImageUtil.uploadImage(newWebsiteHeroFile)
+        }
+
+        setLoadingMessage("Modification de la landing page...");
+
+        try {
+            await DisplayWebsiteService.updateWebsite(newWebsite)
+            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
+        } catch (error) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(error));
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    return (
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={website ? `${website.hero_title}` : "Votre page web"}>
+            <SectionElem width={SectionWidth.FULL} loading={pagesLoading} title={"Vos pages"}
+                         actions={[{text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add"}]}>
+
+                <List elements={pages.map((page) => {
+                    return {text: page.title, onClick: () => router.push("/secure/pages/" + page.id)}
+                })}/>
+
+            </SectionElem>
+
+            <SectionElem title={"Domaine du site"} actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit"}]}>
+                <p>{website?.website_domain}</p>
+            </SectionElem>
+
+            <SectionElem title={"Contenu de la landing page"} actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit"}]}>
+
+                <p>{website?.hero_title}</p>
+                {website?.hero_image_url ?
+                    <img src={website?.hero_image_url} alt={"Image de la landing page"} className={"max-w-full h-auto mb-4 rounded-lg"}/> :
+                    <p className={"text-onForeground italic"}>Aucune image</p>
+                }
+            </SectionElem>
+
+            <SectionElem title={"Supprimer le site"} actions={[{text: "Supprimer", onClick: () => setShowPopupDelete(true), iconName: "trash", actionType: ActionTypeEnum.dangerous}]}>
+                <p>Supprimer le site entraine la perte de l'intégralité de son contenu.</p>
+            </SectionElem>
+
+            <LoadingPopup show={loading} message={loadingMessage}/>
+
+            <AdvancedPopup show={showPopup} message={popupText} title={popupTitle} closePopup={() => setShowPopup(false)}/>
+
+            <AdvancedPopup
+                show={showPopupDelete}
+                message={"L'entièreté de son contenu sera également supprimé."}
+                title={"Voulez-vous vraiment supprimer ce site ?"}
+                icon={"trash"}
+                actions={[
+                    {text: "Supprimer", actionType: ActionTypeEnum.dangerous, iconName: "trash", onClick: deleteWebsiteAction},
+                ]}
+                closePopup={() => setShowPopupDelete(false)}/>
+
+            <Form onSubmitAction={addPageAction}>
+                <AdvancedPopup show={showPopupForm}
+                               message={"Saisissez les informations requises ci-dessous afin d'ajouter une nouvelle page à votre site :"}
+                               title={"Créer une nouvelle page"}
+                               icon={"add"}
+                               actions={[
+                                   {text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
+                               ]}
+                               closePopup={() => setShowPopupForm(false)}>
+                    <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath} validatorAction={StringUtil.pathStringValidator}
+                           iconName={"globe"}/>
+                    <Input placeholder={"Titre"} value={newPageTitle} setValueAction={setNewPageTitle}/>
+
+                    <Textarea value={newPageDescription} onChangeAction={setNewPageDescription} placeholder={"Description"}/>
+
+                    <Textarea value={newPageIcon} onChangeAction={setNewPageIcon} placeholder={"Icone au format SVG (facultatif)"}/>
+
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={editDomainAction}>
+                <AdvancedPopup icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"} message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}]} closePopup={() => setShowPopupEditDomain(false)}>
+                    <Input iconName={"globe"} validatorAction={StringUtil.httpsDomainValidator} placeholder={"Nouveau domaine"} value={newWebsiteDomain} setValueAction={setNewWebsiteDomain}/>
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={editHeroAction}>
+                <AdvancedPopup icon={"edit"} show={showPopupEditHero} title={"Modifier le contenu de la landing page"} message={"Saisissez le contenu de la landing page de votre site ci-dessous :"} actions={[{text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}]} closePopup={() => setShowPopupEditHero(false)}>
+                    <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
+                    <ImageInput setFileAction={setNewWebsiteHeroFile}/>
+                </AdvancedPopup>
+            </Form>
+
+        </MainPage>
+    )
+}
