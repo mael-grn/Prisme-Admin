@@ -1,11 +1,12 @@
 // typescript
-import { InsertableUser } from "@/app/models/User";
-import { InsertableDisplayWebsite } from "@/app/models/DisplayWebsite";
-import { InsertablePage } from "@/app/models/Page";
-import { InsertableSection } from "@/app/models/Section";
-import { InsertableElement } from "@/app/models/Element";
-import { InsertableCategory } from "@/app/models/Category";
-import { InsertableSubcategory } from "@/app/models/Subcategory";
+import {InsertableUser} from "@/app/models/User";
+import {InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
+import {InsertablePage} from "@/app/models/Page";
+import {InsertableSection} from "@/app/models/Section";
+import {InsertableElement} from "@/app/models/Element";
+import {InsertableCategory} from "@/app/models/Category";
+import {InsertableSubcategory} from "@/app/models/Subcategory";
+import {InvalidFieldsError} from "@/app/errors/InvalidFieldsError";
 
 export type ValidationResult = { valid: boolean; errors: string[] };
 
@@ -47,7 +48,7 @@ export class FieldsUtil {
     public static checkUser(user: InsertableUser): ValidationResult {
         const errors: string[] = [];
         if (!user) {
-            return { valid: false, errors: ["user est requis"] };
+            return {valid: false, errors: ["user est requis"]};
         }
 
         if (!this.isNonEmptyString(user.email)) {
@@ -70,12 +71,12 @@ export class FieldsUtil {
             errors.push("password doit contenir au moins 8 caractères");
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkDisplayWebsite(w: InsertableDisplayWebsite): ValidationResult {
         const errors: string[] = [];
-        if (!w) return { valid: false, errors: ["display website est requis"] };
+        if (!w) return {valid: false, errors: ["display website est requis"]};
 
         if (!this.isPositiveInteger(w.owner_id)) {
             errors.push("ownerId est requis et doit être un entier positif (référence utilisateurs)");
@@ -116,12 +117,12 @@ export class FieldsUtil {
         // Note: auth_token existe en base mais n'est pas dans InsertableDisplayWebsite :
         // la création doit générer/assigner auth_token serveur-side.
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkPage(p: InsertablePage): ValidationResult {
         const errors: string[] = [];
-        if (!p) return { valid: false, errors: ["page est requise"] };
+        if (!p) return {valid: false, errors: ["page est requise"]};
 
         if (!this.isNonEmptyString(p.path)) {
             errors.push("path est requis et doit être une chaîne non vide");
@@ -172,12 +173,12 @@ export class FieldsUtil {
             }
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkSection(s: InsertableSection): ValidationResult {
         const errors: string[] = [];
-        if (!s) return { valid: false, errors: ["section est requise"] };
+        if (!s) return {valid: false, errors: ["section est requise"]};
 
         if (!this.isPositiveInteger(s.page_id)) {
             errors.push("pageId est requis et doit être un entier positif (référence pages)");
@@ -195,12 +196,12 @@ export class FieldsUtil {
             errors.push("type est trop long");
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkElement(e: InsertableElement): ValidationResult {
         const errors: string[] = [];
-        if (!e) return { valid: false, errors: ["element est requis"] };
+        if (!e) return {valid: false, errors: ["element est requis"]};
 
         if (!this.isPositiveInteger(e.section_id)) {
             errors.push("sectionId est requis et doit être un entier positif (référence sections)");
@@ -222,12 +223,12 @@ export class FieldsUtil {
             errors.push("content est requis et doit être une chaîne non vide");
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkCategory(c: InsertableCategory): ValidationResult {
         const errors: string[] = [];
-        if (!c) return { valid: false, errors: ["category est requise"] };
+        if (!c) return {valid: false, errors: ["category est requise"]};
 
         if (!this.isNonEmptyString(c.name)) {
             errors.push("name est requis et doit être une chaîne non vide");
@@ -235,12 +236,12 @@ export class FieldsUtil {
             errors.push("name est trop long");
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkSubCategory(sc: InsertableSubcategory): ValidationResult {
         const errors: string[] = [];
-        if (!sc) return { valid: false, errors: ["subcategory est requise"] };
+        if (!sc) return {valid: false, errors: ["subcategory est requise"]};
 
         if (!this.isPositiveInteger(sc.category_id)) {
             errors.push("categoryId est requis et doit être un entier positif (référence categories)");
@@ -252,6 +253,14 @@ export class FieldsUtil {
             errors.push("name est trop long");
         }
 
-        return { valid: errors.length === 0, errors };
+        return {valid: errors.length === 0, errors};
+    }
+
+    public static checkFieldsOrThrow<T>(validationFunction: (obj: T) => ValidationResult, obj: T) {
+        // appeler la fonction de validation avec `FieldsUtil` comme `this` pour préserver l'accès
+        const validation = validationFunction.call(FieldsUtil, obj);
+        if (!validation.valid) {
+            throw new InvalidFieldsError();
+        }
     }
 }

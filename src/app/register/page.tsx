@@ -37,7 +37,7 @@ export default function Home() {
         UserService.insertUser(userToInsert).then(() => {
             setPopupTitle("Inscription réussie");
             setPopupText("Votre compte a bien été créé. Vous pouvez maintenant vous connecter.");
-            setPopupIconName("check_circle");
+            setPopupIconName("check");
             setPopupActions([{text: "Connexion", iconName: "redirect", onClick: () => router.push("/")}]);
             setShowPopup(true);
 

@@ -10,7 +10,7 @@ export default class UserService {
     static async getMyUser() : Promise<User> {
         try {
             const response = await axios.get('/api/me/', {withCredentials: true});
-            return response.data as User;
+            return response.data.data as User;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -22,7 +22,7 @@ export default class UserService {
     static async updateMyUser(updatedUser : InsertableUser) : Promise<User> {
         try {
             const response = await axios.put('/api/me/', updatedUser, {withCredentials: true});
-            return response.data as User;
+            return response.data.data as User;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -34,7 +34,7 @@ export default class UserService {
     static async insertUser(newUser : InsertableUser) : Promise<User> {
         try {
             const response = await axios.post('/api/users/', newUser);
-            return response.data as User;
+            return response.data.data as User;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }

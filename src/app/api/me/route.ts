@@ -1,16 +1,16 @@
-import {NextResponse} from "next/server";
-import {InsertableUser} from "@/app/models/User";
+import {InsertableUser, User} from "@/app/models/User";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {PasswordUtil} from "@/app/utils/passwordUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 
 export async function GET() {
-    const user = await ApiUtil.getConnectedUser();
-    if (!user) {
-        return NextResponse.json({message: "User not found"}, {status: 404});
+    try {
+        const user = await ApiUtil.getConnectedUser();
+        return ApiUtil.getSuccessNextResponse<User>(user);
+    } catch (e) {
+        return ApiUtil.handleNextErrors(e as Error);
     }
-    return NextResponse.json((user), {status: 200});
 }
 
 /**
@@ -20,30 +20,29 @@ export async function GET() {
  */
 export async function PUT(request: Request) {
 
-    const user = await ApiUtil.getConnectedUser();
-    if (!user) {
-        return NextResponse.json({message: "User not found"}, {status: 404});
-    }
+    try {
+        const user = await ApiUtil.getConnectedUser();
 
-    // Récupération des données dans le body
-    const insertableUser: InsertableUser = await request.json();
+        // Récupération des données dans le body
+        const insertableUser: InsertableUser = await request.json();
 
-    // Validation des données
-    const validationResult = FieldsUtil.checkUser(insertableUser)
-    if (!validationResult.valid) {
-        return NextResponse.json({message: validationResult.errors}, {status: 400});
-    }
+        // Validation des données
+        FieldsUtil.checkFieldsOrThrow<InsertableUser>(FieldsUtil.checkUser, insertableUser);
 
-    // Connexion à la base de données
-    const sql = SqlUtil.getSql();
-    const hashedPassword = PasswordUtil.hashPassword(insertableUser.password);
+        // Connexion à la base de données
+        const sql = SqlUtil.getSql();
+        const hashedPassword = PasswordUtil.hashPassword(insertableUser.password);
 
-    const [res] = await sql`UPDATE users
+        await sql`UPDATE users
               SET email      = ${insertableUser.email},
                   first_name = ${insertableUser.first_name},
                   last_name  = ${insertableUser.last_name},
                   password   = ${hashedPassword}
-              WHERE id = ${user.id} RETURNING *`;
+              WHERE id = ${user.id}`;
 
-    return NextResponse.json((res), {status: 200});
+        return ApiUtil.getSuccessNextResponse()
+    } catch (error) {
+        return ApiUtil.handleNextErrors(error as Error);
+    }
+
 }

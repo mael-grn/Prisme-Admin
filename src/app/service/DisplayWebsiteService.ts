@@ -7,7 +7,7 @@ export default class DisplayWebsiteService {
     static async createNewWebsite(newWebsite: InsertableDisplayWebsite) {
         try {
             const response = await axios.post('/api/me/websites', newWebsite);
-            return response.data as DisplayWebsite;
+            return response.data.data as DisplayWebsite;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -16,7 +16,7 @@ export default class DisplayWebsiteService {
     static async getMyWebsites(): Promise<DisplayWebsite[]> {
         try {
             const response = await axios.get('/api/me/websites');
-            return response.data as DisplayWebsite[];
+            return response.data.data as DisplayWebsite[];
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -33,7 +33,7 @@ export default class DisplayWebsiteService {
     static async updateWebsite(editedWebsite: DisplayWebsite) {
         try {
             const response = await axios.put(`/api/websites/${editedWebsite.id}`, editedWebsite);
-            return response.data as DisplayWebsite;
+            return response.data.data as DisplayWebsite;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -42,7 +42,7 @@ export default class DisplayWebsiteService {
     static async getWebsiteById(websiteId: number): Promise<DisplayWebsite> {
         try {
             const response = await axios.get(`/api/websites/${websiteId}`);
-            return response.data as DisplayWebsite;
+            return response.data.data as DisplayWebsite;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
