@@ -1,0 +1,40 @@
+import {Category, InsertableCategory} from "@/app/models/Category";
+import axios, {AxiosError} from "axios";
+import {Page} from "@/app/models/Page";
+import {StringUtil} from "@/app/utils/stringUtil";
+
+export default class CategoryService {
+
+    static async getAllCategories(): Promise<Category[]> {
+        try {
+            const response = await axios.get(`/api/categories`);
+            return response.data.data as Category[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async createCategory(newCat : InsertableCategory): Promise<void> {
+        try {
+            await axios.post(`/api/categories`, newCat);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async updateCategory(updatedCat : Category): Promise<void> {
+        try {
+            await axios.put(`/api/categories/${updatedCat.id}`, updatedCat);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async deleteCategory(category : Category): Promise<void> {
+        try {
+            await axios.delete(`/api/categories/${category.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+}

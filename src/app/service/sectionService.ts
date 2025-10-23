@@ -1,4 +1,7 @@
 import {InsertableSection, Section} from "@/app/models/Section";
+import axios, {AxiosError} from "axios";
+import {Page} from "@/app/models/Page";
+import {StringUtil} from "@/app/utils/stringUtil";
 
 export default class SectionService {
 
@@ -7,14 +10,23 @@ export default class SectionService {
      * @param pageId
      */
     static async getSectionsForPageId(pageId: number) : Promise<Section[]> {
-        throw  new Error("Method not implemented.");
+        try {
+            const response = await axios.get(`/api/pages/${pageId}/sections`);
+            return response.data.data as Section[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
      * Get all available section types
      */
-    static async getSectionTypes() : Promise<SectionType[]> {
-        throw  new Error("Method not implemented.");
+    static getSectionTypes() : string[] {
+        return [
+            "classic",
+            "develop",
+            "tile"
+        ]
     }
 
     /**
@@ -22,23 +34,36 @@ export default class SectionService {
      * @param sectionId
      */
     static async getSectionById(sectionId: number) : Promise<Section>  {
-        throw  new Error("Method not implemented.");
+        try {
+            const response = await axios.get(`/api/sections/${sectionId}`);
+            return response.data.data as Section;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
      * Insert a new section and return the newly created section
      * @param newSection
      */
-    static async insertSection(newSection : InsertableSection) : Promise<Section> {
-        throw  new Error("Method not implemented.");
+    static async insertSection(newSection : InsertableSection) : Promise<void> {
+        try {
+            await axios.post(`/api/pages/${newSection.page_id}/sections`, newSection);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
      * Update a section and return the updated section
      * @param updatedSection
      */
-    static async updateSection(updatedSection : Section) : Promise<Section> {
-        throw  new Error("Method not implemented.");
+    static async updateSection(updatedSection : Section) : Promise<void> {
+        try {
+            await axios.put(`/api/sections/${updatedSection.page_id}`, updatedSection);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
 

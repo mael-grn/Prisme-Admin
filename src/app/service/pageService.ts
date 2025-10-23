@@ -67,6 +67,14 @@ export default class PageService {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
     }
+
+    static async movePage(pageWithNewPos: Page) : Promise<void> {
+        try {
+            await axios.post(`/api/pages/${pageWithNewPos.id}/move_position`, pageWithNewPos);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
 }
 
 
