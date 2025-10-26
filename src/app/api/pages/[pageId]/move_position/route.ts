@@ -1,4 +1,3 @@
-
 import {NextResponse} from "next/server";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
@@ -15,12 +14,12 @@ export async function POST(request: Request, {params}: { params: Promise<{ pageI
         const sql = SqlUtil.getSql();
 
         const [pageWithUser] = await sql`
-        select pages.*
-        from pages
-                 join display_websites on pages.website_id = display_websites.id
-        where display_websites.owner_id = ${user.id}
-          and pages.id = ${pageId}
-    `;
+            select pages.*
+            from pages
+                     join display_websites on pages.website_id = display_websites.id
+            where display_websites.owner_id = ${user.id}
+              and pages.id = ${pageId}
+        `;
         if (!pageWithUser) {
             return ApiUtil.getErrorNextResponse("No page found that belong to user", undefined, 404)
         }
@@ -40,15 +39,18 @@ export async function POST(request: Request, {params}: { params: Promise<{ pageI
         await sql`
             UPDATE pages
             SET position = CASE
-                               WHEN id = ${pageId} THEN ${newPos}
-                               WHEN ${newPos} < ${oldPos} AND position >= ${newPos} AND position < ${oldPos}
+                               WHEN id = ${pageId}::int THEN ${newPos}::int
+                               WHEN ${newPos}::int < ${oldPos}::int AND position >= ${newPos}::int AND
+                                    position < ${oldPos}::int
                                    THEN position + 1
-                               WHEN ${newPos} > ${oldPos} AND position > ${oldPos} AND position <= ${newPos}
+                               WHEN ${newPos}::int > ${oldPos}::int AND position > ${oldPos}::int AND
+                                    position <= ${newPos}::int
                                    THEN position - 1
                                ELSE position
                 END
-            WHERE website_id = ${pageWithUser.website_id}
-              AND (id = ${pageId} OR position BETWEEN LEAST(${newPos}, ${oldPos}) AND GREATEST(${newPos}, ${oldPos}))
+            WHERE website_id = ${pageWithUser.website_id}::int
+              AND (id = ${pageId}::int OR
+                   position BETWEEN LEAST(${newPos}::int, ${oldPos}::int) AND GREATEST(${newPos}::int, ${oldPos}::int))
         `;
 
         return ApiUtil.getSuccessNextResponse();

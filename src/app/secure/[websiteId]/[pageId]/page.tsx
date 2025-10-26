@@ -2,89 +2,139 @@
 
 import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
-import {deletePage, getPage, Page, updatePage} from "@/app/service/pageService";
-import {
-    addSection,
-    changeSectionPosition,
-    getSectionsForPage,
-    getSectionTypes, normalizeSectionPositions,
-    Section,
-    SectionType
-} from "@/app/service/sectionService";
-import Popup from "@/app/components/popup";
-import MainPage from "@/app/components/mainPage";
+import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
 import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
 import List from "@/app/components/list";
-import {ActionTypeEnum, ButtonProps} from "@/app/components/Button";
+import {ActionTypeEnum} from "@/app/components/Button";
 import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Input from "@/app/components/Input";
-import DropDown from "@/app/components/DropDown";
-import {getElementsFromSection, normalizeElementPositions} from "@/app/service/elementService";
+import {InsertableSection, Section} from "@/app/models/Section";
+import PageService from "@/app/service/pageService";
+import {InsertablePage, Page} from "@/app/models/Page";
+import SectionService from "@/app/service/sectionService";
+import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import {StringUtil} from "@/app/utils/stringUtil";
+import Form from "@/app/components/form";
+import Textarea from "@/app/components/textarea";
 
 export default function PageVisu() {
+
     const [loading, setLoading] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
     const [sectionsLoading, setSectionsLoading] = useState(true);
+
     const [page, setPage] = useState<Page | null>(null);
-    const [sectionTypes, setSectionTypes] = useState<SectionType[]>([]);
+    const [sectionTypes, setSectionTypes] = useState<string[]>([]);
     const [sections, setSections] = useState<Section[] | null>([]);
+
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
+
     const [showPopupNewSection, setShowPopupNewSection] = useState(false);
-    const [showPopupEditPage, setShowPopupEditPage] = useState(false);
+    const [showPopupEditTitle, setShowPopupEditTitle] = useState(false);
+    const [showPopupEditPath, setShowPopupEditPath] = useState(false);
+    const [showPopupEditDescription, setShowPopupEditDescription] = useState(false);
+    const [showPopupEditIcon, setShowPopupEditIcon] = useState(false);
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
+
     const [modifySectionOrder, setModifySectionOrder] = useState<boolean>(false);
     const [modifiedSections, setModifiedSections] = useState<number[]>([]);
-    const [newPageTitle, setNewPageTitle] = useState<string>('');
-    const [selectedSectionType, setSelectedSectionType] = useState<SectionType | null>(null);
-    const [newSectionTitle, setNewSectionTitle] = useState<string>('');
+
+    const [newTitle, setNewTitle] = useState<string>('');
+    const [newPath, setNewPath] = useState<string>('');
+    const [newDescription, setNewDescription] = useState<string>('');
+    const [newIcon, setNewIcon] = useState<string>('');
+
 
     const router = useRouter();
     const {pageId} = useParams();
 
+    const [newSection, setNewSection] = useState<InsertableSection>({
+        position: 0,
+        page_id: parseInt(pageId as string),
+        section_type: '',
+    });
+
     useEffect(() => {
         async function loadData() {
-            const tmpPage: Page | null = await getPage(parseInt(pageId as string))
+            const tmpPage: Page = await PageService.getPageById(parseInt(pageId as string))
             setPage(tmpPage)
-            setNewPageTitle(tmpPage?.title || '');
-            setLoading(false);
-            setSections(await getSectionsForPage(parseInt(pageId as string)));
-            setSectionTypes(await getSectionTypes());
+            setNewTitle(tmpPage.title);
+            setNewPath(tmpPage.path);
+            setNewDescription(tmpPage.description || '');
+            setNewIcon(tmpPage.icon_svg || '');
+            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
+            setSectionTypes(SectionService.getSectionTypes);
             setSectionsLoading(false);
         }
 
-        loadData();
+        try {
+            loadData();
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite lors de la suppression");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+
     }, [pageId]);
 
     function deletePageAction() {
         setLoading(true);
-        const id = parseInt(pageId as string);
-        deletePage(id).then(() => {
-            router.push('/secure/pages');
-        }).catch((error: Error) => {
-            setLoading(false);
-            setPopupTitle("Erreur");
-            setPopupText(error.message);
+        setLoadingMessage("suppression de la page...");
+        if (!page) return;
+        PageService.deletePage(page).then(() => {
+            router.push('/secure/' + page.website_id);
+        }).catch((e) => {
+            setPopupTitle("Une erreur s'est produite lors de la suppression");
+            setPopupText(e);
             setShowPopup(true);
+        }).finally(() => {
+            setLoading(false);
         })
     }
 
 
-    function updatePageAction(e: React.FormEvent) {
-        e.preventDefault();
-        const id = parseInt(pageId as string);
-        if (newPageTitle === '') {
+    function updatePageAction() {
+        setShowPopupEditTitle(false);
+        setShowPopupEditPath(false);
+        setShowPopupEditDescription(false);
+        setShowPopupEditIcon(false);
+        if (!page) return;
+        const insertablePage: InsertablePage = {
+            title: newTitle,
+            website_id: page.website_id,
+            path: newPath,
+            icon_svg: newIcon,
+            description: newDescription,
+        }
+        const validation = FieldsUtil.checkPage(insertablePage)
+        if (!validation.valid) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(validation.errors.join(', '));
+            setShowPopup(true);
             return;
         }
-        setShowPopupEditPage(false);
+
+        const updatedPage: Page = {
+            position: page.position,
+            ...insertablePage,
+            id: page.id
+        }
+
         setLoading(true);
-        updatePage(id, newPageTitle).then(() => {
-            const newPage: Page = {
-                id: page?.id || -1,
-                title: newPageTitle
-            }
-            setPage(newPage);
+        setLoadingMessage("Mise à jour des données...");
+        PageService.updatePage(updatedPage).then(async () => {
+            setLoadingMessage("Récuperation des informations...");
+            const tmp = await PageService.getPageById(parseInt(pageId as string))
+            setPage(tmp);
+            setNewTitle(tmp.title);
+            setNewPath(tmp.path);
+            setNewDescription(tmp.description || '');
+            setNewIcon(tmp.icon_svg || '');
         }).catch((error) => {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(error);
@@ -94,52 +144,40 @@ export default function PageVisu() {
         })
     }
 
-    function addSectonAction(e: React.FormEvent) {
-        e.preventDefault();
-        if (newSectionTitle === '' || !selectedSectionType) {
+    function addSectonAction() {
+        setShowPopupNewSection(false);
+        const validation = FieldsUtil.checkSection(newSection)
+        if (!validation.valid) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(validation.errors.join(', '));
+            setShowPopup(true);
             return;
         }
-        console.log(newSectionTitle);
-        console.log(selectedSectionType);
-        setShowPopupNewSection(false);
+
         setLoading(true);
-        addSection(parseInt(pageId as string), newSectionTitle, selectedSectionType?.id || 0).then(() => {
-            getSectionsForPage(parseInt(pageId as string)).then(sections => {
-                setSections(sections);
-            }).finally(() => {
-                setLoading(false);
-            });
+        setLoadingMessage("Ajout de la section...");
+        SectionService.insertSection(newSection).then(async () => {
+            setLoadingMessage("Chargement des sections...")
+            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
         }).catch((error) => {
-            setLoading(false);
             setPopupTitle("Erreur");
             setPopupText(error);
             setShowPopup(true);
+        }).finally(() => {
+            setLoading(false);
         })
     }
 
     function beginModifySectionOrder() {
-        setSectionsLoading(true);
-
-        async function loadData() {
-            await normalizeSectionPositions(parseInt(pageId as string))
-            setSections(await getSectionsForPage(parseInt(pageId as string)));
-            setSectionsLoading(false);
-        }
-
-        loadData();
         setModifySectionOrder(true);
     }
 
-    function cancelModifySectionOrder() {
-        setSectionsLoading(true);
-
-        async function loadData() {
-            setSections(await getSectionsForPage(parseInt(pageId as string)));
-            setSectionsLoading(false);
-        }
-
-        loadData();
+    async function cancelModifySectionOrder() {
         setModifySectionOrder(false);
+
+        setSectionsLoading(true)
+        setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
+        setSectionsLoading(false);
     }
 
     function validateModifySectionOrder() {
@@ -151,10 +189,10 @@ export default function PageVisu() {
             }
             for (const sect of sections) {
                 if (modifiedSections && modifiedSections.includes(sect.id)) {
-                    await changeSectionPosition(sect.id, sect.position);
+                    await SectionService.moveSection(sect);
                 }
             }
-            setSections(await getSectionsForPage(parseInt(pageId as string)));
+            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
             setSectionsLoading(false);
         }
 
@@ -202,16 +240,16 @@ export default function PageVisu() {
         setSections(newSections);
     }
 
-    if (loading || !page) {
+    if (!page) {
         return (
             <div>
-                <LoadingPopup show={true} message={"Récuperation des informations..."}/>
+                <LoadingPopup show={true} message={loadingMessage}/>
             </div>
         )
     }
 
     return (
-        <MainPage title={page.title}>
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={page.title}>
             <SectionElem loading={sectionsLoading} title={"Sections"} width={SectionWidth.FULL}
                          actions={modifySectionOrder ? [
                              {
@@ -228,17 +266,6 @@ export default function PageVisu() {
                              }
                          ] : [
                              {
-                                 text: "Supprimer",
-                                 iconName: "trash",
-                                 onClick: () => setShowPopupDelete(true),
-                                 actionType: ActionTypeEnum.dangerous
-                             },
-                             {
-                                 text: "Modifier",
-                                 iconName: "edit",
-                                 onClick: () => setShowPopupEditPage(true),
-                             },
-                             {
                                  text: "Réorganiser",
                                  iconName: "order",
                                  onClick: beginModifySectionOrder,
@@ -253,7 +280,7 @@ export default function PageVisu() {
 
                 <List elements={sections?.map((sect) => {
                     return {
-                        text: sect.title,
+                        text: sect.section_type,
                         onClick: () => router.push("/secure/pages/" + pageId + "/sections/" + sect.id),
                         actions: modifySectionOrder ? [{
                             iconName: "up",
@@ -262,6 +289,35 @@ export default function PageVisu() {
                     }
                 }) ?? []}/>
 
+            </SectionElem>
+
+            <SectionElem title={"Titre"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit"}]}>
+                <p>{page?.title}</p>
+            </SectionElem>
+
+            <SectionElem title={"Chemin d'accès"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit"}]}>
+                <p>{page?.path}</p>
+            </SectionElem>
+
+            <SectionElem title={"Description"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit"}]}>
+                <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
+            </SectionElem>
+
+            <SectionElem title={"Icone"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit"}]}>
+                {page.icon_svg || "Vous n'avez pas de description pour le moment."}
+            </SectionElem>
+
+            <SectionElem title={"Supprimer"} actions={[{
+                text: "Supprimer",
+                onClick: () => setShowPopupDelete(true),
+                iconName: "trash",
+                actionType: ActionTypeEnum.dangerous
+            }]}>
+                <p>Supprimer la page entraine la perte de l'intégralité de son contenu.</p>
             </SectionElem>
 
             <AdvancedPopup
@@ -285,23 +341,63 @@ export default function PageVisu() {
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <form onSubmit={updatePageAction}>
+            <Form onSubmitAction={updatePageAction}>
                 <AdvancedPopup
                     icon={'edit'}
-                    show={showPopupEditPage}
-                    message={"Entrez le nouvel endpoint de la page ci-dessous :"}
-                    title={'Modifier la page'}
+                    show={showPopupEditTitle}
+                    message={"Entrez le nouveau titre de la page :"}
+                    title={'Modifier le titre de la page'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
-                    closePopup={() => setShowPopupEditPage(false)}
+                    closePopup={() => setShowPopupEditTitle(false)}
                 >
-                    <Input key={1} placeholder={"Endpoint"} value={newPageTitle} setValueAction={setNewPageTitle}
-                           iconName={"globe"}/>
+                    <Input placeholder={"Titre"} value={newTitle} setValueAction={setNewTitle}
+                           />
                 </AdvancedPopup>
-            </form>
+                <AdvancedPopup
+                    icon={'edit'}
+                    show={showPopupEditPath}
+                    message={"Entrez le nouveau chemin d'accès de la page :"}
+                    title={'Modifier le chemin d\'accès de la page'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupEditPath(false)}
+                >
+                    <Input validatorAction={StringUtil.pathStringValidator} placeholder={"Chemin d'accès"} value={newPath} setValueAction={setNewPath}
+                    />
+                </AdvancedPopup>
+                <AdvancedPopup
+                    icon={'edit'}
+                    show={showPopupEditDescription}
+                    message={"Entrez la nouvelle description de la page :"}
+                    title={'Modifier la description de la page'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupEditPath(false)}
+                >
+                    <Textarea placeholder={"Chemin d'accès"} value={newDescription} onChangeAction={setNewDescription}
+                    />
+                </AdvancedPopup>
 
-            <form onSubmit={addSectonAction}>
+                <AdvancedPopup
+                    icon={'edit'}
+                    show={showPopupEditIcon}
+                    message={"Entrez la nouvelle icone au format SVG de la page :"}
+                    title={'Modifier l\'icone de la page'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupEditIcon(false)}
+                >
+                    <Textarea placeholder={"Icone au format SVG"} value={newIcon} onChangeAction={setNewIcon}
+                    />
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={addSectonAction}>
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupNewSection}
@@ -310,16 +406,13 @@ export default function PageVisu() {
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
-                    closePopup={() => setShowPopupEditPage(false)}
+                    closePopup={() => setShowPopupNewSection(false)}
                 >
-                    <Input key={1} placeholder={"Nom"} value={newSectionTitle} setValueAction={setNewSectionTitle}/>
-                    <DropDown
-                        items={sectionTypes.map((sectionType) => sectionType.name)}
-                        selectedItem={selectedSectionType?.name || 'Type de la section'}
-                        setSelectedItemAction={(newValue) => setSelectedSectionType(sectionTypes.find((st) => st.name === newValue) || null)}
-                    />
+
                 </AdvancedPopup>
-            </form>
+            </Form>
+
+            <LoadingPopup show={loading} message={loadingMessage}/>
 
         </MainPage>
     );

@@ -72,10 +72,8 @@ export default class SectionService {
      * The offset can be positive or negative
      * If the offset is positive, the section will be moved down
      * If the offset is negative, the section will be moved up
-     * @param id
-     * @param offset
      */
-    static async moveSection(id: number, offset: number) : Promise<void> {
+    static async moveSection(section: Section ) : Promise<void> {
         throw  new Error("Method not implemented.");
     }
 

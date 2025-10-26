@@ -3,7 +3,7 @@ import {RecursiveSection} from "@/app/models/Section";
 export interface Page {
     id: number;
     path: string;
-    websiteId: number;
+    website_id: number;
     icon_svg?: string;
     title: string;
     description?: string;

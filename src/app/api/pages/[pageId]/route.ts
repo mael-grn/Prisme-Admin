@@ -4,7 +4,7 @@ import {ApiUtil} from "@/app/utils/apiUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {InsertablePage, Page} from "@/app/models/Page";
 
-export async function GET({params}: { params: Promise<{ pageId: string }> }) {
+export async function GET(request: Request, {params}: { params: Promise<{ pageId: string }> }) {
     try {
         const {pageId} = await params;
         ApiUtil.checkParam(pageId);
@@ -26,7 +26,7 @@ export async function GET({params}: { params: Promise<{ pageId: string }> }) {
 
 }
 
-export async function DELETE({params}: { params: Promise<{ pageId: string }> }) {
+export async function DELETE(request: Request, {params}: { params: Promise<{ pageId: string }> }) {
 
     try {
         const {pageId} = await params;
@@ -84,7 +84,7 @@ export async function PUT(request: Request, {params}: { params: Promise<{ pageId
             FROM display_websites,
                  pages
             WHERE pages.id = ${pageId}
-              and display_websites.id = pages.id
+              and display_websites.id = pages.website_id
             LIMIT 1
         `;
 
@@ -112,7 +112,9 @@ export async function PUT(request: Request, {params}: { params: Promise<{ pageId
         await sql`UPDATE pages
                   SET title      = ${insertablePage.title},
                       path       = ${insertablePage.path},
-                      website_id = ${insertablePage.website_id}
+                      website_id = ${insertablePage.website_id},
+                        icon_svg   = ${insertablePage.icon_svg},
+                        description = ${insertablePage.description}
                   WHERE id = ${pageId}`;
 
         return ApiUtil.getSuccessNextResponse();

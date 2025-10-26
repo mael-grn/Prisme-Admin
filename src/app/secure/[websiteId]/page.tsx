@@ -19,6 +19,8 @@ import {ActionTypeEnum} from "@/app/components/Button";
 import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
 import {ImageUtil} from "@/app/utils/ImageUtil";
+import SectionService from "@/app/service/sectionService";
+import {Section} from "@/app/models/Section";
 
 export default function Pages() {
 
@@ -51,6 +53,9 @@ export default function Pages() {
     const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
     const [newWebsiteHeroFile, setNewWebsiteHeroFile] = useState<File | null>(null);
 
+    const [modifyPageOrder, setModifyPageOrder] = useState<boolean>(false);
+    const [modifiedPages, setModifiedPages] = useState<number[]>([]);
+
     const router = useRouter();
     const {websiteId} = useParams();
 
@@ -82,7 +87,7 @@ export default function Pages() {
         try {
             await DisplayWebsiteService.deleteWebsite(parseInt(websiteId as string))
             router.push("/secure");
-        }  catch (e) {
+        } catch (e) {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(String(e));
             setShowPopup(true);
@@ -138,7 +143,7 @@ export default function Pages() {
         setLoading(true);
 
         try {
-            const newWebsite : DisplayWebsite = {...website!, website_domain: newWebsiteDomain};
+            const newWebsite: DisplayWebsite = {...website!, website_domain: newWebsiteDomain};
             await DisplayWebsiteService.updateWebsite(newWebsite)
             setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
         } catch (error) {
@@ -160,7 +165,7 @@ export default function Pages() {
             return;
         }
 
-        const newWebsite : DisplayWebsite = {...website!, hero_title: newWebsiteHeroTitle};
+        const newWebsite: DisplayWebsite = {...website!, hero_title: newWebsiteHeroTitle};
 
         setLoading(true);
 
@@ -183,37 +188,164 @@ export default function Pages() {
         }
     }
 
+    function beginModifyPageOrder() {
+        setModifyPageOrder(true);
+    }
+
+    async function cancelModifyPageOrder() {
+        setModifyPageOrder(false);
+
+        setPagesLoading(true)
+        setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)));
+        setPagesLoading(false);
+    }
+
+    function validateModifyPageOrder() {
+        setPagesLoading(true)
+
+        async function loadData() {
+            if (!pages) {
+                return;
+            }
+            for (const page of pages) {
+                if (modifiedPages && modifiedPages.includes(page.id)) {
+                    try {
+                        await PageService.movePage(page);
+                    } catch (e) {
+                        setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)));
+                        setPagesLoading(false);
+                        setPopupTitle("Une erreur s'est produite");
+                        setPopupText(String(e));
+                        setShowPopup(true);
+                        break;
+                    }
+
+                }
+            }
+            setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)));
+            setPagesLoading(false);
+        }
+
+        loadData();
+        setModifyPageOrder(false);
+    }
+
+    function movePageUp(page: Page) {
+        if (!pages) {
+            return;
+        }
+        const newPages: Page[] = [...pages];
+        if (page.position === 1) {
+            return;
+        }
+
+        const modSect: number[] = [...modifiedPages];
+        modSect?.push(newPages.find(s => s.position === page.position - 1)!.id);
+        modSect?.push(page.id);
+        setModifiedPages(modSect)
+
+        newPages.find(s => s.position === page.position - 1)!.position++;
+        newPages.find(s => s.id === page.id)!.position--;
+        newPages.sort((a, b) => a.position - b.position);
+        setPages(newPages);
+    }
+
+    function movePageDown(page: Page) {
+        if (!pages) {
+            return;
+        }
+        const newPages: Page[] = [...pages];
+        if (page.position === pages.length) {
+            return;
+        }
+
+        const modSect: number[] = [...modifiedPages];
+        modSect?.push(newPages.find(s => s.position === page.position + 1)!.id);
+        modSect?.push(page.id);
+        setModifiedPages(modSect)
+
+        newPages.find(s => s.position === page.position + 1)!.position--;
+        newPages.find(s => s.id === page.id)!.position++;
+        newPages.sort((a, b) => a.position - b.position);
+        setPages(newPages);
+    }
+
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={website ? `${website.hero_title}` : "Votre page web"}>
-            <SectionElem width={SectionWidth.FULL} loading={pagesLoading} title={"Vos pages"}
-                         actions={[{text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add"}]}>
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart}
+                  title={website ? `${website.hero_title}` : "Votre page web"}>
+            <SectionElem
+                width={SectionWidth.FULL}
+                loading={pagesLoading}
+                title={"Vos pages"}
+                actions={
+                    modifyPageOrder ?
+                        [
+                            {
+                                text: "Annuler",
+                                iconName: "close",
+                                onClick: cancelModifyPageOrder,
+                                actionType: ActionTypeEnum.dangerous
+                            },
+                            {
+                                text: "Valider",
+                                iconName: "check",
+                                onClick: validateModifyPageOrder,
+                                actionType: ActionTypeEnum.safe
+                            }
+                        ] :
+                        [
+
+                            {
+                                text: "Réorganiser",
+                                iconName: "order",
+                                onClick: beginModifyPageOrder,
+                            },
+                            {text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
+                        ]
+            }>
 
                 <List elements={pages.map((page) => {
-                    return {text: page.title, onClick: () => router.push("/secure/pages/" + page.id)}
+                    return {
+                        text: page.title,
+                        onClick: () => router.push(`/secure/${websiteId}/${page.id}`),
+                        actions: modifyPageOrder ? [{
+                            iconName: "up",
+                            onClick: () => movePageUp(page)
+                        }, {iconName: "down", onClick: () => movePageDown(page)}] : undefined
+                    }
                 })}/>
 
             </SectionElem>
 
-            <SectionElem title={"Domaine du site"} actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit"}]}>
+            <SectionElem title={"Domaine du site"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit"}]}>
                 <p>{website?.website_domain}</p>
             </SectionElem>
 
-            <SectionElem title={"Contenu de la landing page"} actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit"}]}>
+            <SectionElem title={"Contenu de la landing page"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit"}]}>
 
                 <p>{website?.hero_title}</p>
                 {website?.hero_image_url ?
-                    <img src={website?.hero_image_url} alt={"Image de la landing page"} className={"max-w-full h-auto mb-4 rounded-lg"}/> :
+                    <img src={website?.hero_image_url} alt={"Image de la landing page"}
+                         className={"max-w-full h-auto mb-4 rounded-lg"}/> :
                     <p className={"text-onForeground italic"}>Aucune image</p>
                 }
             </SectionElem>
 
-            <SectionElem title={"Supprimer le site"} actions={[{text: "Supprimer", onClick: () => setShowPopupDelete(true), iconName: "trash", actionType: ActionTypeEnum.dangerous}]}>
+            <SectionElem title={"Supprimer le site"} actions={[{
+                text: "Supprimer",
+                onClick: () => setShowPopupDelete(true),
+                iconName: "trash",
+                actionType: ActionTypeEnum.dangerous
+            }]}>
                 <p>Supprimer le site entraine la perte de l'intégralité de son contenu.</p>
             </SectionElem>
 
             <LoadingPopup show={loading} message={loadingMessage}/>
 
-            <AdvancedPopup show={showPopup} message={popupText} title={popupTitle} closePopup={() => setShowPopup(false)}/>
+            <AdvancedPopup show={showPopup} message={popupText} title={popupTitle}
+                           closePopup={() => setShowPopup(false)}/>
 
             <AdvancedPopup
                 show={showPopupDelete}
@@ -221,7 +353,12 @@ export default function Pages() {
                 title={"Voulez-vous vraiment supprimer ce site ?"}
                 icon={"trash"}
                 actions={[
-                    {text: "Supprimer", actionType: ActionTypeEnum.dangerous, iconName: "trash", onClick: deleteWebsiteAction},
+                    {
+                        text: "Supprimer",
+                        actionType: ActionTypeEnum.dangerous,
+                        iconName: "trash",
+                        onClick: deleteWebsiteAction
+                    },
                 ]}
                 closePopup={() => setShowPopupDelete(false)}/>
 
@@ -234,25 +371,43 @@ export default function Pages() {
                                    {text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
                                ]}
                                closePopup={() => setShowPopupForm(false)}>
-                    <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath} validatorAction={StringUtil.pathStringValidator}
+                    <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath}
+                           validatorAction={StringUtil.pathStringValidator}
                            iconName={"globe"}/>
                     <Input placeholder={"Titre"} value={newPageTitle} setValueAction={setNewPageTitle}/>
 
-                    <Textarea value={newPageDescription} onChangeAction={setNewPageDescription} placeholder={"Description"}/>
+                    <Textarea value={newPageDescription} onChangeAction={setNewPageDescription}
+                              placeholder={"Description"}/>
 
-                    <Textarea value={newPageIcon} onChangeAction={setNewPageIcon} placeholder={"Icone au format SVG (facultatif)"}/>
+                    <Textarea value={newPageIcon} onChangeAction={setNewPageIcon}
+                              placeholder={"Icone au format SVG (facultatif)"}/>
 
                 </AdvancedPopup>
             </Form>
 
             <Form onSubmitAction={editDomainAction}>
-                <AdvancedPopup icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"} message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}]} closePopup={() => setShowPopupEditDomain(false)}>
-                    <Input iconName={"globe"} validatorAction={StringUtil.httpsDomainValidator} placeholder={"Nouveau domaine"} value={newWebsiteDomain} setValueAction={setNewWebsiteDomain}/>
+                <AdvancedPopup icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"}
+                               message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{
+                    text: "Valider",
+                    isForm: true,
+                    iconName: "check",
+                    actionType: ActionTypeEnum.safe
+                }]} closePopup={() => setShowPopupEditDomain(false)}>
+                    <Input iconName={"globe"} validatorAction={StringUtil.httpsDomainValidator}
+                           placeholder={"Nouveau domaine"} value={newWebsiteDomain}
+                           setValueAction={setNewWebsiteDomain}/>
                 </AdvancedPopup>
             </Form>
 
             <Form onSubmitAction={editHeroAction}>
-                <AdvancedPopup icon={"edit"} show={showPopupEditHero} title={"Modifier le contenu de la landing page"} message={"Saisissez le contenu de la landing page de votre site ci-dessous :"} actions={[{text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}]} closePopup={() => setShowPopupEditHero(false)}>
+                <AdvancedPopup icon={"edit"} show={showPopupEditHero} title={"Modifier le contenu de la landing page"}
+                               message={"Saisissez le contenu de la landing page de votre site ci-dessous :"}
+                               actions={[{
+                                   text: "Valider",
+                                   isForm: true,
+                                   iconName: "check",
+                                   actionType: ActionTypeEnum.safe
+                               }]} closePopup={() => setShowPopupEditHero(false)}>
                     <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
                     <ImageInput setFileAction={setNewWebsiteHeroFile}/>
                 </AdvancedPopup>

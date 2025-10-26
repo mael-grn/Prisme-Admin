@@ -55,6 +55,11 @@ export class ApiUtil {
         }, {status: statusCode});
     }
 
+    static isRecursiveRequest(request: Request): boolean {
+        const url = new URL(request.url);
+        return url.searchParams.get("recursive") === "true";
+    }
+
     static async getConnectedUserOrNull() : Promise<User | null> {
         'use server';
         const sql = SqlUtil.getSql();

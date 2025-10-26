@@ -1,4 +1,4 @@
-import {Category, InsertableCategory} from "@/app/models/Category";
+import {Category, InsertableCategory, RecursiveCategory} from "@/app/models/Category";
 import axios, {AxiosError} from "axios";
 import {Page} from "@/app/models/Page";
 import {StringUtil} from "@/app/utils/stringUtil";
@@ -33,6 +33,15 @@ export default class CategoryService {
     static async deleteCategory(category : Category): Promise<void> {
         try {
             await axios.delete(`/api/categories/${category.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getAllRecursiveCategories() : Promise<RecursiveCategory[]> {
+        try {
+            const response = await axios.get(`/api/categories?recursive=true`);
+            return response.data.data as RecursiveCategory[];
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
