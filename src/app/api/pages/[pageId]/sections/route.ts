@@ -11,6 +11,26 @@ export async function POST(request: Request, {params}: { params: Promise<{ pageI
 
         const sql = SqlUtil.getSql();
 
+        // On récupère l'utilisateur connecté
+        const user = await ApiUtil.getConnectedUser();
+
+        //on récupère le site internet
+        const [website] = await sql`
+            SELECT display_websites.*
+            FROM display_websites,
+                 pages,
+                 sections
+            WHERE 
+            pages.id = ${pageId}
+              and display_websites.id = pages.website_id
+            LIMIT 1
+        `;
+
+        // On vérifie que le site appartient bien à l'utilisateur
+        if (website.owner_id !== user.id) {
+            return ApiUtil.getErrorNextResponse("You are not the owner", undefined, 403);
+        }
+
         await sql`
             insert into sections (page_id, section_type, position)
             values (${pageId}, ${newSection.section_type},
