@@ -68,13 +68,14 @@ export default class SectionService {
 
 
     /**
-     * Move a section by its id and an offset
-     * The offset can be positive or negative
-     * If the offset is positive, the section will be moved down
-     * If the offset is negative, the section will be moved up
+     * Move a section whose position has changed, update other sections positions accordingly
      */
     static async moveSection(section: Section ) : Promise<void> {
-        throw  new Error("Method not implemented.");
+        try {
+            await axios.post(`/api/sections/${section.id}/move_position`, section);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**

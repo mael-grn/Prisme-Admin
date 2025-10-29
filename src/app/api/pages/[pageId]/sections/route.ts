@@ -31,8 +31,9 @@ export async function GET(request: Request, {params}: { params: Promise<{ pageId
             SELECT *
             FROM sections
             WHERE page_id = ${pageId}
+            ORDER BY position
         `;
-        return ApiUtil.getSuccessNextResponse<Section[]>(res as Section[], true);
+        return ApiUtil.getSuccessNextResponse<Section[]>(res as Section[]);
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error);
     }

@@ -17,6 +17,8 @@ import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {StringUtil} from "@/app/utils/stringUtil";
 import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
+import SvgFromString from "@/app/components/SvgFromString";
+import DropDown from "@/app/components/DropDown";
 
 export default function PageVisu() {
 
@@ -47,15 +49,11 @@ export default function PageVisu() {
     const [newDescription, setNewDescription] = useState<string>('');
     const [newIcon, setNewIcon] = useState<string>('');
 
+    const [newSectionType, setNewSectionType] = useState<string>('');
+
 
     const router = useRouter();
     const {pageId} = useParams();
-
-    const [newSection, setNewSection] = useState<InsertableSection>({
-        position: 0,
-        page_id: parseInt(pageId as string),
-        section_type: '',
-    });
 
     useEffect(() => {
         async function loadData() {
@@ -67,6 +65,7 @@ export default function PageVisu() {
             setNewIcon(tmpPage.icon_svg || '');
             setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
             setSectionTypes(SectionService.getSectionTypes);
+            setNewSectionType(SectionService.getSectionTypes()[0]);
             setSectionsLoading(false);
         }
 
@@ -146,9 +145,14 @@ export default function PageVisu() {
 
     function addSectonAction() {
         setShowPopupNewSection(false);
+        const newSection: InsertableSection = {
+            page_id: parseInt(pageId as string),
+            position: 0,
+            section_type: newSectionType
+        }
         const validation = FieldsUtil.checkSection(newSection)
         if (!validation.valid) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Données invalides");
             setPopupText(validation.errors.join(', '));
             setShowPopup(true);
             return;
@@ -189,7 +193,17 @@ export default function PageVisu() {
             }
             for (const sect of sections) {
                 if (modifiedSections && modifiedSections.includes(sect.id)) {
-                    await SectionService.moveSection(sect);
+                    try {
+                        await SectionService.moveSection(sect);
+                    } catch (e) {
+                        setPopupTitle("Une erreur s'est produite");
+                        setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+                        setShowPopup(true);
+                        setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
+                        setSectionsLoading(false);
+                        return
+                    }
+
                 }
             }
             setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
@@ -308,7 +322,11 @@ export default function PageVisu() {
 
             <SectionElem title={"Icone"}
                          actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit"}]}>
-                {page.icon_svg || "Vous n'avez pas de description pour le moment."}
+                {
+                    page.icon_svg
+                        ? <SvgFromString svg={page.icon_svg} alt="icone" className="w-12 h-12 invert" />
+                        : <p>Vous n'avez pas d'icône pour le moment.</p>
+                }
             </SectionElem>
 
             <SectionElem title={"Supprimer"} actions={[{
@@ -385,7 +403,7 @@ export default function PageVisu() {
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditIcon}
-                    message={"Entrez la nouvelle icone au format SVG de la page :"}
+                    message={"Entrez la nouvelle icone au format SVG :"}
                     title={'Modifier l\'icone de la page'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
@@ -394,6 +412,10 @@ export default function PageVisu() {
                 >
                     <Textarea placeholder={"Icone au format SVG"} value={newIcon} onChangeAction={setNewIcon}
                     />
+                    <div className={"flex gap-2 items-center"}>
+                        <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-6 h-6"}/>
+                        <p>Si vous ne savez pas où trouver d'icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l'icône de votre choix au format SVG et la coller ici.</p>
+                    </div>
                 </AdvancedPopup>
             </Form>
 
@@ -401,13 +423,27 @@ export default function PageVisu() {
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupNewSection}
-                    message={"Saisissez le type et le titre de la nouvelle section ci-dessous :"}
+                    message={"Selectionnez le type de section. Vous pourrez ajouter du contenu une fois celle-ci créée."}
                     title={'Créer une section'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
                     closePopup={() => setShowPopupNewSection(false)}
                 >
+
+                    <DropDown items={sectionTypes} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
+
+                    <div className={"flex gap-4 items-center"}>
+                        <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
+                        {
+                            newSectionType === "classic" ?
+                                <p>Une section classique contenant divers éléments qui seront affichés les uns à la suite des autres.</p> :
+                                newSectionType === "develop" ?
+                                    <p>Ressemble à une section classique, à la différence que seul le titre est affiché par défaut. Il est nécessaire de cliquer dessus pour afficher le contenu au complet. Recommandé quand il y a beaucoup de contenu à afficher, pour éviter de surcharger la page.</p> :
+                                    newSectionType === "tile" ?
+                                        <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d'une liste où les éléments sont affichés les un à la suite des autres et prennent tous l'espace, les éléments sont des sortes de petit "carrés" avec une mise en page permettant d'optimiser l'espace.</p> :
+                                        <p>Type de section inconnu.</p>
+                        }                    </div>
 
                 </AdvancedPopup>
             </Form>

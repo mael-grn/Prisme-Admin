@@ -62,8 +62,11 @@ export default function Pages() {
 
     useEffect(() => {
         DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string))
-            .then((website) => setWebsite(website))
-            .catch((e) => {
+            .then((website) => {
+                setWebsite(website)
+                setNewWebsiteDomain(website.website_domain)
+                setNewWebsiteHeroTitle(website.hero_title)
+            }).catch((e) => {
                 setPopupTitle("Une erreur s'est produite");
                 setPopupText(e);
                 setShowPopup(true);
