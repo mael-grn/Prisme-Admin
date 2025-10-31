@@ -2,6 +2,7 @@ import {Category, InsertableCategory, RecursiveCategory} from "@/app/models/Cate
 import axios, {AxiosError} from "axios";
 import {Page} from "@/app/models/Page";
 import {StringUtil} from "@/app/utils/stringUtil";
+import {Subcategory} from "@/app/models/Subcategory";
 
 export default class CategoryService {
 
@@ -46,4 +47,6 @@ export default class CategoryService {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
     }
+
+
 }

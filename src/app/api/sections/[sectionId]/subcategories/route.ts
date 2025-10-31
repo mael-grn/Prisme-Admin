@@ -43,3 +43,20 @@ export async function POST(request: Request, {params}: { params: Promise<{ secti
     }
 
 }
+
+export async function GET(request: Request, {params}: { params: Promise<{ sectionId: string }> }) {
+
+    try {
+        const {sectionId} = await params;
+        ApiUtil.checkParam(sectionId);
+
+        const sql = SqlUtil.getSql()
+
+        const res = await sql`select subcategories.* from subcategories, sections_subcategories where subcategories.id = subcategory_id and section_id = ${sectionId}`;
+
+        return ApiUtil.getSuccessNextResponse<Subcategory[]>(res as Subcategory[]);
+    } catch (e) {
+        return ApiUtil.handleNextErrors(e as Error);
+    }
+
+}

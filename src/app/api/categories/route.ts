@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         // Insertion en base de données
         const sql = SqlUtil.getSql()
         await sql`
-            INSERT INTO categories (name) values ${insertableCategory.name}
+            INSERT INTO categories (name) values (${insertableCategory.name})
         `;
 
         return ApiUtil.getSuccessNextResponse(undefined, true);

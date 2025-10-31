@@ -28,13 +28,14 @@ create table pages(
 
 create table categories(
     id serial primary key,
-    name varchar not null
+    name varchar not null unique
 );
 
 create table subcategories(
     id serial primary key,
     category_id integer references categories(id) ON DELETE CASCADE,
-    name varchar not null
+    name varchar not null,
+    unique(category_id, name)
 );
 
 create table sections(

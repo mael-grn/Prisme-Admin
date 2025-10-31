@@ -15,6 +15,11 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next();
     }
 
+    // On exclue les requetes GET sur l'api, car les données doivent être publiques
+    if (request.nextUrl.pathname.startsWith('/api') && request.method === 'GET') {
+        return NextResponse.next();
+    }
+
     // On récupère le cookie 'token' pour vérifier l'authentification
     const cookieStore = await cookies()
     const token = cookieStore.get('token')

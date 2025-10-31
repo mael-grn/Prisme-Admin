@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
 import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
 import List from "@/app/components/list";
-import {ActionTypeEnum} from "@/app/components/Button";
+import Button, {ActionTypeEnum} from "@/app/components/Button";
 import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Input from "@/app/components/Input";
@@ -17,17 +17,23 @@ import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
 import DropDown from "@/app/components/DropDown";
 import ElementService from "@/app/service/elementService";
-import {InsertableElement, Element} from "@/app/models/Element";
+import {Element, InsertableElement} from "@/app/models/Element";
 import {Page} from "@/app/models/Page";
 import PageService from "@/app/service/pageService";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
+import {RecursiveCategory} from "@/app/models/Category";
+import {Subcategory} from "@/app/models/Subcategory";
+import CategoryService from "@/app/service/categoryService";
+import SubcategoryService from "@/app/service/subCategoryService";
+import {AnimatePresence, motion} from "framer-motion";
 
 export default function SectionVisu() {
 
     const [loading, setLoading] = useState(true);
     const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
     const [elementsLoading, setElementsLoading] = useState(true);
+    const [categoriesLoading, setCategoriesLoading] = useState(true);
 
     const [page, setPage] = useState<Page | null>(null);
     const [section, setSection] = useState<Section | null>(null);
@@ -40,6 +46,9 @@ export default function SectionVisu() {
     const [showPopupNewElement, setShowPopupNewElement] = useState(false);
     const [showPopupEditSectionType, setShowPopupEditSectionType] = useState(false);
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
+    const [showPopupNewCategory, setShowPopupNewCategory] = useState<boolean>(false);
+    const [showPopupNewSubcategory, setShowPopupNewSubcategory] = useState<boolean>(false);
+    const [showPopupAddSubcategoryToSection, setShowPopupAddSubcategoryToSection] = useState<boolean>(false);
 
     const [modifyElementOrder, setModifyElementOrder] = useState<boolean>(false);
     const [modifiedElements, setModifiedElements] = useState<number[]>([]);
@@ -51,6 +60,14 @@ export default function SectionVisu() {
 
     const [newSectionType, setNewSectionType] = useState<string>('');
 
+    const [allRecursiveCategories, setAllRecursiveCategories] = useState<RecursiveCategory[]>([]);
+    const [sectionsSubcategories, setSectionsSubcategories] = useState<Subcategory[]>([]);
+
+    const [newCategoryName, setNewCategoryName] = useState<string>('');
+    const [newSubcategoryName, setNewSubcategoryName] = useState<string>('');
+    const [newSubcategoryParentCategoryId, setNewSubcategoryParentCategoryId] = useState<number | null>(null);
+
+    const [subcategoriesToAdd, setSubcategoriesToAdd] = useState<Subcategory[]>([]);
 
     const router = useRouter();
     const {websiteId, pageId, sectionId} = useParams();
@@ -63,21 +80,41 @@ export default function SectionVisu() {
             const tmpSection: Section = await SectionService.getSectionById(parseInt(sectionId as string))
             setSection(tmpSection)
             setNewSectionType(tmpSection.section_type);
-            setLoadingMessage("Récupération des éléments...")
-            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
-            setNewSectionType(ElementService.getElementTypes()[0]);
-            setElementsLoading(false);
         }
 
-        try {
-            loadData();
-        } catch (e) {
+        async function loadCategories() {
+            setAllRecursiveCategories(await CategoryService.getAllRecursiveCategories());
+            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
+        }
+
+        async function loadElements() {
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+            setNewSectionType(ElementService.getElementTypes()[0]);
+        }
+
+        loadData().catch((e) => {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
             setShowPopup(true);
-        } finally {
+        }).finally(() => {
             setLoading(false);
-        }
+        })
+
+        loadElements().catch((e) => {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        }).finally(() => {
+            setElementsLoading(false);
+        })
+
+        loadCategories().catch((e) => {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        }).finally(() => {
+            setCategoriesLoading(false);
+        })
 
     }, [sectionId]);
 
@@ -139,7 +176,6 @@ export default function SectionVisu() {
         if (!section) return;
 
 
-
         const newElement: InsertableElement = {
             section_id: section.id,
             element_type: newElementType,
@@ -154,11 +190,10 @@ export default function SectionVisu() {
             return;
         }
 
-        setLoading(true);
+        setElementsLoading(true);
 
         if (newElementType === 'image') {
             if (newElementFile) {
-                setLoadingMessage("Upload de l'image...");
                 newElement.content = await ImageUtil.uploadImage(newElementFile)
             } else {
                 setPopupTitle("Données invalides");
@@ -168,7 +203,6 @@ export default function SectionVisu() {
             }
         }
 
-        setLoadingMessage("Ajout de l'élément...");
         ElementService.insertElement(newElement).then(async () => {
             setLoadingMessage("Chargement des elements...")
             setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
@@ -177,7 +211,7 @@ export default function SectionVisu() {
             setPopupText(error);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setElementsLoading(false);
         })
     }
 
@@ -263,6 +297,113 @@ export default function SectionVisu() {
         setElements(newElements);
     }
 
+    async function insertNewCategoryAction() {
+        setShowPopupNewCategory(false);
+        const validation = FieldsUtil.checkCategory({name: newCategoryName});
+        if (!validation.valid) {
+            setPopupTitle("Données invalides");
+            setPopupText(validation.errors.join(', '));
+            setShowPopup(true);
+            return;
+        }
+
+        setCategoriesLoading(true);
+
+        try {
+            await CategoryService.createCategory({name: newCategoryName});
+            setAllRecursiveCategories(await CategoryService.getAllRecursiveCategories())
+            setNewCategoryName('');
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    }
+
+    async function insertNewSubcategoryAction() {
+        setShowPopupNewSubcategory(false);
+        if (newSubcategoryParentCategoryId === null) {
+            setPopupTitle("Données invalides");
+            setPopupText("Vous devez sélectionner une catégorie parente.");
+            setShowPopup(true);
+            return;
+        }
+        const validation = FieldsUtil.checkSubCategory({
+            name: newSubcategoryName,
+            category_id: newSubcategoryParentCategoryId
+        });
+        if (!validation.valid) {
+            setPopupTitle("Données invalides");
+            setPopupText(validation.errors.join(', '));
+            setShowPopup(true);
+            return;
+        }
+
+        setCategoriesLoading(true);
+
+        try {
+            await SubcategoryService.createSubCategoryForCategory({
+                name: newSubcategoryName,
+                category_id: newSubcategoryParentCategoryId as number
+            });
+            setAllRecursiveCategories(await CategoryService.getAllRecursiveCategories())
+            setNewSubcategoryName('');
+            setNewSubcategoryParentCategoryId(null);
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    }
+
+    async function addSubcategoriesToSectionAction() {
+        setShowPopupAddSubcategoryToSection(false);
+        if (!section) return;
+        if (subcategoriesToAdd.length === 0) {
+            setPopupTitle("Aucune sous-catégorie sélectionnée");
+            setPopupText("Veuillez sélectionner au moins une sous-catégorie à ajouter à la section.");
+            setShowPopup(true);
+            return;
+        }
+
+        setCategoriesLoading(true);
+
+        try {
+            for (const subcategory of subcategoriesToAdd) {
+                await SectionService.addSubcategory(section, subcategory);
+            }
+            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
+            setSubcategoriesToAdd([]);
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    }
+
+    async function removeSubcategoryFromSectionAction(subcategory: Subcategory) {
+        if (!section) return;
+
+        setCategoriesLoading(true);
+
+        try {
+            await SectionService.removeSubcategory(section, subcategory);
+            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
+        } catch (e) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
+            setShowPopup(true);
+        } finally {
+            setCategoriesLoading(false);
+        }
+    }
+
     if (!section || !page) {
         return (
             <div>
@@ -314,8 +455,61 @@ export default function SectionVisu() {
 
             </SectionElem>
 
+            <SectionElem title={"Catégories"}
+                         loading={categoriesLoading}
+                         actions={[
+                             {
+                                 text: "Ajouter",
+                                 onClick: () => setShowPopupAddSubcategoryToSection(true),
+                                 iconName: "add",
+                                 actionType: ActionTypeEnum.safe
+                             }
+                         ]}>
+                {
+                    allRecursiveCategories.length === 0 ?
+                    <div className={"flex gap-2 items-center"}>
+                        <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
+                        <p>Il n'existe aucune catégories pour le moment.</p>
+                    </div> :
+                    sectionsSubcategories.length === 0 &&
+                        <div className={"flex gap-2 items-center"}>
+                            <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
+                            <p>Vous n'avez pas encore selectionné de sous-catégories pour votre section.</p>
+                        </div>
+                }
+                {
+                    allRecursiveCategories.filter(cat => cat.subcategories.some(subcat => sectionsSubcategories.some(subcat2 => subcat2.id === subcat.id))).map((cat) => {
+                        return <div key={"cat" + cat.id} className={"flex flex-col gap-2 p-3 rounded-xl bg-onBackgroundHover"}>
+                            <h3>{cat.name}</h3>
+                            <div className={"flex gap-2 flex-wrap"}>
+                                {
+                                    cat.subcategories.filter(sub1 => sectionsSubcategories.some(sub2 => sub2.id === sub1.id)).map((subcat) => {
+                                        return <div
+                                            onClick={() => removeSubcategoryFromSectionAction(subcat)}
+                                            key={"sub" + subcat.id}
+                                            className={`rounded-full relative overflow-hidden cursor-pointer pt-1 pb-1 pl-2 pr-2 flex gap-1 items-center justify-center bg-background md:hover:bg-onBackground active:bg-onBackground`}
+                                        >
+                                            <p>{subcat.name}</p>
+                                            <span className={"absolute top-0 left-0 w-full h-full bg-dangerous opacity-0 md:hover:opacity-80 active:opacity-100 flex items-center justify-center"}>
+                                                <img src={"/ico/trash.svg"} alt={"trash"} className={"invert w-4"}/>
+                                            </span>
+                                        </div>
+                                    })
+                                }
+                            </div>
+
+                        </div>
+                    })
+                }
+            </SectionElem>
+
             <SectionElem title={"Type de section"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditSectionType(true), iconName: "edit"}]}>
+                         actions={[{
+                             text: "Modifier",
+                             onClick: () => setShowPopupEditSectionType(true),
+                             iconName: "edit",
+                             actionType: ActionTypeEnum.safe
+                         }]}>
                 <p>{section?.section_type}</p>
             </SectionElem>
 
@@ -360,7 +554,117 @@ export default function SectionVisu() {
                     ]}
                     closePopup={() => setShowPopupEditSectionType(false)}
                 >
-                    <DropDown items={SectionService.getSectionTypes()} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
+                    <DropDown items={SectionService.getSectionTypes()} selectedItem={newSectionType}
+                              setSelectedItemAction={setNewSectionType}/>
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={insertNewCategoryAction}>
+                <AdvancedPopup
+                    icon={'add'}
+                    show={showPopupNewCategory}
+                    message={"Entrez le nom de la nouvelle catégorie :"}
+                    title={'Créer une catégorie'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupNewCategory(false)}
+                >
+                    <Input placeholder={"Nom"} value={newCategoryName} setValueAction={setNewCategoryName}/>
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={insertNewSubcategoryAction}>
+                <AdvancedPopup
+                    icon={'add'}
+                    show={showPopupNewSubcategory}
+                    message={"Entrez le nom de la nouvelle sous-catégorie à créer pour " + (newSubcategoryParentCategoryId ? allRecursiveCategories.find((cat) => cat.id === newSubcategoryParentCategoryId)?.name : 'CATEGORIE NON TROUVEE') + " : "}
+                    title={'Créer une sous-catégorie pour ' + (newSubcategoryParentCategoryId ? allRecursiveCategories.find((cat) => cat.id === newSubcategoryParentCategoryId)?.name : 'CATEGORIE NON TROUVEE')}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupNewSubcategory(false)}
+                >
+                    <Input placeholder={"Nom"} value={newSubcategoryName} setValueAction={setNewSubcategoryName}/>
+                </AdvancedPopup>
+            </Form>
+
+            <Form onSubmitAction={addSubcategoriesToSectionAction}>
+                <AdvancedPopup
+                    icon={'add'}
+                    show={showPopupAddSubcategoryToSection}
+                    message={"Selectionnez les sous-catégories à ajouter à cette section :"}
+                    title={'Ajouter des sous-catégorie'}
+                    actions={[
+                        {
+                            text: "Créer une catégorie", iconName: "add", onClick: () => {
+                                setShowPopupAddSubcategoryToSection(false)
+                                setShowPopupNewCategory(true)
+                            }
+                        },
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupAddSubcategoryToSection(false)}
+                >
+                    {
+                        allRecursiveCategories.length === 0 &&
+                        <div className={"flex gap-2 items-center"}>
+                            <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
+                            <p>Il n'existe aucune catégories pour le moment.</p>
+                        </div>
+                    }
+                    {
+                        allRecursiveCategories.map((cat) => {
+                            return <div key={"cat" + cat.id} className={"flex flex-col gap-2 p-3 rounded-xl bg-onBackgroundHover"}>
+                                <h3>{cat.name}</h3>
+                                {
+                                    cat.subcategories.length === 0 &&
+                                    <div className={"flex gap-2 items-center"}>
+                                        <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
+                                        <p>Cette catégorie ne contient aucune sous-catégorie pour le moment.</p>
+                                    </div>
+                                }
+                                <div className={"flex gap-2 flex-wrap"}>
+                                    {
+                                        cat.subcategories.filter(sub1 => !sectionsSubcategories.some(sub2 => sub2.id === sub1.id)).map((subcat) => {
+                                            return <div key={"sub" + subcat.id}
+                                                className={`rounded-full cursor-pointer pt-1 pb-1 pl-2 pr-2 flex gap-1 items-center justify-center ${subcategoriesToAdd.includes(subcat) ? 'bg-safe md:hover:bg-safeHover active:bg-safeHover' : 'bg-background md:hover:bg-onBackground active:bg-onBackground'}`}
+                                                onClick={() => {
+                                                    if (subcategoriesToAdd.includes(subcat)) {
+                                                        setSubcategoriesToAdd(subcategoriesToAdd.filter((s) => s !== subcat));
+                                                    } else {
+                                                        setSubcategoriesToAdd([...subcategoriesToAdd, subcat]);
+                                                    }
+                                                }}
+                                            >
+                                                <p>{subcat.name}</p>
+                                                <AnimatePresence>
+                                                    {
+                                                        subcategoriesToAdd.includes(subcat) &&
+                                                        <motion.img
+                                                            initial={{opacity: 0, translateX: -10}}
+                                                            animate={{opacity: 1, translateX: 0}}
+                                                            exit={{opacity: 0, translateX: -10}}
+                                                            src={"/ico/check.svg"}
+                                                            alt={"check"}
+                                                            className={"w-4 invert"}/>
+                                                    }
+                                                </AnimatePresence>
+
+                                            </div>
+                                        })
+                                    }
+                                </div>
+
+                                <Button iconName={"add"} text={"Créer une sous-catégorie"} onClick={() => {
+                                    setNewSubcategoryParentCategoryId(cat.id)
+                                    setShowPopupAddSubcategoryToSection(false)
+                                    setShowPopupNewSubcategory(true)
+                                }}/>
+
+                            </div>
+                        })
+                    }
                 </AdvancedPopup>
             </Form>
 
@@ -376,7 +680,8 @@ export default function SectionVisu() {
                     closePopup={() => setShowPopupNewElement(false)}
                 >
 
-                    <DropDown items={ElementService.getElementTypes()} selectedItem={newElementType} setSelectedItemAction={setNewElementType} />
+                    <DropDown items={ElementService.getElementTypes()} selectedItem={newElementType}
+                              setSelectedItemAction={setNewElementType}/>
 
                     <div className={"flex gap-4 items-center"}>
                         <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
@@ -384,22 +689,28 @@ export default function SectionVisu() {
                             newElementType === "titre" ?
                                 <p>Un titre sera affiché en gros, en gras, bref il sera bien visible !</p> :
                                 newElementType === "texte" ?
-                                    <p>Un texte sera affiché de manière classique, comme un paragraphe. Attention, les retours à la ligne ne seront pas pris en compte, pour obtenir cet effet il faudra ajouter plusieurs paragraphes.</p> :
+                                    <p>Un texte sera affiché de manière classique, comme un paragraphe. Attention, les
+                                        retours à la ligne ne seront pas pris en compte, pour obtenir cet effet il
+                                        faudra ajouter plusieurs paragraphes.</p> :
                                     newElementType === "lien" ?
                                         <p>Saisissez un lien, et celui-ci sera cliquable.</p> :
                                         newElementType === "image" ?
-                                            <p>Déposer une image, et celle-ci sera stocké dans le cloud et affichée naturellement !</p> :
-                                        <p>Type d'élément inconnu.</p>
+                                            <p>Déposer une image, et celle-ci sera stocké dans le cloud et affichée
+                                                naturellement !</p> :
+                                            <p>Type d'élément inconnu.</p>
                         }
                     </div>
 
                     {
                         newElementType === "titre" ?
-                            <Input placeholder={"Titre"} value={newElementContent} setValueAction={setNewElementContent}/> :
+                            <Input placeholder={"Titre"} value={newElementContent}
+                                   setValueAction={setNewElementContent}/> :
                             newElementType === "texte" ?
                                 <Textarea value={newElementContent} onChangeAction={setNewElementContent}/> :
                                 newElementType === "lien" ?
-                                    <Input validatorAction={StringUtil.httpsDomainValidator} iconName={"globe"} placeholder={"Lien"} value={newElementContent} setValueAction={setNewElementContent}/> :
+                                    <Input validatorAction={StringUtil.httpsDomainValidator} iconName={"globe"}
+                                           placeholder={"Lien"} value={newElementContent}
+                                           setValueAction={setNewElementContent}/> :
                                     newElementType === "image" ?
                                         <ImageInput setFileAction={setNewElementFile}/> :
                                         <p>Type d'élément inconnu.</p>

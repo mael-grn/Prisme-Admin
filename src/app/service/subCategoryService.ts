@@ -29,4 +29,13 @@ export default class SubcategoryService {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
     }
+
+    static async getSubcategoriesFromSectionId(sectionId: number): Promise<Subcategory[]> {
+        try {
+            const response = await axios.get(`/api/sections/${sectionId}/subcategories`);
+            return response.data.data as Subcategory[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
 }
