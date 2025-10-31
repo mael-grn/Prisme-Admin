@@ -1,6 +1,7 @@
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
-import {Section} from "@/app/models/Section";
+import {RecursiveSection, Section} from "@/app/models/Section";
+import SectionService from "@/app/service/sectionService";
 
 export async function POST(request: Request, {params}: { params: Promise<{ pageId: string }> }) {
 
@@ -18,8 +19,7 @@ export async function POST(request: Request, {params}: { params: Promise<{ pageI
         const [website] = await sql`
             SELECT display_websites.*
             FROM display_websites,
-                 pages,
-                 sections
+                 pages
             WHERE 
             pages.id = ${pageId}
               and display_websites.id = pages.website_id
@@ -53,7 +53,21 @@ export async function GET(request: Request, {params}: { params: Promise<{ pageId
             WHERE page_id = ${pageId}
             ORDER BY position
         `;
-        return ApiUtil.getSuccessNextResponse<Section[]>(res as Section[]);
+
+        const recursive = ApiUtil.isRecursiveRequest(request);
+
+        if (!recursive) {
+            return ApiUtil.getSuccessNextResponse<Section[]>(res as Section[]);
+        }
+
+        const recursiveSections: RecursiveSection[] = [];
+
+        for (const section of res as Section[]) {
+            recursiveSections.push(await SectionService.getRecursiveSectionById(section.id));
+        }
+
+        return ApiUtil.getSuccessNextResponse<RecursiveSection[]>(recursiveSections);
+
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error);
     }

@@ -12,7 +12,6 @@ create table display_websites(
     id serial primary key,
     owner_id integer references users(id) ON DELETE CASCADE,
     website_domain varchar not null unique,
-    auth_token varchar not null,
     hero_image_url varchar,
     hero_title varchar not null
 );

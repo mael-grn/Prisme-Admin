@@ -213,14 +213,22 @@ export class FieldsUtil {
             errors.push("type est trop long");
         }
 
-        if (!this.isInteger(e.position)) {
-            errors.push("position est requis et doit être un entier");
-        } else if ((e.position as number) < 0) {
-            errors.push("position doit être >= 0");
-        }
+        if (e.element_type === "image") return {valid: errors.length === 0, errors};
 
         if (!this.isNonEmptyString(e.content)) {
             errors.push("content est requis et doit être une chaîne non vide");
+        }
+
+        switch (e.element_type) {
+            case "lien":
+                if (!this.isValidUrl(e.content)) {
+                    errors.push("url est requis pour un lien");
+                }
+                break;
+            case "titre":
+                if (e.content.length > 50) {
+                    errors.push("le titre ne dois pas faire plus de 50 caractères");
+                }
         }
 
         return {valid: errors.length === 0, errors};

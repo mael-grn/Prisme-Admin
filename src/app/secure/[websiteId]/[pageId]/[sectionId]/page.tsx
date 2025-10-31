@@ -10,83 +10,83 @@ import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Input from "@/app/components/Input";
 import {InsertableSection, Section} from "@/app/models/Section";
-import PageService from "@/app/service/pageService";
-import {InsertablePage, Page} from "@/app/models/Page";
 import SectionService from "@/app/service/sectionService";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {StringUtil} from "@/app/utils/stringUtil";
 import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
-import SvgFromString from "@/app/components/SvgFromString";
 import DropDown from "@/app/components/DropDown";
+import ElementService from "@/app/service/elementService";
+import {InsertableElement, Element} from "@/app/models/Element";
+import {Page} from "@/app/models/Page";
+import PageService from "@/app/service/pageService";
+import {ImageUtil} from "@/app/utils/ImageUtil";
+import ImageInput from "@/app/components/imageInput";
 
 export default function SectionVisu() {
 
     const [loading, setLoading] = useState(true);
     const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
-    const [sectionsLoading, setSectionsLoading] = useState(true);
+    const [elementsLoading, setElementsLoading] = useState(true);
 
     const [page, setPage] = useState<Page | null>(null);
-    const [sectionTypes, setSectionTypes] = useState<string[]>([]);
-    const [sections, setSections] = useState<Section[] | null>([]);
+    const [section, setSection] = useState<Section | null>(null);
+    const [elements, setElements] = useState<Element[] | null>([]);
 
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
     const [popupTitle, setPopupTitle] = useState<string>('');
 
-    const [showPopupNewSection, setShowPopupNewSection] = useState(false);
-    const [showPopupEditTitle, setShowPopupEditTitle] = useState(false);
-    const [showPopupEditPath, setShowPopupEditPath] = useState(false);
-    const [showPopupEditDescription, setShowPopupEditDescription] = useState(false);
-    const [showPopupEditIcon, setShowPopupEditIcon] = useState(false);
+    const [showPopupNewElement, setShowPopupNewElement] = useState(false);
+    const [showPopupEditSectionType, setShowPopupEditSectionType] = useState(false);
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
 
-    const [modifySectionOrder, setModifySectionOrder] = useState<boolean>(false);
-    const [modifiedSections, setModifiedSections] = useState<number[]>([]);
+    const [modifyElementOrder, setModifyElementOrder] = useState<boolean>(false);
+    const [modifiedElements, setModifiedElements] = useState<number[]>([]);
 
-    const [newTitle, setNewTitle] = useState<string>('');
-    const [newPath, setNewPath] = useState<string>('');
-    const [newDescription, setNewDescription] = useState<string>('');
-    const [newIcon, setNewIcon] = useState<string>('');
+    const [newElementContent, setNewElementContent] = useState<string>('');
+    const [newElementFile, setNewElementFile] = useState<File | null>(null);
+
+    const [newElementType, setNewElementType] = useState<string>('');
 
     const [newSectionType, setNewSectionType] = useState<string>('');
 
 
     const router = useRouter();
-    const {pageId} = useParams();
+    const {websiteId, pageId, sectionId} = useParams();
 
     useEffect(() => {
         async function loadData() {
-            const tmpPage: Page = await PageService.getPageById(parseInt(pageId as string))
-            setPage(tmpPage)
-            setNewTitle(tmpPage.title);
-            setNewPath(tmpPage.path);
-            setNewDescription(tmpPage.description || '');
-            setNewIcon(tmpPage.icon_svg || '');
-            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
-            setSectionTypes(SectionService.getSectionTypes);
-            setNewSectionType(SectionService.getSectionTypes()[0]);
-            setSectionsLoading(false);
+            setLoadingMessage("Chargement de la page d'origine...")
+            setPage(await PageService.getPageById(parseInt(pageId as string)))
+            setLoadingMessage("Chargement de la section...")
+            const tmpSection: Section = await SectionService.getSectionById(parseInt(sectionId as string))
+            setSection(tmpSection)
+            setNewSectionType(tmpSection.section_type);
+            setLoadingMessage("Récupération des éléments...")
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+            setNewSectionType(ElementService.getElementTypes()[0]);
+            setElementsLoading(false);
         }
 
         try {
             loadData();
         } catch (e) {
-            setPopupTitle("Une erreur s'est produite lors de la suppression");
+            setPopupTitle("Une erreur s'est produite");
             setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
             setShowPopup(true);
         } finally {
             setLoading(false);
         }
 
-    }, [pageId]);
+    }, [sectionId]);
 
-    function deletePageAction() {
+    function deleteSectionAction() {
         setLoading(true);
-        setLoadingMessage("suppression de la page...");
-        if (!page) return;
-        PageService.deletePage(page).then(() => {
-            router.push('/secure/' + page.website_id);
+        setLoadingMessage("suppression de la section...");
+        if (!section) return;
+        SectionService.deleteSection(section).then(() => {
+            router.push('/secure/' + websiteId + '/' + pageId);
         }).catch((e) => {
             setPopupTitle("Une erreur s'est produite lors de la suppression");
             setPopupText(e);
@@ -97,20 +97,15 @@ export default function SectionVisu() {
     }
 
 
-    function updatePageAction() {
-        setShowPopupEditTitle(false);
-        setShowPopupEditPath(false);
-        setShowPopupEditDescription(false);
-        setShowPopupEditIcon(false);
-        if (!page) return;
-        const insertablePage: InsertablePage = {
-            title: newTitle,
-            website_id: page.website_id,
-            path: newPath,
-            icon_svg: newIcon,
-            description: newDescription,
+    function updateSectionAction() {
+        setShowPopupEditSectionType(false);
+        if (!section) return;
+        const insertableSection: InsertableSection = {
+            page_id: section.page_id,
+            position: section.position,
+            section_type: newSectionType
         }
-        const validation = FieldsUtil.checkPage(insertablePage)
+        const validation = FieldsUtil.checkSection(insertableSection)
         if (!validation.valid) {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(validation.errors.join(', '));
@@ -118,22 +113,18 @@ export default function SectionVisu() {
             return;
         }
 
-        const updatedPage: Page = {
-            position: page.position,
-            ...insertablePage,
-            id: page.id
+        const updatedSection: Section = {
+            ...insertableSection,
+            id: section.id
         }
 
         setLoading(true);
         setLoadingMessage("Mise à jour des données...");
-        PageService.updatePage(updatedPage).then(async () => {
+        SectionService.updateSection(updatedSection).then(async () => {
             setLoadingMessage("Récuperation des informations...");
-            const tmp = await PageService.getPageById(parseInt(pageId as string))
-            setPage(tmp);
-            setNewTitle(tmp.title);
-            setNewPath(tmp.path);
-            setNewDescription(tmp.description || '');
-            setNewIcon(tmp.icon_svg || '');
+            const tmp = await SectionService.getSectionById(parseInt(sectionId as string))
+            setSection(tmp);
+            setNewSectionType(tmp.section_type);
         }).catch((error) => {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(error);
@@ -143,14 +134,19 @@ export default function SectionVisu() {
         })
     }
 
-    function addSectonAction() {
-        setShowPopupNewSection(false);
-        const newSection: InsertableSection = {
-            page_id: parseInt(pageId as string),
-            position: 0,
-            section_type: newSectionType
+    async function addElementAction() {
+        setShowPopupNewElement(false);
+        if (!section) return;
+
+
+
+        const newElement: InsertableElement = {
+            section_id: section.id,
+            element_type: newElementType,
+            content: newElementContent
         }
-        const validation = FieldsUtil.checkSection(newSection)
+        const validation = FieldsUtil.checkElement(newElement)
+
         if (!validation.valid) {
             setPopupTitle("Données invalides");
             setPopupText(validation.errors.join(', '));
@@ -159,10 +155,23 @@ export default function SectionVisu() {
         }
 
         setLoading(true);
-        setLoadingMessage("Ajout de la section...");
-        SectionService.insertSection(newSection).then(async () => {
-            setLoadingMessage("Chargement des sections...")
-            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
+
+        if (newElementType === 'image') {
+            if (newElementFile) {
+                setLoadingMessage("Upload de l'image...");
+                newElement.content = await ImageUtil.uploadImage(newElementFile)
+            } else {
+                setPopupTitle("Données invalides");
+                setPopupText("Vous avez selectionné le type 'image' mais n'avez importé aucune image.");
+                setShowPopup(true);
+                return;
+            }
+        }
+
+        setLoadingMessage("Ajout de l'élément...");
+        ElementService.insertElement(newElement).then(async () => {
+            setLoadingMessage("Chargement des elements...")
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
         }).catch((error) => {
             setPopupTitle("Erreur");
             setPopupText(error);
@@ -172,89 +181,89 @@ export default function SectionVisu() {
         })
     }
 
-    function beginModifySectionOrder() {
-        setModifySectionOrder(true);
+    function beginModifyElementOrder() {
+        setModifyElementOrder(true);
     }
 
-    async function cancelModifySectionOrder() {
-        setModifySectionOrder(false);
+    async function cancelModifyElementOrder() {
+        setModifyElementOrder(false);
 
-        setSectionsLoading(true)
-        setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
-        setSectionsLoading(false);
+        setElementsLoading(true)
+        setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+        setElementsLoading(false);
     }
 
-    function validateModifySectionOrder() {
-        setSectionsLoading(true);
+    function validateModifyElementOrder() {
+        setElementsLoading(true);
 
         async function loadData() {
-            if (!sections) {
+            if (!elements) {
                 return;
             }
-            for (const sect of sections) {
-                if (modifiedSections && modifiedSections.includes(sect.id)) {
+            for (const elem of elements) {
+                if (modifiedElements && modifiedElements.includes(elem.id)) {
                     try {
-                        await SectionService.moveSection(sect);
+                        await ElementService.moveElement(elem);
                     } catch (e) {
                         setPopupTitle("Une erreur s'est produite");
                         setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
                         setShowPopup(true);
-                        setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
-                        setSectionsLoading(false);
+                        setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+                        setElementsLoading(false);
                         return
                     }
 
                 }
             }
-            setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
-            setSectionsLoading(false);
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+            setElementsLoading(false);
         }
 
         loadData();
-        setModifySectionOrder(false);
+        setModifyElementOrder(false);
     }
 
-    function moveSectionUp(section: Section) {
-        if (!sections) {
+    function moveElementUp(element: Element) {
+        if (!elements) {
             return;
         }
-        const newSections: Section[] = [...sections];
-        if (section.position === 1) {
+        const newElements: Element[] = [...elements];
+        if (element.position === 1) {
             return;
         }
 
-        const modSect: number[] = [...modifiedSections];
-        modSect?.push(newSections.find(s => s.position === section.position - 1)!.id);
-        modSect?.push(section.id);
-        setModifiedSections(modSect)
+        const modSect: number[] = [...modifiedElements];
+        modSect?.push(newElements.find(s => s.position === element.position - 1)!.id);
+        modSect?.push(element.id);
+        setModifiedElements(modSect)
 
-        newSections.find(s => s.position === section.position - 1)!.position++;
-        newSections.find(s => s.id === section.id)!.position--;
-        newSections.sort((a, b) => a.position - b.position);
-        setSections(newSections);
+        newElements.find(s => s.position === element.position - 1)!.position++;
+        newElements.find(s => s.id === element.id)!.position--;
+        newElements.sort((a, b) => a.position - b.position);
+        setElements(newElements);
     }
 
-    function moveSectionDown(section: Section) {
-        if (!sections) {
+    function moveElementDown(element: Element) {
+        if (!elements) {
             return;
         }
-        const newSections: Section[] = [...sections];
-        if (section.position === sections.length) {
+        const newElements: Element[] = [...elements];
+        if (element.position === elements.length) {
             return;
         }
 
-        const modSect: number[] = [...modifiedSections];
-        modSect?.push(newSections.find(s => s.position === section.position + 1)!.id);
-        modSect?.push(section.id);
-        setModifiedSections(modSect)
+        const modSect: number[] = [...modifiedElements];
+        modSect?.push(newElements.find(s => s.position === element.position + 1)!.id);
+        modSect?.push(element.id);
+        setModifiedElements(modSect)
 
-        newSections.find(s => s.position === section.position + 1)!.position--;
-        newSections.find(s => s.id === section.id)!.position++;
-        newSections.sort((a, b) => a.position - b.position);
-        setSections(newSections);
+        newElements.find(s => s.position === element.position + 1)!.position--;
+        newElements.find(s => s.id === element.id)!.position++;
+        newElements.sort((a, b) => a.position - b.position);
+        setElements(newElements);
     }
 
-    if (!page) {
+    if (!section || !page) {
         return (
             <div>
                 <LoadingPopup show={true} message={loadingMessage}/>
@@ -263,70 +272,51 @@ export default function SectionVisu() {
     }
 
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={page.title}>
-            <SectionElem loading={sectionsLoading} title={"Sections"} width={SectionWidth.FULL}
-                         actions={modifySectionOrder ? [
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={page?.title + ' - ' + section.section_type}>
+            <SectionElem loading={elementsLoading} title={"Elements"} width={SectionWidth.FULL}
+                         actions={modifyElementOrder ? [
                              {
                                  text: "Annuler",
                                  iconName: "close",
-                                 onClick: cancelModifySectionOrder,
+                                 onClick: cancelModifyElementOrder,
                                  actionType: ActionTypeEnum.dangerous
                              },
                              {
                                  text: "Valider",
                                  iconName: "check",
-                                 onClick: validateModifySectionOrder,
+                                 onClick: validateModifyElementOrder,
                                  actionType: ActionTypeEnum.safe
                              }
                          ] : [
                              {
                                  text: "Réorganiser",
                                  iconName: "order",
-                                 onClick: beginModifySectionOrder,
+                                 onClick: beginModifyElementOrder,
                              },
                              {
                                  text: "Ajouter",
-                                 onClick: () => setShowPopupNewSection(true),
+                                 onClick: () => setShowPopupNewElement(true),
                                  iconName: "add",
                                  actionType: ActionTypeEnum.safe
                              }
                          ]}>
 
-                <List elements={sections?.map((sect) => {
+                <List elements={elements?.map((elem) => {
                     return {
-                        text: sect.section_type,
-                        onClick: () => router.push("/secure/pages/" + pageId + "/sections/" + sect.id),
-                        actions: modifySectionOrder ? [{
+                        text: StringUtil.truncateString(elem.content, 50),
+                        onClick: () => router.push("/secure/" + websiteId + '/' + pageId + '/' + sectionId + '/' + elem.id),
+                        actions: modifyElementOrder ? [{
                             iconName: "up",
-                            onClick: () => moveSectionUp(sect)
-                        }, {iconName: "down", onClick: () => moveSectionDown(sect)}] : undefined
+                            onClick: () => moveElementUp(elem)
+                        }, {iconName: "down", onClick: () => moveElementDown(elem)}] : undefined
                     }
                 }) ?? []}/>
 
             </SectionElem>
 
-            <SectionElem title={"Titre"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit"}]}>
-                <p>{page?.title}</p>
-            </SectionElem>
-
-            <SectionElem title={"Chemin d'accès"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit"}]}>
-                <p>{page?.path}</p>
-            </SectionElem>
-
-            <SectionElem title={"Description"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit"}]}>
-                <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
-            </SectionElem>
-
-            <SectionElem title={"Icone"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit"}]}>
-                {
-                    page.icon_svg
-                        ? <SvgFromString svg={page.icon_svg} alt="icone" className="w-12 h-12 invert" />
-                        : <p>Vous n'avez pas d'icône pour le moment.</p>
-                }
+            <SectionElem title={"Type de section"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditSectionType(true), iconName: "edit"}]}>
+                <p>{section?.section_type}</p>
             </SectionElem>
 
             <SectionElem title={"Supprimer"} actions={[{
@@ -335,7 +325,7 @@ export default function SectionVisu() {
                 iconName: "trash",
                 actionType: ActionTypeEnum.dangerous
             }]}>
-                <p>Supprimer la page entraine la perte de l'intégralité de son contenu.</p>
+                <p>Supprimer la section entraine la perte de l'intégralité de ses éléments.</p>
             </SectionElem>
 
             <AdvancedPopup
@@ -350,100 +340,70 @@ export default function SectionVisu() {
                     iconName: "trash",
                     text: "Supprimer",
                     actionType: ActionTypeEnum.dangerous,
-                    onClick: deletePageAction
+                    onClick: deleteSectionAction
                 }]}
                 icon={"warning"}
                 show={showPopupDelete}
-                message={"Cette action est irreversible. Vous perdrez également les elements que cette page contient."}
-                title={`Voulez-vous vraiment supprimer la page "${page.title}" ?`}
+                message={"Cette action est irreversible. Vous perdrez également les elements que cette section contient."}
+                title={`Voulez-vous vraiment supprimer cette section ?`}
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <Form onSubmitAction={updatePageAction}>
+            <Form onSubmitAction={updateSectionAction}>
                 <AdvancedPopup
                     icon={'edit'}
-                    show={showPopupEditTitle}
-                    message={"Entrez le nouveau titre de la page :"}
-                    title={'Modifier le titre de la page'}
+                    show={showPopupEditSectionType}
+                    message={"Selectionnez le nouveau type de la section :"}
+                    title={'Modifier le type'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
-                    closePopup={() => setShowPopupEditTitle(false)}
+                    closePopup={() => setShowPopupEditSectionType(false)}
                 >
-                    <Input placeholder={"Titre"} value={newTitle} setValueAction={setNewTitle}
-                    />
-                </AdvancedPopup>
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditPath}
-                    message={"Entrez le nouveau chemin d'accès de la page :"}
-                    title={'Modifier le chemin d\'accès de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditPath(false)}
-                >
-                    <Input validatorAction={StringUtil.pathStringValidator} placeholder={"Chemin d'accès"} value={newPath} setValueAction={setNewPath}
-                    />
-                </AdvancedPopup>
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditDescription}
-                    message={"Entrez la nouvelle description de la page :"}
-                    title={'Modifier la description de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditPath(false)}
-                >
-                    <Textarea placeholder={"Chemin d'accès"} value={newDescription} onChangeAction={setNewDescription}
-                    />
-                </AdvancedPopup>
-
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditIcon}
-                    message={"Entrez la nouvelle icone au format SVG :"}
-                    title={'Modifier l\'icone de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditIcon(false)}
-                >
-                    <Textarea placeholder={"Icone au format SVG"} value={newIcon} onChangeAction={setNewIcon}
-                    />
-                    <div className={"flex gap-2 items-center"}>
-                        <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-6 h-6"}/>
-                        <p>Si vous ne savez pas où trouver d'icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l'icône de votre choix au format SVG et la coller ici.</p>
-                    </div>
+                    <DropDown items={SectionService.getSectionTypes()} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
                 </AdvancedPopup>
             </Form>
 
-            <Form onSubmitAction={addSectonAction}>
+            <Form onSubmitAction={addElementAction}>
                 <AdvancedPopup
                     icon={'add'}
-                    show={showPopupNewSection}
-                    message={"Selectionnez le type de section. Vous pourrez ajouter du contenu une fois celle-ci créée."}
-                    title={'Créer une section'}
+                    show={showPopupNewElement}
+                    message={"Remplissez les informations ci-dessous pour créer un nouvel élément dans votre section."}
+                    title={'Créer un élément'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
-                    closePopup={() => setShowPopupNewSection(false)}
+                    closePopup={() => setShowPopupNewElement(false)}
                 >
 
-                    <DropDown items={sectionTypes} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
+                    <DropDown items={ElementService.getElementTypes()} selectedItem={newElementType} setSelectedItemAction={setNewElementType} />
 
                     <div className={"flex gap-4 items-center"}>
                         <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
                         {
-                            newSectionType === "classic" ?
-                                <p>Une section classique contenant divers éléments qui seront affichés les uns à la suite des autres.</p> :
-                                newSectionType === "develop" ?
-                                    <p>Ressemble à une section classique, à la différence que seul le titre est affiché par défaut. Il est nécessaire de cliquer dessus pour afficher le contenu au complet. Recommandé quand il y a beaucoup de contenu à afficher, pour éviter de surcharger la page.</p> :
-                                    newSectionType === "tile" ?
-                                        <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d'une liste où les éléments sont affichés les un à la suite des autres et prennent tous l'espace, les éléments sont des sortes de petit "carrés" avec une mise en page permettant d'optimiser l'espace.</p> :
-                                        <p>Type de section inconnu.</p>
-                        }                    </div>
+                            newElementType === "titre" ?
+                                <p>Un titre sera affiché en gros, en gras, bref il sera bien visible !</p> :
+                                newElementType === "texte" ?
+                                    <p>Un texte sera affiché de manière classique, comme un paragraphe. Attention, les retours à la ligne ne seront pas pris en compte, pour obtenir cet effet il faudra ajouter plusieurs paragraphes.</p> :
+                                    newElementType === "lien" ?
+                                        <p>Saisissez un lien, et celui-ci sera cliquable.</p> :
+                                        newElementType === "image" ?
+                                            <p>Déposer une image, et celle-ci sera stocké dans le cloud et affichée naturellement !</p> :
+                                        <p>Type d'élément inconnu.</p>
+                        }
+                    </div>
+
+                    {
+                        newElementType === "titre" ?
+                            <Input placeholder={"Titre"} value={newElementContent} setValueAction={setNewElementContent}/> :
+                            newElementType === "texte" ?
+                                <Textarea value={newElementContent} onChangeAction={setNewElementContent}/> :
+                                newElementType === "lien" ?
+                                    <Input validatorAction={StringUtil.httpsDomainValidator} iconName={"globe"} placeholder={"Lien"} value={newElementContent} setValueAction={setNewElementContent}/> :
+                                    newElementType === "image" ?
+                                        <ImageInput setFileAction={setNewElementFile}/> :
+                                        <p>Type d'élément inconnu.</p>
+                    }
 
                 </AdvancedPopup>
             </Form>

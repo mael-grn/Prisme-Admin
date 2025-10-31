@@ -1,4 +1,4 @@
-import {InsertablePage, Page} from "@/app/models/Page";
+import {InsertablePage, Page, RecursivePage} from "@/app/models/Page";
 import axios, {AxiosError} from "axios";
 import {DisplayWebsite} from "@/app/models/DisplayWebsite";
 import {StringUtil} from "@/app/utils/stringUtil";
@@ -17,6 +17,15 @@ export default class PageService {
         }
     }
 
+    static async getMyRecursivePagesFromWebsite(websiteId : number) : Promise<RecursivePage[]> {
+        try {
+            const response = await axios.get(`/api/websites/${websiteId}/pages?recursive=true`);
+            return response.data.data as RecursivePage[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
     /**
      * Get a page by its id
      * @param pageId
@@ -25,6 +34,15 @@ export default class PageService {
         try {
             const response = await axios.get(`/api/pages/${pageId}`);
             return response.data.data as Page;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getRecursivePageById(pageId: number) : Promise<RecursivePage>  {
+        try {
+            const response = await axios.get(`/api/pages/${pageId}?recursive=true`);
+            return response.data.data as RecursivePage;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }

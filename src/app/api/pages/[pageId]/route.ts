@@ -2,7 +2,8 @@ import {NextResponse} from "next/server";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
-import {InsertablePage, Page} from "@/app/models/Page";
+import {InsertablePage, Page, RecursivePage} from "@/app/models/Page";
+import SectionService from "@/app/service/sectionService";
 
 export async function GET(request: Request, {params}: { params: Promise<{ pageId: string }> }) {
     try {
@@ -19,7 +20,24 @@ export async function GET(request: Request, {params}: { params: Promise<{ pageId
                or website_domain || path = ${pageId}
             LIMIT 1
         `;
-        return ApiUtil.getSuccessNextResponse<Page>(res as Page);
+
+        const recursive = ApiUtil.isRecursiveRequest(request);
+
+        if (!res) {
+            return ApiUtil.getErrorNextResponse("Page not found", undefined, 404);
+        }
+
+        if (!recursive) {
+            return ApiUtil.getSuccessNextResponse<Page>(res as Page);
+        }
+
+        const recursiveSections = await SectionService.getRecursiveSectionsForPageId(res.id);
+        const recursivePage : RecursivePage = {
+            ...res as Page,
+            sections: recursiveSections
+        }
+
+        return ApiUtil.getSuccessNextResponse<RecursivePage>(recursivePage);
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error);
     }

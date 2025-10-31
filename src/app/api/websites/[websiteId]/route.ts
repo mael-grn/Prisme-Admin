@@ -1,7 +1,9 @@
-import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
+import {DisplayWebsite, InsertableDisplayWebsite, RecursiveWebsite} from "@/app/models/DisplayWebsite";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import {RecursivePage} from "@/app/models/Page";
+import PageService from "@/app/service/pageService";
 
 export async function GET(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
 
@@ -17,7 +19,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ webs
         if (!res) {
             return ApiUtil.getErrorNextResponse("Website not found", undefined, 404);
         }
-        return ApiUtil.getSuccessNextResponse<DisplayWebsite>(res as DisplayWebsite);
+
+        if (!ApiUtil.isRecursiveRequest(request)) {
+            return ApiUtil.getSuccessNextResponse<DisplayWebsite>(res as DisplayWebsite);
+        }
+
+        const recursivePages: RecursivePage[] = await PageService.getMyRecursivePagesFromWebsite(res.id);
+        const recursiveWebsite: RecursiveWebsite = {
+            ...res as DisplayWebsite,
+            pages: recursivePages
+        }
+        return ApiUtil.getSuccessNextResponse<RecursiveWebsite>(recursiveWebsite);
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error)
     }

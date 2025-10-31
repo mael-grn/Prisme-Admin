@@ -21,21 +21,17 @@ export async function POST(request: Request) {
         // Validation des données
         FieldsUtil.checkFieldsOrThrow<InsertableDisplayWebsite>(FieldsUtil.checkDisplayWebsite, insertableWebsite);
 
-        // Génération d'un token d'authentification pour le site
-        const website_token = PasswordUtil.generatePassword(32)
-        const website_token_hashed = await PasswordUtil.hashPassword(website_token)
-
         // Insertion en base de données
         const sql = SqlUtil.getSql()
         await sql`
-            INSERT INTO display_websites (owner_id, website_domain, auth_token, hero_image_url, hero_title)
-            VALUES (${user.id}, ${insertableWebsite.website_domain}, ${website_token_hashed},
+            INSERT INTO display_websites (owner_id, website_domain, hero_image_url, hero_title)
+            VALUES (${user.id}, ${insertableWebsite.website_domain},
                     ${insertableWebsite.hero_image_url},
                     ${insertableWebsite.hero_title})
         `
 
         // Retour de la nouvelle ressource avec le token en clair, disponible uniquement une fois
-        return ApiUtil.getSuccessNextResponse<string>(website_token, true);
+        return ApiUtil.getSuccessNextResponse();
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error);
     }

@@ -1,7 +1,8 @@
-import {InsertableSection, Section} from "@/app/models/Section";
+import {InsertableSection, RecursiveSection, Section} from "@/app/models/Section";
 import axios, {AxiosError} from "axios";
 import {Page} from "@/app/models/Page";
 import {StringUtil} from "@/app/utils/stringUtil";
+import {Subcategory} from "@/app/models/Subcategory";
 
 export default class SectionService {
 
@@ -13,6 +14,15 @@ export default class SectionService {
         try {
             const response = await axios.get(`/api/pages/${pageId}/sections`);
             return response.data.data as Section[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getRecursiveSectionsForPageId(pageId: number) : Promise<RecursiveSection[]> {
+        try {
+            const response = await axios.get(`/api/pages/${pageId}/sections?recursive=true`);
+            return response.data.data as RecursiveSection[];
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -42,6 +52,15 @@ export default class SectionService {
         }
     }
 
+    static async getRecursiveSectionById(sectionId: number) : Promise<RecursiveSection>  {
+        try {
+            const response = await axios.get(`/api/sections/${sectionId}?recursive=true`);
+            return response.data.data as RecursiveSection;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
     /**
      * Insert a new section and return the newly created section
      * @param newSection
@@ -60,7 +79,7 @@ export default class SectionService {
      */
     static async updateSection(updatedSection : Section) : Promise<void> {
         try {
-            await axios.put(`/api/sections/${updatedSection.page_id}`, updatedSection);
+            await axios.put(`/api/sections/${updatedSection.id}`, updatedSection);
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
@@ -78,6 +97,22 @@ export default class SectionService {
         }
     }
 
+    static async addSubcategory(section: Section, subcategory: Subcategory) : Promise<void> {
+        try {
+            await axios.post(`/api/sections/${section.id}/subcategories`, subcategory);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async removeSubcategory(section: Section, subcategory: Subcategory) : Promise<void> {
+        try {
+            await axios.delete(`/api/sections/${section.id}/subcategories/${subcategory.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
     /**
      * Delete a section
      * Deletes all descendant elements
@@ -85,10 +120,12 @@ export default class SectionService {
      * return the number of deleted sections (1 or 0)
      * @param section
      */
-    static async deleteSection(section: Section) : Promise<number> {
-        //TODO supprimer tous les elements descendant
-        //TODO normaliser la position des autres sections
-        throw  new Error("Method not implemented.");
+    static async deleteSection(section: Section) : Promise<void> {
+        try {
+            await axios.delete(`/api/sections/${section.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 }
 

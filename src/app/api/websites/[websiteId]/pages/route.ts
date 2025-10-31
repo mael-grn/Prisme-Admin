@@ -1,7 +1,8 @@
-import {InsertablePage, Page} from "@/app/models/Page";
+import {InsertablePage, Page, RecursivePage} from "@/app/models/Page";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
+import PageService from "@/app/service/pageService";
 
 export async function POST(request: Request, { params }: { params: Promise<{ websiteId: string }> }) {
 
@@ -56,7 +57,17 @@ export async function GET(request: Request, { params }: { params: Promise<{ webs
         const res = await sql`
         SELECT pages.* FROM display_websites, pages WHERE (display_websites.id = ${websiteId} or website_domain = ${websiteId}) and pages.website_id = display_websites.id ORDER BY pages.position
     `;
-        return ApiUtil.getSuccessNextResponse<Page[]>(res as Page[]);
+        if (!ApiUtil.isRecursiveRequest(request)) {
+            return ApiUtil.getSuccessNextResponse<Page[]>(res as Page[]);
+        }
+
+        const recursivePages: RecursivePage[] = [];
+
+        for (const page of res as Page[]) {
+            recursivePages.push(await PageService.getRecursivePageById(page.id));
+        }
+
+        return ApiUtil.getSuccessNextResponse<RecursivePage[]>(recursivePages);
     } catch (e) {
         return ApiUtil.handleNextErrors(e as Error)
     }

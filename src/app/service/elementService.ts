@@ -1,28 +1,29 @@
-import {ElementType, InsertableElement} from "@/app/models/Element";
-
+import {InsertableElement} from "@/app/models/Element";
+import axios, {AxiosError} from "axios";
+import {StringUtil} from "@/app/utils/stringUtil";
+import {Element} from "@/app/models/Element";
 export default class ElementService {
-
-    /**
-     * Récupère tous les types de d'element possible
-     */
-    static async getTypes() : Promise<ElementType[]> {
-        throw new Error("Function not implemented.");
-    }
-
-    /**
-     * Recupere un type d'element par son id
-     * @param id
-     */
-    static async getTypeById(id: number) : Promise<ElementType | null> {
-        throw new Error("Function not implemented.");
-    }
 
     /**
      * Récupère tous les éléments dont la section correspond à l'id passé en paramètre
      * @param sectionId
      */
     static async getElementsFromSectionId(sectionId: number) : Promise<Element[]> {
-        throw new Error("Function not implemented.");
+        try {
+            const response = await axios.get(`/api/sections/${sectionId}/elements`);
+            return response.data.data as Element[];
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static getElementTypes() : string[] {
+        return [
+            "titre",
+            "texte",
+            "lien",
+            "image"
+        ]
     }
 
     /**
@@ -30,7 +31,12 @@ export default class ElementService {
      * @param elementId
      */
     static async getElementById(elementId: number) : Promise<Element>  {
-        throw new Error("Function not implemented.");
+        try {
+            const response = await axios.get(`/api/elements/${elementId}`);
+            return response.data.data as Element;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
@@ -38,8 +44,12 @@ export default class ElementService {
      * Retourne l'élément inséré avec son id.
      * @param newElement
      */
-    static async insertElement(newElement : InsertableElement) : Promise<Element> {
-        throw new Error("Function not implemented.");
+    static async insertElement(newElement : InsertableElement) : Promise<void> {
+        try {
+            await axios.post(`/api/sections/${newElement.section_id}/elements`, newElement);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
@@ -48,8 +58,12 @@ export default class ElementService {
      * Ne change pas la position.
      * @param updatedElement
      */
-    static async updateElement(updatedElement: Element) : Promise<Element> {
-        throw new Error("Function not implemented.");
+    static async updateElement(updatedElement: Element) : Promise<void> {
+        try {
+            await axios.put(`/api/elements/${updatedElement.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
     /**
@@ -60,11 +74,13 @@ export default class ElementService {
      * Ne fait rien si l'élément n'existe pas ou si l''offset est nul.
      * Ne fait rien si l'élément ne peut pas être déplacé (déplacement hors des limites de la section).
      * Modifie egalement la position des autres elements pour que les positions restent cohérentes.
-     * @param id
-     * @param offset
      */
-    static async moveElement(id: number, offset: number) : Promise<void> {
-        throw new Error("Function not implemented.");
+    static async moveElement(element: Element) : Promise<void> {
+        try {
+            await axios.post(`/api/elements/${element.id}/move_position`, element);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 
 
@@ -73,10 +89,12 @@ export default class ElementService {
      * Retourne le nombre d'éléments supprimés (0 ou 1)
      * @param element
      */
-    static async deleteElement(element: Element) : Promise<number> {
+    static async deleteElement(element: Element) : Promise<void> {
 
-        //TODO Normaliser la position des autres éléments de la section
-        //TODO Supprimer les fichiers associés à l'élément s'il y en a
-        throw new Error("Function not implemented.");
+        try {
+            await axios.delete(`/api/elements/${element.id}`);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
     }
 }

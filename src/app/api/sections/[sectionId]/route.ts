@@ -1,7 +1,9 @@
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
-import {InsertableSection, Section} from "@/app/models/Section";
+import {InsertableSection, RecursiveSection, Section} from "@/app/models/Section";
+import {Element} from "@/app/models/Element";
+import CategoryService from "@/app/service/categoryService";
 
 export async function GET(request: Request, {params}: { params: Promise<{ sectionId: string }> }) {
 
@@ -17,7 +19,28 @@ export async function GET(request: Request, {params}: { params: Promise<{ sectio
             return ApiUtil.getErrorNextResponse("Section was not found.");
         }
 
-        return ApiUtil.getSuccessNextResponse<Section>(res as Section);
+        const recursive = ApiUtil.isRecursiveRequest(request);
+        if (!recursive) {
+            return ApiUtil.getSuccessNextResponse<Section>(res as Section);
+        }
+
+        const elements = await sql`SELECT * from elements where section_id = ${sectionId}`;
+
+        const categories = await CategoryService.getAllRecursiveCategories()
+
+        const validSubCategoriesIdsForSection = await sql`SELECT subcategory_id from sections_subcategories where section_id = ${sectionId}`;
+
+        const validCategories = categories.filter(category => {
+            return validSubCategoriesIdsForSection.some((validSubCategoryIdObj) => validSubCategoryIdObj.subcategory_id === category.id);
+        });
+
+        const recursiveSection: RecursiveSection = {
+            ...(res as Section),
+            elements: elements as Element[],
+            categories: validCategories
+        }
+
+        return ApiUtil.getSuccessNextResponse<RecursiveSection>(recursiveSection);
     } catch (e) {
         return ApiUtil.handleNextErrors(e as Error);
     }
@@ -82,9 +105,8 @@ export async function PUT(request: Request, {params}: { params: Promise<{ sectio
             FROM display_websites,
                  pages,
                  sections
-            WHERE 
-            sections.id = ${sectionId}
-            and pages.id = sections.page_id
+            WHERE sections.id = ${sectionId}
+              and pages.id = sections.page_id
               and display_websites.id = pages.website_id
             LIMIT 1
         `;

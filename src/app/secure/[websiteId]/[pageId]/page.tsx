@@ -72,7 +72,7 @@ export default function PageVisu() {
         try {
             loadData();
         } catch (e) {
-            setPopupTitle("Une erreur s'est produite lors de la suppression");
+            setPopupTitle("Une erreur s'est produite");
             setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
             setShowPopup(true);
         } finally {
@@ -295,7 +295,7 @@ export default function PageVisu() {
                 <List elements={sections?.map((sect) => {
                     return {
                         text: sect.section_type,
-                        onClick: () => router.push("/secure/pages/" + pageId + "/sections/" + sect.id),
+                        onClick: () => router.push("/secure/" + page.website_id + "/" + pageId + "/" + sect.id),
                         actions: modifySectionOrder ? [{
                             iconName: "up",
                             onClick: () => moveSectionUp(sect)
