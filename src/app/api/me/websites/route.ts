@@ -20,6 +20,7 @@ export async function POST(request: Request) {
         // Validation des données
         FieldsUtil.checkFieldsOrThrow<InsertableDisplayWebsite>(FieldsUtil.checkDisplayWebsite, insertableWebsite);
 
+        insertableWebsite.website_domain = insertableWebsite.website_domain.replaceAll(".", "-");
         // Insertion en base de données
         const sql = SqlUtil.getSql()
         await sql`
