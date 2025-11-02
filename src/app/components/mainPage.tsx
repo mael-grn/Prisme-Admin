@@ -78,22 +78,22 @@ export default function MainPage({children, title, pageAlignment=PageAlignmentEn
 
     return (
         <main className={`flex items-start justify-start flex-col gap-6 ${title ? "pb-6 pl-6 pr-6" : "p-6"} mb-20`}>
-            {title && <div className={`flex flex-col ${scrolled ? "gap-4 pt-4" : "gap-6 pt-6"} sticky w-full top-0 left-0 z-10 bg-backgroundOpacity backdrop-blur`}>
+            {title && <div className={`flex flex-col ${scrolled ? "gap-4 pt-4" : "gap-4 pt-4 md:gap-6 md:pt-6"} sticky w-full top-0 left-0 z-10 bg-backgroundOpacity backdrop-blur`}>
                 <div className="flex gap-4 items-center justify-between w-full" >
                     <div className="flex gap-2 items-start flex-col justify-center">
                         <div className="flex gap-4 items-center">
                             <button
-                                className={`flex ${scrolled ? "gap-0" : "gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                                className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                                 onClick={() => router.back()}
                             >
                                 <img src="/ico/arrow-back.svg" alt="Back" className="w-4 invert" />
-                                <span className={`${scrolled ? "text-[0px]" : "text-[15px]"}`}>Retour</span>
+                                <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Retour</span>
                             </button>
                             <h1 className={`line-clamp-2`} style={{fontSize: scrolled ? "20px" : "35px"}}>{title}</h1>
                         </div>
 
                         <div
-                            className={`flex gap-1 items-center text-onBackgroundHover ${scrolled && "text-[0]"} italic justify-start`}>
+                            className={`flex gap-1 items-center text-onBackgroundHover ${scrolled ? "text-[0]" : "text-[0] md:text-inherit"} italic justify-start`}>
                             {
                                 website &&
                                 <>
@@ -130,19 +130,19 @@ export default function MainPage({children, title, pageAlignment=PageAlignmentEn
                     <div className="flex gap-4 items-center">
 
                         <button
-                            className={`flex ${scrolled ? "gap-0" : "gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={() => router.push("/secure")}
                         >
                             <img src="/ico/home.svg" alt="power" className="w-4 invert" />
-                            <span className={`${scrolled ? "text-[0px]" : "text-[15px]"}`}>Accueil</span>
+                            <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Accueil</span>
                         </button>
 
                         <button
-                            className={`flex ${scrolled ? "gap-0" : "gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={logout}
                         >
                             <img src="/ico/power.svg" alt="power" className="w-4 invert" />
-                            <span className={`${scrolled ? "text-[0px]" : "text-[15px]"}`}>Déconnexion</span>
+                            <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Déconnexion</span>
                         </button>
                     </div>
 
