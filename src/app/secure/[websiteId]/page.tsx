@@ -134,7 +134,7 @@ export default function Pages() {
 
     const editDomainAction = async () => {
         setShowPopupEditDomain(false);
-        if (StringUtil.httpsDomainValidator(newWebsiteDomain)) {
+        if (StringUtil.domainValidator(newWebsiteDomain)) {
             setShowPopup(true);
             setPopupTitle("Domaine invalide");
             setPopupText("Le domaine saisi n'est pas valide.");
@@ -394,7 +394,7 @@ export default function Pages() {
                     iconName: "check",
                     actionType: ActionTypeEnum.safe
                 }]} closePopup={() => setShowPopupEditDomain(false)}>
-                    <Input iconName={"globe"} validatorAction={StringUtil.httpsDomainValidator}
+                    <Input iconName={"globe"} validatorAction={StringUtil.domainValidator}
                            placeholder={"Nouveau domaine"} value={newWebsiteDomain}
                            setValueAction={setNewWebsiteDomain}/>
                 </AdvancedPopup>

@@ -124,7 +124,7 @@ export default function Home() {
                     ]}
                 >
 
-                    <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain} setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.httpsDomainValidator}/>
+                    <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain} setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.domainValidator}/>
 
                     <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
 

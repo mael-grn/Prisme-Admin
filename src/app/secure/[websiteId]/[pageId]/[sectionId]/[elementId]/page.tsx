@@ -195,7 +195,7 @@ export default function SectionVisu() {
                 element?.element_type === "texte" ?
                     <Textarea value={newElementContent} onChangeAction={setNewElementContent}/> :
                     element?.element_type === "lien" ?
-                        <Input validatorAction={StringUtil.httpsDomainValidator} iconName={"globe"}
+                        <Input validatorAction={StringUtil.domainValidator} iconName={"globe"}
                                placeholder={"Lien"} value={newElementContent}
                                setValueAction={setNewElementContent}/> :
                         element?.element_type === "image" ?

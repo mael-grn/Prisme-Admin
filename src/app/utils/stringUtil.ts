@@ -60,20 +60,10 @@ export class StringUtil {
         return null;
     }
 
-    static httpsDomainValidator(domain: string): string | null {
-        if (!domain.startsWith("https://")) return "L'URL doit commencer par `https://`.";
-        try {
-            const url = new URL(domain);
-            if (url.protocol !== "https:") return "L'URL doit utiliser le protocole HTTPS.";
-            const hostname = url.hostname;
-            if (!hostname) return "Nom d'hôte manquant dans l'URL.";
-            // autorise 'localhost' ou un hostname contenant un point (ex: example.com)
-            const isHostValid = hostname === "localhost" || hostname.includes(".");
-            if (!isHostValid) return "Le domaine n'est pas valide.";
-            return null;
-        } catch {
-            return "Le format de l'URL est invalide.";
-        }
+    static domainValidator(domain: string): string | null {
+        const domainRegex = /^(?!-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/;
+        if (!domainRegex.test(domain)) return "Le domaine n'est pas valide.";
+        return null;
     }
 
     static truncateString(str: string, num: number): string {
