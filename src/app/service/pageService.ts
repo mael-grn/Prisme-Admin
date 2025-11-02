@@ -1,6 +1,5 @@
 import {InsertablePage, Page, RecursivePage} from "@/app/models/Page";
 import axios, {AxiosError} from "axios";
-import {DisplayWebsite} from "@/app/models/DisplayWebsite";
 import {StringUtil} from "@/app/utils/stringUtil";
 
 export default class PageService {

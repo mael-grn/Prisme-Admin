@@ -263,8 +263,8 @@ export default function PageVisu() {
     }
 
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={page.title}>
-            <SectionElem loading={sectionsLoading} title={"Sections"} width={SectionWidth.FULL}
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(page.title || "", 30)}>
+            <SectionElem loading={sectionsLoading} title={"Sections de votre page"} width={SectionWidth.FULL}
                          actions={modifySectionOrder ? [
                              {
                                  text: "Annuler",
@@ -306,26 +306,26 @@ export default function PageVisu() {
             </SectionElem>
 
             <SectionElem title={"Titre"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit"}]}>
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                 <p>{page?.title}</p>
             </SectionElem>
 
             <SectionElem title={"Chemin d'accès"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit"}]}>
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                 <p>{page?.path}</p>
             </SectionElem>
 
             <SectionElem title={"Description"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit"}]}>
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                 <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
             </SectionElem>
 
             <SectionElem title={"Icone"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit"}]}>
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                 {
                     page.icon_svg
                         ? <SvgFromString svg={page.icon_svg} alt="icone" className="w-12 h-12 invert" />
-                        : <p>Vous n'avez pas d'icône pour le moment.</p>
+                        : <p>Vous n&apos;avez pas d&apos;icône pour le moment.</p>
                 }
             </SectionElem>
 
@@ -335,7 +335,7 @@ export default function PageVisu() {
                 iconName: "trash",
                 actionType: ActionTypeEnum.dangerous
             }]}>
-                <p>Supprimer la page entraine la perte de l'intégralité de son contenu.</p>
+                <p>Supprimer la page entraine la perte de l&apos;intégralité de son contenu.</p>
             </SectionElem>
 
             <AdvancedPopup
@@ -394,9 +394,9 @@ export default function PageVisu() {
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
-                    closePopup={() => setShowPopupEditPath(false)}
+                    closePopup={() => setShowPopupEditDescription(false)}
                 >
-                    <Textarea placeholder={"Chemin d'accès"} value={newDescription} onChangeAction={setNewDescription}
+                    <Textarea placeholder={"Description"} value={newDescription} onChangeAction={setNewDescription}
                     />
                 </AdvancedPopup>
 
@@ -414,7 +414,7 @@ export default function PageVisu() {
                     />
                     <div className={"flex gap-2 items-center"}>
                         <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-6 h-6"}/>
-                        <p>Si vous ne savez pas où trouver d'icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l'icône de votre choix au format SVG et la coller ici.</p>
+                        <p>Si vous ne savez pas où trouver d&apos;icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l&apos;icône de votre choix au format SVG et la coller ici.</p>
                     </div>
                 </AdvancedPopup>
             </Form>
@@ -441,7 +441,7 @@ export default function PageVisu() {
                                 newSectionType === "develop" ?
                                     <p>Ressemble à une section classique, à la différence que seul le titre est affiché par défaut. Il est nécessaire de cliquer dessus pour afficher le contenu au complet. Recommandé quand il y a beaucoup de contenu à afficher, pour éviter de surcharger la page.</p> :
                                     newSectionType === "tile" ?
-                                        <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d'une liste où les éléments sont affichés les un à la suite des autres et prennent tous l'espace, les éléments sont des sortes de petit "carrés" avec une mise en page permettant d'optimiser l'espace.</p> :
+                                        <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d&apos;une liste où les éléments sont affichés les un à la suite des autres et prennent tous l&apos;espace, les éléments sont des sortes de petit &apos;carrés&apos; avec une mise en page permettant d&apos;optimiser l&apos;espace.</p> :
                                         <p>Type de section inconnu.</p>
                         }                    </div>
 

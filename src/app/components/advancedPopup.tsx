@@ -1,5 +1,5 @@
 import {AnimatePresence, motion} from "framer-motion";
-import Button, {ActionTypeEnum, ButtonProps} from "@/app/components/Button";
+import Button, { ButtonProps} from "@/app/components/Button";
 
 export default function AdvancedPopup({show, icon="info", title, message, closePopup, actions, children} : {show: boolean, icon?: string, message: string, title: string, closePopup: () => void, actions?: ButtonProps[], children?: React.ReactNode}) {
     return (

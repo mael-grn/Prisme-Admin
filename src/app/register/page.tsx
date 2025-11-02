@@ -11,7 +11,6 @@ import {ButtonProps} from "@/app/components/Button";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Form from "@/app/components/form";
 import {StringUtil} from "@/app/utils/stringUtil";
-import {error} from "next/dist/build/output/log";
 
 export default function Home() {
     const [password, setPassword] = useState("");

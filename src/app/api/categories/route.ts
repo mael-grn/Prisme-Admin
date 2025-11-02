@@ -49,7 +49,7 @@ export async function GET(request: Request) {
 
         // Agrégation en mémoire en un tableau de RecursiveCategory
         const map = new Map<number, RecursiveCategory>();
-        for (const row of rows as any[]) {
+        for (const row of rows as {category_id: number, category_name: string, sub_id: number, sub_category_id:number, sub_name:string}[]) {
             const catId: number = row.category_id;
             let entry = map.get(catId);
             if (!entry) {

@@ -19,8 +19,6 @@ import {ActionTypeEnum} from "@/app/components/Button";
 import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
 import {ImageUtil} from "@/app/utils/ImageUtil";
-import SectionService from "@/app/service/sectionService";
-import {Section} from "@/app/models/Section";
 
 export default function Pages() {
 
@@ -275,11 +273,11 @@ export default function Pages() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart}
-                  title={website ? `${website.hero_title}` : "Votre page web"}>
+                  title={StringUtil.truncateString(website?.hero_title || "", 30)}>
             <SectionElem
                 width={SectionWidth.FULL}
                 loading={pagesLoading}
-                title={"Vos pages"}
+                title={"Pages de votre site"}
                 actions={
                     modifyPageOrder ?
                         [
@@ -320,13 +318,13 @@ export default function Pages() {
 
             </SectionElem>
 
-            <SectionElem title={"Domaine du site"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit"}]}>
+            <SectionElem title={"Domaine"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                 <p>{website?.website_domain}</p>
             </SectionElem>
 
-            <SectionElem title={"Contenu de la landing page"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit"}]}>
+            <SectionElem title={"Contenu de la page d'accueil"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                 <p>{website?.hero_title}</p>
                 {website?.hero_image_url ?
@@ -342,7 +340,7 @@ export default function Pages() {
                 iconName: "trash",
                 actionType: ActionTypeEnum.dangerous
             }]}>
-                <p>Supprimer le site entraine la perte de l'intégralité de son contenu.</p>
+                <p>Supprimer le site entraine la perte de l&apos;intégralité de son contenu.</p>
             </SectionElem>
 
             <LoadingPopup show={loading} message={loadingMessage}/>

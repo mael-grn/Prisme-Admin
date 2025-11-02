@@ -1,4 +1,3 @@
-import {NextResponse} from "next/server";
 import {ApiUtil} from "@/app/utils/apiUtil";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {Page} from "@/app/models/Page";

@@ -1,10 +1,5 @@
 import {neon, NeonQueryFunction} from "@neondatabase/serverless";
 
-export interface SqlResponse<T> {
-    success: boolean;
-    data?: T;
-    http_code: number;
-}
 
 export class SqlUtil {
     private static sql : NeonQueryFunction<false, false>

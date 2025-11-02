@@ -17,6 +17,7 @@ import {StringUtil} from "@/app/utils/stringUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
+import {ActionTypeEnum} from "@/app/components/Button";
 
 export default function Home() {
 
@@ -61,7 +62,7 @@ export default function Home() {
 
         setShowPopupCreateWebsite(false);
 
-        let displayWebsite : InsertableDisplayWebsite = {
+        const displayWebsite : InsertableDisplayWebsite = {
             owner_id: user!.id,
             website_domain: newWebsiteDomain,
             hero_title: newWebsiteHeroTitle,
@@ -102,7 +103,7 @@ export default function Home() {
             <SectionElem title={"Vos pages web"}
                          loading={websiteLoading}
             actions={[
-                {text: "Ajouter une page web", iconName: "add", onClick: () => setShowPopupCreateWebsite(true) },
+                {text: "Ajouter une page web", iconName: "add", onClick: () => setShowPopupCreateWebsite(true), actionType: ActionTypeEnum.safe },
             ]}
             >
 
@@ -119,7 +120,7 @@ export default function Home() {
                     title={"Créer une nouvelle page web"}
                     message={"Remplissez les informations ci-dessous pour créer une nouvelle page web."}
                     actions={[
-                        {text: "Créer", isForm: true, iconName: "add"},
+                        {text: "Créer", isForm: true, iconName: "add", actionType: ActionTypeEnum.safe},
                     ]}
                 >
 
@@ -127,6 +128,7 @@ export default function Home() {
 
                     <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
 
+                    <p>Vous pouvez déposer l&apos;image de la page d&apos;accueil du site :</p>
                     <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
 
                 </AdvancedPopup>

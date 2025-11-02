@@ -1,8 +1,27 @@
 import {ApiUtil} from "@/app/utils/apiUtil";
-import {InsertableSection} from "@/app/models/Section";
 import {SqlUtil} from "@/app/utils/sqlUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
-import {InsertableElement} from "@/app/models/Element";
+import {InsertableElement, Element} from "@/app/models/Element";
+
+export async function GET(request: Request, {params}: { params: Promise<{ elementId: string }> }) {
+
+    try {
+        const {elementId} = await params;
+        ApiUtil.checkParam(elementId);
+
+        const sql = SqlUtil.getSql()
+
+        const [element] = await sql`SELECT * FROM elements WHERE id = ${elementId} LIMIT 1`;
+
+        if (!element) {
+            return ApiUtil.getErrorNextResponse("Element not found", undefined, 404);
+        }
+        return ApiUtil.getSuccessNextResponse<Element>(element as Element);
+    } catch (e) {
+        return ApiUtil.handleNextErrors(e as Error);
+    }
+
+}
 
 export async function PUT(request: Request, {params}: { params: Promise<{ elementId: string }> }) {
 
@@ -14,7 +33,7 @@ export async function PUT(request: Request, {params}: { params: Promise<{ elemen
         const user = await ApiUtil.getConnectedUser();
 
         // Récupération des données dans le body
-        const insertableElement: InsertableElement = await request.json();
+        const element: Element = await request.json();
 
         const sql = SqlUtil.getSql()
 
@@ -39,10 +58,10 @@ export async function PUT(request: Request, {params}: { params: Promise<{ elemen
         }
 
         // Validation des données
-        FieldsUtil.checkFieldsOrThrow<InsertableElement>(FieldsUtil.checkElement, insertableElement);
+        FieldsUtil.checkFieldsOrThrow<InsertableElement>(FieldsUtil.checkElement, element);
 
         await sql`UPDATE elements
-                  SET element_type      = ${insertableElement.element_type}, content = ${insertableElement.content}
+                  SET element_type      = ${element.element_type}, content = ${element.content}
                   WHERE id = ${elementId}`;
 
         return ApiUtil.getSuccessNextResponse();

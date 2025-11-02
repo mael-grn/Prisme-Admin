@@ -53,7 +53,7 @@ export default function List({elements}: { elements: ListElementProps[] }) {
             {elements.length === 0 ?
                 <div className={"flex items-center justify-center w-full p-6 flex-col gap-6"}>
                     <img src={"/ico/question.svg"} className={"w-10 invert"} alt={"question"}/>
-                    <p>Il n'y a rien à afficher</p>
+                    <p>Il n&apos;y a rien à afficher</p>
                 </div> :
                 <>
                     {elements.map((element, index) => <ListElement key={index} props={element} isFirst={index === 0}

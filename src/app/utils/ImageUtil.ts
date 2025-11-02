@@ -16,8 +16,4 @@ export class ImageUtil {
             throw (error as Error).message;
         }
     }
-
-    static async deleteImageNotInUse() {
-        throw "Not implemented yet";
-    }
 }

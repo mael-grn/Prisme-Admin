@@ -60,7 +60,7 @@ export default class ElementService {
      */
     static async updateElement(updatedElement: Element) : Promise<void> {
         try {
-            await axios.put(`/api/elements/${updatedElement.id}`);
+            await axios.put(`/api/elements/${updatedElement.id}`, updatedElement);
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }

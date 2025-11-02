@@ -18,8 +18,6 @@ import Textarea from "@/app/components/textarea";
 import DropDown from "@/app/components/DropDown";
 import ElementService from "@/app/service/elementService";
 import {Element, InsertableElement} from "@/app/models/Element";
-import {Page} from "@/app/models/Page";
-import PageService from "@/app/service/pageService";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
 import {RecursiveCategory} from "@/app/models/Category";
@@ -35,7 +33,6 @@ export default function SectionVisu() {
     const [elementsLoading, setElementsLoading] = useState(true);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
-    const [page, setPage] = useState<Page | null>(null);
     const [section, setSection] = useState<Section | null>(null);
     const [elements, setElements] = useState<Element[] | null>([]);
 
@@ -74,12 +71,11 @@ export default function SectionVisu() {
 
     useEffect(() => {
         async function loadData() {
-            setLoadingMessage("Chargement de la page d'origine...")
-            setPage(await PageService.getPageById(parseInt(pageId as string)))
             setLoadingMessage("Chargement de la section...")
             const tmpSection: Section = await SectionService.getSectionById(parseInt(sectionId as string))
             setSection(tmpSection)
             setNewSectionType(tmpSection.section_type);
+            setNewElementType(ElementService.getElementTypes()[0])
         }
 
         async function loadCategories() {
@@ -404,17 +400,9 @@ export default function SectionVisu() {
         }
     }
 
-    if (!section || !page) {
-        return (
-            <div>
-                <LoadingPopup show={true} message={loadingMessage}/>
-            </div>
-        )
-    }
-
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={page?.title + ' - ' + section.section_type}>
-            <SectionElem loading={elementsLoading} title={"Elements"} width={SectionWidth.FULL}
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(section?.section_type || "", 30)}>
+            <SectionElem loading={elementsLoading} title={"Elements de votre section"} width={SectionWidth.FULL}
                          actions={modifyElementOrder ? [
                              {
                                  text: "Annuler",
@@ -469,12 +457,12 @@ export default function SectionVisu() {
                     allRecursiveCategories.length === 0 ?
                     <div className={"flex gap-2 items-center"}>
                         <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                        <p>Il n'existe aucune catégories pour le moment.</p>
+                        <p>Il n&apos;existe aucune catégories pour le moment.</p>
                     </div> :
                     sectionsSubcategories.length === 0 &&
                         <div className={"flex gap-2 items-center"}>
                             <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                            <p>Vous n'avez pas encore selectionné de sous-catégories pour votre section.</p>
+                            <p>Vous n&apos;avez pas encore selectionné de sous-catégories pour votre section.</p>
                         </div>
                 }
                 {
@@ -519,7 +507,7 @@ export default function SectionVisu() {
                 iconName: "trash",
                 actionType: ActionTypeEnum.dangerous
             }]}>
-                <p>Supprimer la section entraine la perte de l'intégralité de ses éléments.</p>
+                <p>Supprimer la section entraine la perte de l&apos;intégralité de ses éléments.</p>
             </SectionElem>
 
             <AdvancedPopup
@@ -610,12 +598,12 @@ export default function SectionVisu() {
                         allRecursiveCategories.length === 0 &&
                         <div className={"flex gap-2 items-center"}>
                             <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                            <p>Il n'existe aucune catégories pour le moment.</p>
+                            <p>Il n&apos;existe aucune catégories pour le moment.</p>
                         </div>
                     }
                     {
                         allRecursiveCategories.map((cat) => {
-                            return <div key={"cat" + cat.id} className={"flex flex-col gap-2 p-3 rounded-xl bg-onBackgroundHover"}>
+                            return <div key={"cat" + cat.id} className={"flex flex-col gap-2 w-full p-3 rounded-xl bg-onBackgroundHover"}>
                                 <h3>{cat.name}</h3>
                                 {
                                     cat.subcategories.length === 0 &&
@@ -697,7 +685,7 @@ export default function SectionVisu() {
                                         newElementType === "image" ?
                                             <p>Déposer une image, et celle-ci sera stocké dans le cloud et affichée
                                                 naturellement !</p> :
-                                            <p>Type d'élément inconnu.</p>
+                                            <p>Type d&apos;élément inconnu.</p>
                         }
                     </div>
 
@@ -713,7 +701,7 @@ export default function SectionVisu() {
                                            setValueAction={setNewElementContent}/> :
                                     newElementType === "image" ?
                                         <ImageInput setFileAction={setNewElementFile}/> :
-                                        <p>Type d'élément inconnu.</p>
+                                        <p>Type d&apos;élément inconnu.</p>
                     }
 
                 </AdvancedPopup>
