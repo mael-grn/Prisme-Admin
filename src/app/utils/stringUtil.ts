@@ -73,4 +73,9 @@ export class StringUtil {
         return str.slice(0, num) + '...';
     }
 
+    static isInteger(value: string): boolean {
+      // accepte les signes +/-, uniquement des chiffres
+      return /^[+-]?\d+$/.test(value.trim());
+    }
+
 }
