@@ -90,7 +90,7 @@ export class FieldsUtil {
             errors.push("domain est requis et doit être une chaîne non vide");
         } else {
             const domain = w.website_domain;
-            if (!this.isValidDomain(domain) && !this.isValidUrl(domain)) {
+            if (!this.isValidDomain(domain) && !this.isValidDomain(domain)) {
                 errors.push("domain doit être un nom de domaine valide (ex: example.com) ou une URL");
             }
             if (domain.endsWith("/")) {
