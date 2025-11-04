@@ -175,6 +175,15 @@ export default function Pages() {
             newWebsite.hero_image_url = await ImageUtil.uploadImage(newWebsiteHeroFile)
         }
 
+        const validation = FieldsUtil.checkDisplayWebsite(newWebsite)
+        if (!validation.valid) {
+            setShowPopup(true)
+            setPopupTitle("Le contenu de la landing page n'est pas valide");
+            setPopupText(validation.errors.join(", "));
+            setLoading(false);
+            return;
+        }
+
         setLoadingMessage("Modification de la landing page...");
 
         try {

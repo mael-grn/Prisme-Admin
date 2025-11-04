@@ -21,7 +21,7 @@ function ListElement({props, isFirst, isLast}: { props: ListElementProps, isFirs
                         props.actions.map((action, index) =>
                             <div
                                 key={index}
-                                className={"h-10 w-10 flex items-center justify-center rounded-full md:hover:bg-onBackground bg-background active:rounded-full active:bg-onBackground cursor-pointer"}
+                                className={"h-10 w-10 flex items-center justify-center rounded-full md:hover:bg-onBackground bg-background active:bg-onBackground cursor-pointer"}
                             >
 
                                 <img src={`/ico/${action.iconName}.svg`}
@@ -35,7 +35,7 @@ function ListElement({props, isFirst, isLast}: { props: ListElementProps, isFirs
                 </div>
             }
             <div
-                className={` flex justify-between w-full p-4 rounded-lg ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""} md:hover:bg-onBackgroundHover bg-background target:bg-onBackgroundHover cursor-pointer`}
+                className={` flex justify-between w-full p-4 rounded-lg ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""} md:hover:bg-onBackgroundHover bg-background active:rounded-3xl active:bg-onBackgroundHover cursor-pointer`}
                 onClick={props.onClick}>
                 <p>{props.text}</p>
             </div>
