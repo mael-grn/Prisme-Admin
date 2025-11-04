@@ -81,16 +81,20 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                 className={`flex flex-col ${scrolled ? "gap-4 pt-4" : "gap-4 pt-4 md:gap-6 md:pt-6"} sticky w-full top-0 left-0 z-10 bg-backgroundOpacity backdrop-blur`}>
                 <div className="flex gap-4 items-center justify-between w-full">
                     <div className="flex gap-2 items-start flex-col justify-center">
-                        <div className="flex gap-4 items-center">
+                        <div className="flex gap-4 items-center min-w-0">
+                            <img
+                                src={"/img/icon.png"}
+                                alt={"icon"}
+                                className={`${!scrolled ? "w-14 h-14" : "w-0 h-0"} md:block hidden flex-shrink-0 mr-2`}
+                            />
                             <button
-                                className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                                className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                                 onClick={() => router.back()}
                             >
                                 <img src="/ico/arrow-back.svg" alt="Back" className="w-4 invert"/>
-                                <span
-                                    className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Retour</span>
+                                <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Retour</span>
                             </button>
-                            <h1 className={`truncate w-full ${scrolled ? "text-[20px]" : "text-[20px] md:text-[35px]"}`}>{title}</h1>
+                            <h1 className={`truncate w-full min-w-0 ${scrolled ? "text-[20px]" : "text-[20px] md:text-[35px]"}`}>{title}</h1>
                         </div>
 
                         <div
@@ -134,7 +138,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                     <div className="flex gap-4 items-center">
 
                         <button
-                            className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={() => router.push("/secure")}
                         >
                             <img src="/ico/home.svg" alt="power" className="w-4 invert"/>
@@ -142,7 +146,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                         </button>
 
                         <button
-                            className={`flex ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={logout}
                         >
                             <img src="/ico/power.svg" alt="power" className="w-4 invert"/>
