@@ -19,7 +19,9 @@ import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
 import SvgFromString from "@/app/components/SvgFromString";
 import DropDown from "@/app/components/DropDown";
-import TutorialCard from "@/app/components/tutorialCard";
+import {TutorialCard} from "@/app/components/tutorialCard";
+import {DisplayWebsite} from "@/app/models/DisplayWebsite";
+import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 
 export default function PageVisu() {
 
@@ -27,6 +29,7 @@ export default function PageVisu() {
     const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
     const [sectionsLoading, setSectionsLoading] = useState(true);
 
+    const [website, setWebsite] = useState<DisplayWebsite | null>(null);
     const [page, setPage] = useState<Page | null>(null);
     const [sectionTypes, setSectionTypes] = useState<string[]>([]);
     const [sections, setSections] = useState<Section[] | null>([]);
@@ -51,13 +54,17 @@ export default function PageVisu() {
     const [newIcon, setNewIcon] = useState<string>('');
 
     const [newSectionType, setNewSectionType] = useState<string>('');
+    const [newSectionTitle, setNewSectionTitle] = useState<string>('');
 
 
     const router = useRouter();
-    const {pageId} = useParams();
+    const {websiteId, pageId} = useParams();
 
     useEffect(() => {
         async function loadData() {
+            setLoadingMessage("Chargement du site...")
+            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)))
+            setLoadingMessage("Chargement de la page...")
             const tmpPage: Page = await PageService.getPageById(parseInt(pageId as string))
             setPage(tmpPage)
             setNewTitle(tmpPage.title);
@@ -80,7 +87,7 @@ export default function PageVisu() {
             setLoading(false);
         }
 
-    }, [pageId]);
+    }, [websiteId, pageId]);
 
     function deletePageAction() {
         setLoading(true);
@@ -147,6 +154,7 @@ export default function PageVisu() {
     function addSectonAction() {
         setShowPopupNewSection(false);
         const newSection: InsertableSection = {
+            title: newSectionTitle,
             page_id: parseInt(pageId as string),
             position: 0,
             section_type: newSectionType
@@ -264,12 +272,17 @@ export default function PageVisu() {
     }
 
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(page.title || "", 30)}>
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(website?.hero_title || "", 30)}>
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"text-onForegroundHover"}>Gestion de votre page</p>
+                <h1>{page.title}</h1>
+                <p className={"text-onForegroundHover"}>Vous gérez ici la page accessible depuis {page.path}, sur votre site {website?.website_domain}.</p>
+            </div>
             <TutorialCard
                 text={"Sur cette page, vous pouvez gérer les différentes sections de votre page, ainsi que ses informations principales comme le titre, le chemin d'accès, la description ou l'icône. N'hésitez pas à ajouter, modifier ou supprimer des sections pour personnaliser le contenu de votre page selon vos besoins."}
                 uniqueId={"page-visualization-tutorial"}
             />
-            <SectionElem loading={sectionsLoading} title={"Sections de votre page"} width={SectionWidth.FULL}
+            <SectionElem loading={sectionsLoading} title={"Contenue de votre page"} width={SectionWidth.FULL}
                          actions={modifySectionOrder ? [
                              {
                                  text: "Annuler",
@@ -297,9 +310,11 @@ export default function PageVisu() {
                              }
                          ]}>
 
+                <TutorialCard text={"Le contenu de votre page est séparé en plusieurs sections, vous pouvez les gérer ici."} uniqueId={"tips-sections-for-page"}/>
+
                 <List elements={sections?.map((sect) => {
                     return {
-                        text: sect.section_type,
+                        text: sect.title + " (" + sect.section_type + ")",
                         onClick: () => router.push("/secure/" + page.website_id + "/" + pageId + "/" + sect.id),
                         actions: modifySectionOrder ? [{
                             iconName: "up",
@@ -428,16 +443,16 @@ export default function PageVisu() {
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupNewSection}
-                    message={"Selectionnez le type de section. Vous pourrez ajouter du contenu une fois celle-ci créée."}
+                    message={"Le titre ne sera pas visible pour les utilisateurs, mais vous permettra de retrouver plus facilement la section lors de vos modifications."}
                     title={'Créer une section'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
                     closePopup={() => setShowPopupNewSection(false)}
                 >
+                    <Input placeholder={"Titre"} value={newSectionTitle} setValueAction={setNewSectionTitle} />
 
                     <DropDown items={sectionTypes} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
-
                     <div className={"flex gap-4 items-center"}>
                         <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
                         {
@@ -449,6 +464,8 @@ export default function PageVisu() {
                                         <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d&apos;une liste où les éléments sont affichés les un à la suite des autres et prennent tous l&apos;espace, les éléments sont des sortes de petit &apos;carrés&apos; avec une mise en page permettant d&apos;optimiser l&apos;espace.</p> :
                                         <p>Type de section inconnu.</p>
                         }                    </div>
+
+
 
                 </AdvancedPopup>
             </Form>

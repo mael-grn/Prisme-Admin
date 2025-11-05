@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import {cookies} from "next/headers";
 import {TokenUtil} from "@/app/utils/tokenUtil";
+import {SqlUtil} from "@/app/utils/sqlUtil";
 
 export async function middleware(request: NextRequest) {
 
@@ -32,6 +33,19 @@ export async function middleware(request: NextRequest) {
 
     // Si le token est invalide ou expiré, on supprime le cookie et retourne une erreur 401
     if (!res) {
+        cookieStore.delete('token');
+        cookieStore.delete('user');
+        return NextResponse.json("Non autorisé", { status: 401 });
+    }
+
+    const id = await TokenUtil.getIdFromToken(token.value);
+
+    const sql = SqlUtil.getSql();
+    const [user] = await sql`
+        SELECT * FROM users WHERE id = ${id}
+    `;
+
+    if (!user) {
         cookieStore.delete('token');
         cookieStore.delete('user');
         return NextResponse.json("Non autorisé", { status: 401 });

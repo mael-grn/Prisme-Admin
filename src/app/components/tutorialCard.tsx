@@ -1,10 +1,8 @@
-import AdvancedPopup from "@/app/components/advancedPopup";
 import {useEffect, useState} from "react";
-import {ActionTypeEnum} from "@/app/components/Button";
+import {AnimatePresence, motion} from "framer-motion";
 
-export default function TutorialCard({text, uniqueId}: { text: string, uniqueId: string }) {
+export function TutorialCard({text, uniqueId}: { text: string, uniqueId: string }) {
 
-    const [showPopup, setShowPopup] = useState<boolean>(false);
 
     const [showTutorial, setShowTutorial] = useState<boolean>(false);
 
@@ -15,6 +13,8 @@ export default function TutorialCard({text, uniqueId}: { text: string, uniqueId:
             if (!dismissedTutorialsArray.includes(uniqueId)) {
                 setShowTutorial(true);
             }
+        } else {
+            setShowTutorial(true);
         }
     }, [uniqueId])
 
@@ -27,28 +27,27 @@ export default function TutorialCard({text, uniqueId}: { text: string, uniqueId:
         dismissedTutorialsArray.push(uniqueId)
         localStorage.setItem("dismissedTutorials", JSON.stringify(dismissedTutorialsArray))
         setShowTutorial(false);
-        setShowPopup(false);
-    }
-
-    if (!showTutorial) {
-        return null;
     }
 
     return (
-        <div className={`flex gap-4 items-center w-full p-3 rounded-2xl bg-onBackgroundHover ${!showTutorial && "hidden"}`}>
-            <img src={"/ico/question.svg"} alt={"question"} className={"invert w-8 h-8"}/>
-            <p>{text}</p>
-            <button onClick={() => setShowPopup(true)} className={"min-w-6 w-6 h-6 self-start flex items-center justify-center md:hover:bg-dangerousHover active:bg-dangerousHover active:scale-90 rounded-full"}>
-                <img src={"/ico/close.svg"} alt={"close"} className={"invert "}/>
-            </button>
-            <AdvancedPopup
-                show={showPopup}
-                message={"Avez-vous vraiment lu ces informations ? Celles-ci sont très utiles, et vous n'y aurez plus accès une fois supprimées"}
-                title={"Supprimer les conseils ?"}
-                actions={[
-                    {text: "Valider", iconName: "check", actionType: ActionTypeEnum.dangerous, onClick: dismissTutorial}
-                ]}
-                closePopup={() => setShowPopup(false)}/>
-        </div>
+        <AnimatePresence>
+            {
+                showTutorial &&
+                <motion.div
+                    initial={{opacity: 0, transform: "scale(0)"}}
+                    animate={{opacity: 1, transform: "scale(1)"}}
+                    exit={{opacity: 0, transform: "scale(0)"}}
+                    className={`flex gap-4 items-center w-fit p-3 rounded-2xl bg-onBackgroundHover ${!showTutorial && "hidden"}`}>
+                    <img src={"/ico/question.svg"} alt={"question"} className={"invert w-8 h-8"}/>
+                    <p>{text}</p>
+                    <button onClick={dismissTutorial}
+                            className={"min-w-6 w-6 h-6 self-start flex items-center justify-center md:hover:bg-dangerousHover active:bg-dangerousHover active:scale-90 rounded-full"}>
+                        <img src={"/ico/close.svg"} alt={"close"} className={"invert "}/>
+                    </button>
+                </motion.div>
+            }
+        </AnimatePresence>
+
+
     )
 }

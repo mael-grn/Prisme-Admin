@@ -16,7 +16,7 @@ import ElementService from "@/app/service/elementService";
 import {Element, InsertableElement} from "@/app/models/Element";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
-import TutorialCard from "@/app/components/tutorialCard";
+import {TutorialCard} from "@/app/components/tutorialCard";
 
 export default function SectionVisu() {
 

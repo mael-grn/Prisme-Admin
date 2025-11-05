@@ -32,8 +32,8 @@ export async function POST(request: Request, {params}: { params: Promise<{ pageI
         }
 
         await sql`
-            insert into sections (page_id, section_type, position)
-            values (${pageId}, ${newSection.section_type},
+            insert into sections (title, page_id, section_type, position)
+            values (${newSection.title}, ${pageId}, ${newSection.section_type},
                     COALESCE((select max(position) from sections where page_id = ${pageId}), 0) + 1)
         `;
         return ApiUtil.getSuccessNextResponse(null, true);

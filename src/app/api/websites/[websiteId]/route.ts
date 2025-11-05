@@ -136,6 +136,7 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
 
             arr.push({
                 id: s.id,
+                title: s.title,
                 page_id: s.page_id,
                 position: s.position,
                 section_type: s.section_type,

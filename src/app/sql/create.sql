@@ -40,6 +40,7 @@ create table subcategories(
 
 create table sections(
     id serial primary key,
+    title varchar not null,
     page_id integer references pages(id) ON DELETE CASCADE,
     section_type varchar not null,
     position int not null

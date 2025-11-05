@@ -82,11 +82,6 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                 <div className="flex gap-4 items-center justify-between w-full">
                     <div className="flex gap-2 items-start flex-col justify-center">
                         <div className="flex gap-4 items-center min-w-0">
-                            <img
-                                src={"/img/icon.png"}
-                                alt={"icon"}
-                                className={`${!scrolled ? "w-14 h-14" : "w-0 h-0"} md:block hidden flex-shrink-0 mr-2`}
-                            />
                             <button
                                 className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                                 onClick={() => router.back()}
@@ -103,7 +98,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                                 website &&
                                 <>
                                     <a className={"cursor-pointer hover:underline"}
-                                       href={"/secure/" + websiteId}>{StringUtil.truncateString(website.hero_title, 15)}</a>
+                                       href={"/secure/" + websiteId}>{StringUtil.truncateString(website.website_domain, 20)}</a>
                                 </>
                             }
                             {
@@ -111,7 +106,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                                 <>
                                     <p>{" > "}</p>
                                     <a className={"cursor-pointer hover:underline"}
-                                       href={`/secure/${websiteId}/${pageId}`}>{StringUtil.truncateString(page.title, 15)}</a>
+                                       href={`/secure/${websiteId}/${pageId}`}>{StringUtil.truncateString(page.path, 20)}</a>
                                 </>
                             }
                             {
@@ -119,7 +114,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                                 <>
                                     <p>{" > "}</p>
                                     <a className={"cursor-pointer hover:underline"}
-                                       href={`/secure/${websiteId}/${pageId}/${sectionId}`}>{StringUtil.truncateString(section.section_type, 15)}</a>
+                                       href={`/secure/${websiteId}/${pageId}/${sectionId}`}>{StringUtil.truncateString(section.title, 20)}</a>
                                 </>
                             }
                             {
@@ -127,7 +122,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                                 <>
                                     <p>{" > "}</p>
                                     <a className={"cursor-pointer hover:underline"}
-                                       href={`/secure/${websiteId}/${pageId}/${sectionId}/${elementId}`}>{StringUtil.truncateString(element.content, 15)}</a>
+                                       href={`/secure/${websiteId}/${pageId}/${sectionId}/${elementId}`}>{StringUtil.truncateString(element.content, 20)}</a>
                                 </>
                             }
                         </div>

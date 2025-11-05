@@ -18,7 +18,7 @@ import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
 import {ActionTypeEnum} from "@/app/components/Button";
-import TutorialCard from "@/app/components/tutorialCard";
+import {TutorialCard} from "@/app/components/tutorialCard";
 
 export default function Home() {
 
@@ -101,11 +101,14 @@ export default function Home() {
 
     return (
         <MainPage title={user ? `Bonjour, ${user.first_name}` : "Accueil"}>
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"text-onForegroundHover"}>Gestion de vos sites web</p>
+                <h1>Bienvenue !</h1>
+                <p className={"text-onForegroundHover"}>Vous voyez ici tous vos sites web créés sur notre plateforme.</p>
+            </div>
             <TutorialCard
                 text={`
                     Vous pouvez créer des pages web personnalisées pour présenter vos projets, votre portfolio ou toute autre information que vous souhaitez partager en ligne. Utilisez le bouton "Ajouter une page web" pour commencer à créer votre première page !
-                    
-                    Vous devrez fournir un domaine unique pour chaque page web, qui doit être associé au projet template. Vous pouvez contacter notre support si vous avez besoin d&apos;aide pour configurer votre domaine.
                 `}
                 uniqueId={"welcome-page"}
             />
@@ -115,6 +118,7 @@ export default function Home() {
                 {text: "Ajouter une page web", iconName: "add", onClick: () => setShowPopupCreateWebsite(true), actionType: ActionTypeEnum.safe },
             ]}
             >
+                <TutorialCard text={"Vous voyez-ci vos pages web. Pour en créer une, il faut avoir dans un premier temps créé un nouveau projet template et le lier à un nom de domaine, que vous devrez saisir ici. Si vous ne savez pas faire, demandez à Maël."} uniqueId={"tutorial-create-website"}/>
 
                 <List elements={websites.map((website) => { return {text: `${website.hero_title} - ${website.website_domain}`, onClick: () => router.push("/secure/" + website.id)}})}/>
 

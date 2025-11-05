@@ -25,7 +25,11 @@ import {Subcategory} from "@/app/models/Subcategory";
 import CategoryService from "@/app/service/categoryService";
 import SubcategoryService from "@/app/service/subCategoryService";
 import {AnimatePresence, motion} from "framer-motion";
-import TutorialCard from "@/app/components/tutorialCard";
+import {TutorialCard} from "@/app/components/tutorialCard";
+import {DisplayWebsite} from "@/app/models/DisplayWebsite";
+import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
+import PageService from "@/app/service/pageService";
+import {Page} from "@/app/models/Page";
 
 export default function SectionVisu() {
 
@@ -33,6 +37,9 @@ export default function SectionVisu() {
     const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
     const [elementsLoading, setElementsLoading] = useState(true);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+    const [website, setWebsite] = useState<DisplayWebsite | null>(null);
+    const [page, setPage] = useState<Page | null>(null);
 
     const [section, setSection] = useState<Section | null>(null);
     const [elements, setElements] = useState<Element[] | null>([]);
@@ -47,6 +54,8 @@ export default function SectionVisu() {
     const [showPopupNewCategory, setShowPopupNewCategory] = useState<boolean>(false);
     const [showPopupNewSubcategory, setShowPopupNewSubcategory] = useState<boolean>(false);
     const [showPopupAddSubcategoryToSection, setShowPopupAddSubcategoryToSection] = useState<boolean>(false);
+    const [showPopupDeleteElement, setShowPopupDeleteElement] = useState<boolean>(false);
+    const [showPopupEditElementContent, setShowPopupEditElementContent] = useState(false);
 
     const [modifyElementOrder, setModifyElementOrder] = useState<boolean>(false);
     const [modifiedElements, setModifiedElements] = useState<number[]>([]);
@@ -56,6 +65,13 @@ export default function SectionVisu() {
 
     const [newElementType, setNewElementType] = useState<string>('');
 
+    const [elementToDelete, setElementToDelete] = useState<number | null>(null);
+
+    const [elementToEdit, setElementToEdit] = useState<number | null>(null);
+    const [editedElementContent, setEditedElementContent] = useState<string>('');
+    const [editedElementFile, setEditedElementFile] = useState<File | null>(null);
+
+    const [newSectionTitle, setNewSectionTitle] = useState<string>('');
     const [newSectionType, setNewSectionType] = useState<string>('');
 
     const [allRecursiveCategories, setAllRecursiveCategories] = useState<RecursiveCategory[]>([]);
@@ -72,10 +88,15 @@ export default function SectionVisu() {
 
     useEffect(() => {
         async function loadData() {
+            setLoadingMessage("chargement du site...")
+            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)))
+            setLoadingMessage("chargement de la page...")
+            setPage(await PageService.getPageById(parseInt(pageId as string)))
             setLoadingMessage("Chargement de la section...")
             const tmpSection: Section = await SectionService.getSectionById(parseInt(sectionId as string))
             setSection(tmpSection)
             setNewSectionType(tmpSection.section_type);
+            setNewSectionTitle(tmpSection.title);
             setNewElementType(ElementService.getElementTypes()[0])
         }
 
@@ -113,7 +134,7 @@ export default function SectionVisu() {
             setCategoriesLoading(false);
         })
 
-    }, [sectionId]);
+    }, [websiteId, pageId, sectionId]);
 
     function deleteSectionAction() {
         setLoading(true);
@@ -135,6 +156,7 @@ export default function SectionVisu() {
         setShowPopupEditSectionType(false);
         if (!section) return;
         const insertableSection: InsertableSection = {
+            title: newSectionTitle,
             page_id: section.page_id,
             position: section.position,
             section_type: newSectionType
@@ -401,12 +423,88 @@ export default function SectionVisu() {
         }
     }
 
+    async function deleteElementAction() {
+        setShowPopupDeleteElement(false)
+        if (!elementToDelete) return;
+        setElementsLoading(true);
+        const element = elements?.find((el) => el.id === elementToDelete);
+        if (!element) return;
+        ElementService.deleteElement(element).then(async () => {
+            setElementToDelete(null)
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+        }).catch((e) => {
+            setPopupTitle("Une erreur s'est produite lors de la suppression");
+            setPopupText(e);
+            setShowPopup(true);
+        }).finally(() => {
+            setElementsLoading(false);
+        })
+    }
+
+    async function updateElementAction() {
+        setShowPopupEditElementContent(false);
+        if (!elementToEdit) return;
+        const element = elements?.find((el) => el.id === elementToEdit);
+        if (!element) return;
+        const insertableElement: InsertableElement = {
+            section_id: element.section_id,
+            element_type: element.element_type,
+            content: editedElementContent,
+
+        }
+        const validation = FieldsUtil.checkElement(insertableElement)
+        if (!validation.valid) {
+            setPopupTitle("Il y a une erreur dans les données saisies");
+            setPopupText(validation.errors.join(', '));
+            setShowPopup(true);
+            return;
+        }
+
+        const updatedElement: Element = {
+            ...insertableElement,
+            id: element.id,
+            position: element.position
+        }
+
+        if (element.element_type === 'image') {
+            if (editedElementFile) {
+                updatedElement.content = await ImageUtil.uploadImage(editedElementFile)
+            } else {
+                setPopupTitle("Données invalides");
+                setPopupText("Vous avez selectionné le type 'image' mais n'avez importé aucune image.");
+                setShowPopup(true);
+                return;
+            }
+        }
+
+        setElementsLoading(true);
+        ElementService.updateElement(updatedElement).then(async () => {
+            setElementToEdit(null)
+            setEditedElementContent("")
+            setEditedElementFile(null)
+            setElements(await ElementService.getElementsFromSectionId(parseInt(sectionId as string)));
+        }).catch((error) => {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(error);
+            setShowPopup(true);
+        }).finally(() => {
+            setElementsLoading(false);
+        })
+    }
+
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(section?.section_type || "", 30)}>
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(website?.hero_title || "", 30)}>
+
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"text-onForegroundHover"}>Gestion de votre section</p>
+                <h1>{section?.title}</h1>
+                <p className={"text-onForegroundHover"}>Vous gérez ici la section de type {section?.section_type} numéro {section?.position} de la page {page?.path}, sur votre site {website?.website_domain}.</p>
+            </div>
+
             <TutorialCard
                 text={"Vous pouvez gérer les éléments de votre section ici. Ajoutez, réorganisez ou supprimez des éléments pour personnaliser le contenu de votre page. Vous pouvez également gérer les catégories associées à cette section. Les catégories sont utiles pour trier et organiser le contenu de votre site web."}
                 uniqueId={"section-page"}/>
-            <SectionElem loading={elementsLoading} title={"Elements de votre section"} width={SectionWidth.FULL}
+            <SectionElem loading={elementsLoading} title={"Contenu de votre section"} width={SectionWidth.FULL}
                          actions={modifyElementOrder ? [
                              {
                                  text: "Annuler",
@@ -434,14 +532,33 @@ export default function SectionVisu() {
                              }
                          ]}>
 
+                <TutorialCard
+                    text={"Vous pouvez ici gérer les différents elements contenus dans votre section."}
+                    uniqueId={"elements-in-section-tutorial"}
+                />
+
                 <List elements={elements?.map((elem) => {
                     return {
-                        text: StringUtil.truncateString(elem.content, 50),
-                        onClick: () => router.push("/secure/" + websiteId + '/' + pageId + '/' + sectionId + '/' + elem.id),
+                        text: elem.element_type === "image" ? elem.content : StringUtil.truncateString(elem.content, 50),
+                        isImage: elem.element_type === "image",
                         actions: modifyElementOrder ? [{
                             iconName: "up",
                             onClick: () => moveElementUp(elem)
-                        }, {iconName: "down", onClick: () => moveElementDown(elem)}] : undefined
+                        }, {iconName: "down", onClick: () => moveElementDown(elem)}] : [
+                            {iconName: "edit", type: ActionTypeEnum.safe, onClick: () => {
+                                setElementToEdit(elem.id);
+                                console.log(elem.content)
+                                if (elem.element_type !== "image") {
+                                    console.log("test")
+                                    setEditedElementContent(elem.content);
+                                }
+                                setShowPopupEditElementContent(true);
+                            }},
+                            {iconName: "trash", type: ActionTypeEnum.dangerous, onClick: () => {
+                                    setElementToDelete(elem.id);
+                                    setShowPopupDeleteElement(true);
+                                }}
+                        ]
                     }
                 }) ?? []}/>
 
@@ -539,13 +656,14 @@ export default function SectionVisu() {
                 <AdvancedPopup
                     icon={'edit'}
                     show={showPopupEditSectionType}
-                    message={"Selectionnez le nouveau type de la section :"}
+                    message={"Saisissez le nouveau titre et type de la section :"}
                     title={'Modifier le type'}
                     actions={[
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
                     closePopup={() => setShowPopupEditSectionType(false)}
                 >
+                    <Input placeholder={"Titre"} value={newSectionTitle} setValueAction={setNewSectionTitle} />
                     <DropDown items={SectionService.getSectionTypes()} selectedItem={newSectionType}
                               setSelectedItemAction={setNewSectionType}/>
                 </AdvancedPopup>
@@ -708,6 +826,48 @@ export default function SectionVisu() {
                                         <p>Type d&apos;élément inconnu.</p>
                     }
 
+                </AdvancedPopup>
+            </Form>
+
+            <AdvancedPopup
+                actions={[{
+                    iconName: "trash",
+                    text: "Supprimer",
+                    actionType: ActionTypeEnum.dangerous,
+                    onClick: deleteElementAction
+                }]}
+                icon={"warning"}
+                show={showPopupDeleteElement}
+                message={"Cette action est irreversible. Cet élément sera définitivement supprimé."}
+                title={`Voulez-vous vraiment supprimer cet element ?`}
+                closePopup={() => setShowPopupDeleteElement(false)}
+            />
+
+            <Form onSubmitAction={updateElementAction}>
+                <AdvancedPopup
+                    icon={'edit'}
+                    show={showPopupEditElementContent}
+                    message={"Entrez le nouveau contenu de l'élément :"}
+                    title={'Modifier le contenu'}
+                    actions={[
+                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    ]}
+                    closePopup={() => setShowPopupEditElementContent(false)}
+                >
+                    {
+                        elements?.find((el) => el.id === elementToEdit)?.element_type === "titre" ?
+                            <Input placeholder={"Titre"} value={editedElementContent}
+                                   setValueAction={setEditedElementContent}/> :
+                            elements?.find((el) => el.id === elementToEdit)?.element_type === "texte" ?
+                                <Textarea value={editedElementContent} onChangeAction={setEditedElementContent}/> :
+                                elements?.find((el) => el.id === elementToEdit)?.element_type === "lien" ?
+                                    <Input validatorAction={StringUtil.domainValidator} iconName={"globe"}
+                                           placeholder={"Lien"} value={editedElementContent}
+                                           setValueAction={setEditedElementContent}/> :
+                                    elements?.find((el) => el.id === elementToEdit)?.element_type === "image" ?
+                                        <ImageInput setFileAction={setEditedElementFile}/> :
+                                        <p>Type d&apos;élément inconnu.</p>
+                    }
                 </AdvancedPopup>
             </Form>
 

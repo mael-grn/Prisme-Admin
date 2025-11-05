@@ -19,7 +19,7 @@ import {ActionTypeEnum} from "@/app/components/Button";
 import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
 import {ImageUtil} from "@/app/utils/ImageUtil";
-import TutorialCard from "@/app/components/tutorialCard";
+import {TutorialCard} from "@/app/components/tutorialCard";
 
 export default function Pages() {
 
