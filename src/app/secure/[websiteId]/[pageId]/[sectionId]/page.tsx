@@ -25,6 +25,7 @@ import {Subcategory} from "@/app/models/Subcategory";
 import CategoryService from "@/app/service/categoryService";
 import SubcategoryService from "@/app/service/subCategoryService";
 import {AnimatePresence, motion} from "framer-motion";
+import TutorialCard from "@/app/components/tutorialCard";
 
 export default function SectionVisu() {
 
@@ -402,6 +403,9 @@ export default function SectionVisu() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(section?.section_type || "", 30)}>
+            <TutorialCard
+                text={"Vous pouvez gérer les éléments de votre section ici. Ajoutez, réorganisez ou supprimez des éléments pour personnaliser le contenu de votre page. Vous pouvez également gérer les catégories associées à cette section. Les catégories sont utiles pour trier et organiser le contenu de votre site web."}
+                uniqueId={"section-page"}/>
             <SectionElem loading={elementsLoading} title={"Elements de votre section"} width={SectionWidth.FULL}
                          actions={modifyElementOrder ? [
                              {

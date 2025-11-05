@@ -98,7 +98,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                         </div>
 
                         <div
-                            className={`flex gap-1 items-center text-onBackgroundHover ${scrolled ? "text-[0]" : "text-[0] md:text-inherit"} italic justify-start`}>
+                            className={`flex gap-1 items-center text-onBackgroundHover ${scrolled ? "text-[0]" : "text-[0] md:text-[15px]"} italic justify-start`}>
                             {
                                 website &&
                                 <>

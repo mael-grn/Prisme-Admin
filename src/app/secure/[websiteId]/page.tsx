@@ -19,6 +19,7 @@ import {ActionTypeEnum} from "@/app/components/Button";
 import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
 import {ImageUtil} from "@/app/utils/ImageUtil";
+import TutorialCard from "@/app/components/tutorialCard";
 
 export default function Pages() {
 
@@ -283,6 +284,9 @@ export default function Pages() {
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart}
                   title={StringUtil.truncateString(website?.hero_title || "", 30)}>
+            <TutorialCard
+                text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
+                uniqueId={"gestion-website"}/>
             <SectionElem
                 width={SectionWidth.FULL}
                 loading={pagesLoading}

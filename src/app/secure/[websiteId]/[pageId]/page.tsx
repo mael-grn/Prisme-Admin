@@ -19,6 +19,7 @@ import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
 import SvgFromString from "@/app/components/SvgFromString";
 import DropDown from "@/app/components/DropDown";
+import TutorialCard from "@/app/components/tutorialCard";
 
 export default function PageVisu() {
 
@@ -264,6 +265,10 @@ export default function PageVisu() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(page.title || "", 30)}>
+            <TutorialCard
+                text={"Sur cette page, vous pouvez gérer les différentes sections de votre page, ainsi que ses informations principales comme le titre, le chemin d'accès, la description ou l'icône. N'hésitez pas à ajouter, modifier ou supprimer des sections pour personnaliser le contenu de votre page selon vos besoins."}
+                uniqueId={"page-visualization-tutorial"}
+            />
             <SectionElem loading={sectionsLoading} title={"Sections de votre page"} width={SectionWidth.FULL}
                          actions={modifySectionOrder ? [
                              {

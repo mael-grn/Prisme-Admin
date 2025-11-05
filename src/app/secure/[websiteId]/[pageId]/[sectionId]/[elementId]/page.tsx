@@ -16,6 +16,7 @@ import ElementService from "@/app/service/elementService";
 import {Element, InsertableElement} from "@/app/models/Element";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
+import TutorialCard from "@/app/components/tutorialCard";
 
 export default function SectionVisu() {
 
@@ -125,6 +126,10 @@ export default function SectionVisu() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(element?.content || "", 30)}>
+            <TutorialCard
+                text={"Vous pouvez modifier les informations de cet élément ici. Si vous souhaitez modifier son type, vous devez supprimer cet élément et en créer un nouveau."}
+                uniqueId={"element-visualization-tutorial"}
+                />
 
 
 
