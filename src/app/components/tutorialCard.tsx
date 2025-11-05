@@ -6,14 +6,14 @@ export default function TutorialCard({text, uniqueId}: { text: string, uniqueId:
 
     const [showPopup, setShowPopup] = useState<boolean>(false);
 
-    const [showTutorial, setShowTutorial] = useState<boolean>(true);
+    const [showTutorial, setShowTutorial] = useState<boolean>(false);
 
     useEffect(() => {
         const dismissedTutorials = localStorage.getItem("dismissedTutorials");
         if (dismissedTutorials) {
             const dismissedTutorialsArray = JSON.parse(dismissedTutorials) as string[];
-            if (dismissedTutorialsArray.includes(uniqueId)) {
-                setShowTutorial(false);
+            if (!dismissedTutorialsArray.includes(uniqueId)) {
+                setShowTutorial(true);
             }
         }
     }, [uniqueId])
