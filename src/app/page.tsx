@@ -50,7 +50,10 @@ export default function Home() {
         })
     }
   return (
-      <div className={"flex items-center justify-center min-h-screen"}>
+      <div className={"flex items-center gap-2 flex-col justify-center min-h-screen"}>
+
+          <img src={"/img/icon.png"} alt={"icon"} className={"h-36 w-fit"}/>
+          <h1 className={"mb-10"}>Prisme</h1>
           <Form onSubmitAction={onClickLogin}>
               <SectionElem title="Connexion" actions={[
                   {text: "Pas encore de compte ?", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },

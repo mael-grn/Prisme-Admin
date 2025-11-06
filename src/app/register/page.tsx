@@ -7,7 +7,7 @@ import Input from "@/app/components/Input";
 import SectionElem from "@/app/components/sectionElem";
 import UserService from "@/app/service/UserService";
 import {InsertableUser} from "@/app/models/User";
-import {ButtonProps} from "@/app/components/Button";
+import {ActionTypeEnum, ButtonProps} from "@/app/components/Button";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Form from "@/app/components/form";
 import {StringUtil} from "@/app/utils/stringUtil";
@@ -37,7 +37,7 @@ export default function Home() {
             setPopupTitle("Inscription réussie");
             setPopupText("Votre compte a bien été créé. Vous pouvez maintenant vous connecter.");
             setPopupIconName("check");
-            setPopupActions([{text: "Connexion", iconName: "redirect", onClick: () => router.push("/")}]);
+            setPopupActions([{text: "Connexion", iconName: "redirect", actionType: ActionTypeEnum.safe, onClick: () => router.push("/")}]);
             setShowPopup(true);
 
         }).catch((errorMsg) => {
