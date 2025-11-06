@@ -493,7 +493,7 @@ export default function SectionVisu() {
     }
 
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(website?.hero_title || "", 30)}>
+        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(website?.website_domain || "", 30)}>
 
             <div className={"w-full flex flex-col gap-1"}>
                 <p className={"text-onForegroundHover"}>Gestion de votre section</p>

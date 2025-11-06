@@ -76,7 +76,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
     const router = useRouter();
 
     return (
-        <main className={`flex items-start justify-start flex-col gap-6 ${title ? "pb-6 pl-6 pr-6" : "p-6"} mb-20`}>
+        <main className={`flex items-start justify-start flex-col gap-6 ${title ? "md:pb-6 pb-3 md:pl-6 pl-3 md:pr-6 pr-3" : "md:p-6 p-3"} mb-20`}>
             {title && <div
                 className={`flex flex-col ${scrolled ? "gap-4 pt-4" : "gap-4 pt-4 md:gap-6 md:pt-6"} sticky w-full top-0 left-0 z-10 bg-backgroundOpacity backdrop-blur`}>
                 <div className="flex gap-4 items-center justify-between w-full">

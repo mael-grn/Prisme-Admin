@@ -283,7 +283,7 @@ export default function Pages() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart}
-                  title={StringUtil.truncateString(website?.hero_title || "", 30)}>
+                  title={StringUtil.truncateString(website?.website_domain || "", 30)}>
             <TutorialCard
                 text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
                 uniqueId={"gestion-website"}/>

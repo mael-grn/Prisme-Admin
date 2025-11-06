@@ -36,7 +36,7 @@ export default function SectionElem({title, actions, loading=false, children, we
 
     return (
         <div style={{width: isMobile ? SectionWidth.FULL : width, maxWidth: isMobile ? SectionWidth.FULL : width, minWidth: isMobile ? SectionWidth.FULL : width, flex: weight}} className={` max-h-full min-h-full flex flex-col`}>
-            <div className={`w-full flex-1 relative p-6 bg-onBackground border-[1px] ${actionType === ActionTypeEnum.safe ? "border-safeHover" : actionType === ActionTypeEnum.dangerous ? "border-dangerousHover" : "border-onBackgroundHover"}  ${actions ? "rounded-t-xl" : "rounded-xl"} flex gap-3 flex-col`}>
+            <div className={`w-full flex-1 relative p-3 md:p-6 bg-onBackground border-[1px] ${actionType === ActionTypeEnum.safe ? "border-safeHover" : actionType === ActionTypeEnum.dangerous ? "border-dangerousHover" : "border-onBackgroundHover"}  ${actions ? "rounded-t-xl" : "rounded-xl"} flex gap-3 flex-col`}>
                 {title && <h2 className="text-2xl font-bold mb-4">{title}</h2>}
                 <AnimatePresence>
                     {
