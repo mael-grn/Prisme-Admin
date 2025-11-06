@@ -98,7 +98,7 @@ export default function MainPage({children, title, pageAlignment = PageAlignment
                                 website &&
                                 <>
                                     <a className={"cursor-pointer hover:underline"}
-                                       href={"/secure/" + websiteId}>{StringUtil.truncateString(website.website_domain, 20)}</a>
+                                       href={"/secure/" + websiteId}>{StringUtil.truncateString(website.title, 20)}</a>
                                 </>
                             }
                             {

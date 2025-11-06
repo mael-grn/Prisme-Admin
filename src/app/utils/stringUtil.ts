@@ -66,6 +66,13 @@ export class StringUtil {
         return null;
     }
 
+    static emptyableDomainValidator(domain: string): string | null {
+        if (domain === "") return null;
+        const domainRegex = /^(?!-)(?:[a-zA-Z0-9-]{1,63}\.)+[a-zA-Z]{2,63}$/;
+        if (!domainRegex.test(domain)) return "Le domaine n'est pas valide.";
+        return null;
+    }
+
     static truncateString(str: string, num: number): string {
         if (str.length <= num) {
             return str;

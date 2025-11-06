@@ -82,14 +82,16 @@ export class FieldsUtil {
             errors.push("ownerId est requis et doit être un entier positif (référence utilisateurs)");
         }
 
-        if (!this.isNonEmptyString(w.hero_title)) {
-            errors.push("le site doit avoir un titre");
+        if (!this.isNonEmptyString(w.title)) {
+            errors.push("le site doit avoir un nom");
         }
 
-        if (!this.isNonEmptyString(w.website_domain)) {
-            errors.push("domain est requis et doit être une chaîne non vide");
-        } else {
-            const domain = w.website_domain;
+        if (!this.isNonEmptyString(w.hero_title)) {
+            errors.push("le site doit avoir un titre sur la page d'accueil");
+        }
+
+        if (this.isNonEmptyString(w.website_domain)) {
+            const domain = w.website_domain!;
             if (!this.isValidDomain(domain) && !this.isValidDomain(domain)) {
                 errors.push("domain doit être un nom de domaine valide (ex: example.com) ou une URL");
             }

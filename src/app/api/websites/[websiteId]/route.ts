@@ -42,6 +42,10 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
             return ApiUtil.getErrorNextResponse("Website not found", undefined, 404);
         }
 
+        if (res.website_domain && (res.website_domain === "" || res.website_domain === "null" || res.website_domain === null)) {
+            res.website_domain = undefined;
+        }
+
         if (!ApiUtil.isRecursiveRequest(request)) {
             return ApiUtil.getSuccessNextResponse<DisplayWebsite>(res as DisplayWebsite);
         }
@@ -161,6 +165,7 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
         const recursiveWebsite: RecursiveWebsite = {
             id: res.id,
             owner_id: res.owner_id,
+            title: res.title,
             website_domain: res.website_domain,
             auth_token: res.auth_token,
             hero_image_url: res.hero_image_url,
@@ -250,7 +255,8 @@ export async function PUT(request: Request, {params}: { params: Promise<{ websit
             UPDATE display_websites
             SET website_domain = ${insertableWebsite.website_domain},
                 hero_image_url = ${insertableWebsite.hero_image_url},
-                hero_title     = ${insertableWebsite.hero_title}
+                hero_title     = ${insertableWebsite.hero_title},
+                title     = ${insertableWebsite.title}
             WHERE id = ${website.id}
         `;
 

@@ -34,6 +34,8 @@ export default function Pages() {
 
     const [showPopupDelete, setShowPopupDelete] = useState<boolean>(false);
 
+    const [showPopupEditTitle, setShowPopupEditTitle] = useState<boolean>(false);
+
     const [showPopupEditDomain, setShowPopupEditDomain] = useState<boolean>(false);
 
     const [showPopupEditHero, setShowPopupEditHero] = useState<boolean>(false);
@@ -46,8 +48,9 @@ export default function Pages() {
     const [newPagePath, setNewPagePath] = useState<string>('');
     const [newPageIcon, setNewPageIcon] = useState<string>('');
     const [newPageDescription, setNewPageDescription] = useState<string>('');
+    const [newWebsiteTitle, setNewWebsiteTitle] = useState<string>('');
 
-    const [newWebsiteDomain, setNewWebsiteDomain] = useState<string>('');
+    const [newWebsiteDomain, setNewWebsiteDomain] = useState<string | null>(null);
 
     const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
     const [newWebsiteHeroFile, setNewWebsiteHeroFile] = useState<File | null>(null);
@@ -63,7 +66,8 @@ export default function Pages() {
         DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string))
             .then((website) => {
                 setWebsite(website)
-                setNewWebsiteDomain(website.website_domain)
+                setNewWebsiteDomain(website.website_domain || null)
+                setNewWebsiteTitle(website.title)
                 setNewWebsiteHeroTitle(website.hero_title)
             }).catch((e) => {
                 setPopupTitle("Une erreur s'est produite");
@@ -133,9 +137,28 @@ export default function Pages() {
 
     }
 
+    const editTitleAction = async () => {
+        setShowPopupEditTitle(false);
+        if (!newWebsiteTitle || newWebsiteTitle.length === 0) return;
+        setLoadingMessage("Modification du titre...");
+        setLoading(true);
+
+        try {
+            const newWebsite: DisplayWebsite = {...website!, title: newWebsiteTitle};
+            await DisplayWebsiteService.updateWebsite(newWebsite)
+            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
+        } catch (error) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(error));
+            setShowPopup(true);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     const editDomainAction = async () => {
         setShowPopupEditDomain(false);
-        if (StringUtil.domainValidator(newWebsiteDomain)) {
+        if (newWebsiteDomain&&StringUtil.domainValidator(newWebsiteDomain)) {
             setShowPopup(true);
             setPopupTitle("Domaine invalide");
             setPopupText("Le domaine saisi n'est pas valide.");
@@ -145,7 +168,7 @@ export default function Pages() {
         setLoading(true);
 
         try {
-            const newWebsite: DisplayWebsite = {...website!, website_domain: newWebsiteDomain};
+            const newWebsite: DisplayWebsite = {...website!, website_domain: newWebsiteDomain || undefined};
             await DisplayWebsiteService.updateWebsite(newWebsite)
             setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
         } catch (error) {
@@ -283,7 +306,11 @@ export default function Pages() {
 
     return (
         <MainPage pageAlignment={PageAlignmentEnum.tileStart}
-                  title={StringUtil.truncateString(website?.website_domain || "", 30)}>
+                  title={StringUtil.truncateString(website?.title || "", 30)}>
+            <div className={"w-full flex flex-col gap-1"}>
+                <p className={"text-onForegroundHover"}>Gestion de votre site</p>
+                <h1>{website?.title}</h1>
+            </div>
             <TutorialCard
                 text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
                 uniqueId={"gestion-website"}/>
@@ -331,9 +358,21 @@ export default function Pages() {
 
             </SectionElem>
 
+            <SectionElem title={"Titre"}
+                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+
+                <p>{website?.title}</p>
+            </SectionElem>
+
             <SectionElem title={"Domaine"}
                          actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
-                <p>{website?.website_domain}</p>
+
+                {
+                    website?.website_domain ?
+                        <p>{website?.website_domain}</p>
+                        :
+                        <p>Vous n&apos;avez pas spécifié de domaine personnalisé pour votre site</p>
+                }
             </SectionElem>
 
             <SectionElem title={"Contenu de la page d'accueil"}
@@ -399,6 +438,21 @@ export default function Pages() {
                 </AdvancedPopup>
             </Form>
 
+            <Form onSubmitAction={editTitleAction}>
+                <AdvancedPopup icon={"edit"} show={showPopupEditTitle} title={"Modifier le nom du site"}
+                               message={"Saisissez le nouveau nom de votre site ci-dessous :"} actions={[{
+                    text: "Valider",
+                    isForm: true,
+                    iconName: "check",
+                    actionType: ActionTypeEnum.safe
+                }]} closePopup={() => setShowPopupEditTitle(false)}>
+
+                    <Input
+                           placeholder={"Nouveau titre"} value={newWebsiteTitle}
+                           setValueAction={setNewWebsiteTitle}/>
+                </AdvancedPopup>
+            </Form>
+
             <Form onSubmitAction={editDomainAction}>
                 <AdvancedPopup icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"}
                                message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{
@@ -407,9 +461,23 @@ export default function Pages() {
                     iconName: "check",
                     actionType: ActionTypeEnum.safe
                 }]} closePopup={() => setShowPopupEditDomain(false)}>
-                    <Input iconName={"globe"} validatorAction={StringUtil.domainValidator}
-                           placeholder={"Nouveau domaine"} value={newWebsiteDomain}
+
+                    <Input iconName={"globe"} validatorAction={StringUtil.emptyableDomainValidator}
+                           placeholder={"Nouveau domaine"} value={newWebsiteDomain || ""}
                            setValueAction={setNewWebsiteDomain}/>
+                    {
+                        website?.website_domain ?
+                            <div className={"bg-onBackgroundHover rounded-xl p-3 flex gap-2 items-center"}>
+                                <img src={"/ico/info.svg"} alt={'info'} className={"invert w-12 h-fit"}/>
+                                <p>Vous pouvez supprimer le domaine, Votre site sera alors hébergé sur la plateforme Prisme.</p>
+                            </div> :
+                            <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
+                                <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
+                                <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
+                                    faites, car celui-ci risque d&apos;être inaccessible.</p>
+                            </div>
+                    }
+
                 </AdvancedPopup>
             </Form>
 

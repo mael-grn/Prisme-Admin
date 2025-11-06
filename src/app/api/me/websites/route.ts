@@ -22,12 +22,22 @@ export async function POST(request: Request) {
 
         // Insertion en base de données
         const sql = SqlUtil.getSql()
-        await sql`
-            INSERT INTO display_websites (owner_id, website_domain, hero_image_url, hero_title)
-            VALUES (${user.id}, ${insertableWebsite.website_domain},
+        if (insertableWebsite.website_domain) {
+            await sql`
+            INSERT INTO display_websites (owner_id, title, website_domain, hero_image_url, hero_title)
+            VALUES (${user.id}, ${insertableWebsite.title}, ${insertableWebsite.website_domain},
                     ${insertableWebsite.hero_image_url},
                     ${insertableWebsite.hero_title})
         `
+        } else {
+            await sql`
+            INSERT INTO display_websites (owner_id, title, hero_image_url, hero_title)
+            VALUES (${user.id}, ${insertableWebsite.title},
+                    ${insertableWebsite.hero_image_url},
+                    ${insertableWebsite.hero_title})
+        `
+        }
+
 
         // Retour de la nouvelle ressource avec le token en clair, disponible uniquement une fois
         return ApiUtil.getSuccessNextResponse();
@@ -46,7 +56,18 @@ export async function GET() {
             FROM display_websites
             WHERE owner_id = ${user.id}
         `;
-        return ApiUtil.getSuccessNextResponse<DisplayWebsite[]>(res as DisplayWebsite[]);
+
+        const modifiedList: DisplayWebsite[] = [];
+        for (const website of res) {
+            const modifiedWebsite: DisplayWebsite = {
+                ...website as DisplayWebsite,
+            }
+            if (modifiedWebsite.website_domain && (modifiedWebsite.website_domain === "" || modifiedWebsite.website_domain === "null" || modifiedWebsite.website_domain === null)) {
+                modifiedWebsite.website_domain = undefined;
+            }
+            modifiedList.push(modifiedWebsite)
+        }
+        return ApiUtil.getSuccessNextResponse<DisplayWebsite[]>(modifiedList);
     } catch (error) {
         return ApiUtil.handleNextErrors(error as Error);
     }

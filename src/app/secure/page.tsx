@@ -19,6 +19,7 @@ import {ImageUtil} from "@/app/utils/ImageUtil";
 import ImageInput from "@/app/components/imageInput";
 import {ActionTypeEnum} from "@/app/components/Button";
 import {TutorialCard} from "@/app/components/tutorialCard";
+import Toggle from "@/app/components/toggle";
 
 export default function Home() {
 
@@ -32,6 +33,8 @@ export default function Home() {
     const [popupTitle, setPopupTitle] = useState<string>('');
 
     const [showPopupCreateWebsite, setShowPopupCreateWebsite] = useState<boolean>(false);
+    const [websiteTitle, setWebsiteTitle] = useState<string>('');
+    const [usingCustomWebsiteDomain, setUsingCustomWebsiteDomain] = useState<boolean>(false);
     const [newWebsiteDomain, setNewWebsiteDomain] = useState<string>('');
     const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
     const [newSelectedFileHeroImage, setNewSelectedFileHeroImage] = useState<File | null>(null);
@@ -58,14 +61,14 @@ export default function Home() {
     const router = useRouter();
 
 
-
     const createWebsite = async () => {
 
         setShowPopupCreateWebsite(false);
 
-        const displayWebsite : InsertableDisplayWebsite = {
+        const displayWebsite: InsertableDisplayWebsite = {
             owner_id: user!.id,
-            website_domain: newWebsiteDomain,
+            title: websiteTitle,
+            website_domain: usingCustomWebsiteDomain ? newWebsiteDomain : undefined,
             hero_title: newWebsiteHeroTitle,
         };
 
@@ -80,7 +83,7 @@ export default function Home() {
         setLoadingMessage("Création de la page web...");
         if (newSelectedFileHeroImage) {
             setLoadingMessage("Envoie de l'image...");
-            displayWebsite.hero_image_url =await ImageUtil.uploadImage(newSelectedFileHeroImage) || undefined;
+            displayWebsite.hero_image_url = await ImageUtil.uploadImage(newSelectedFileHeroImage) || undefined;
         }
 
         setLoadingMessage("Création de la page web...");
@@ -104,27 +107,46 @@ export default function Home() {
             <div className={"w-full flex flex-col gap-1"}>
                 <p className={"text-onForegroundHover"}>Gestion de vos sites web</p>
                 <h1>Bienvenue !</h1>
-                <p className={"text-onForegroundHover"}>Vous voyez ici tous vos sites web créés sur notre plateforme.</p>
+                <p className={"text-onForegroundHover"}>Vous voyez ici tous vos sites web créés sur notre
+                    plateforme.</p>
             </div>
             <TutorialCard
                 text={`
-                    Vous pouvez créer des pages web personnalisées pour présenter vos projets, votre portfolio ou toute autre information que vous souhaitez partager en ligne. Utilisez le bouton "Ajouter une page web" pour commencer à créer votre première page !
+                    Vous pouvez créer des sites internet personnalisées pour présenter vos projets, votre portfolio ou toute autre information que vous souhaitez partager en ligne. Utilisez le bouton "Ajouter une page web" pour commencer à créer votre première page !
                 `}
                 uniqueId={"welcome-page"}
             />
-            <SectionElem title={"Vos pages web"}
+            <SectionElem title={"Vos sites internet"}
                          loading={websiteLoading}
-            actions={[
-                {text: "Ajouter une page web", iconName: "add", onClick: () => setShowPopupCreateWebsite(true), actionType: ActionTypeEnum.safe },
-            ]}
-            >
-                <TutorialCard text={"Vous voyez-ci vos pages web. Pour en créer une, il faut avoir dans un premier temps créé un nouveau projet template et le lier à un nom de domaine, que vous devrez saisir ici. Si vous ne savez pas faire, demandez à Maël."} uniqueId={"tutorial-create-website"}/>
 
-                <List elements={websites.map((website) => { return {text: `${website.hero_title} - ${website.website_domain}`, onClick: () => router.push("/secure/" + website.id)}})}/>
+                         actions={[
+                             {
+                                 text: "Créer un site internet",
+                                 iconName: "add",
+                                 onClick: () => setShowPopupCreateWebsite(true),
+                                 actionType: ActionTypeEnum.safe
+                             },
+                         ]}
+            >
+
+                <List elements={websites.map((website) => {
+                    return {
+                        actions: [{
+                            iconName: "redirect", type: ActionTypeEnum.safe, onClick: () => {
+                                if (website.website_domain) {
+                                    router.push("https://" + website.website_domain)
+                                } else {
+                                    router.push("https://prisme.maelg.fr/" + website.id)
+                                }
+                            }
+                        }], text: `${website.title}`, onClick: () => router.push("/secure/" + website.id)
+                    }
+                })}/>
 
             </SectionElem>
             <LoadingPopup show={loading} message={loadingMessage}/>
-            <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle} message={popupText}/>
+            <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle}
+                           message={popupText}/>
 
             <Form onSubmitAction={createWebsite}>
                 <AdvancedPopup
@@ -137,12 +159,34 @@ export default function Home() {
                     ]}
                 >
 
-                    <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain} setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.domainValidator}/>
+                    <Input placeholder={"Nom du site"} value={websiteTitle} setValueAction={setWebsiteTitle}/>
 
-                    <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
+                    <div className={"flex gap-2 items-center"}>
+                        <p>Utiliser un domaine personalisé</p>
+                        <Toggle checked={usingCustomWebsiteDomain} onChangeAction={setUsingCustomWebsiteDomain}/>
+                    </div>
 
-                    <p>Vous pouvez déposer l&apos;image de la page d&apos;accueil du site :</p>
-                    <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
+
+                    {
+                        usingCustomWebsiteDomain && <>
+                            <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain}
+                                   setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.domainValidator}/>
+                            <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
+                                <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
+                                <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
+                                    faites, car celui-ci risque d&apos;être inaccessible.</p>
+                            </div>
+                        </>
+                    }
+
+                    <div
+                        className={"flex gap-4 flex-col justify-center w-full p-3 rounded-xl border-2 border-onBackgroundHover items-center"}>
+                        <h3>Contenu de la page d&apos;accueil</h3>
+                        <Input placeholder={"Titre"} value={newWebsiteHeroTitle}
+                               setValueAction={setNewWebsiteHeroTitle}/>
+                        <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
+                    </div>
+
 
                 </AdvancedPopup>
             </Form>
