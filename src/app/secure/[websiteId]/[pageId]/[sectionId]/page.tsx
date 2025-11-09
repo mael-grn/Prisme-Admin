@@ -5,7 +5,7 @@ import {useEffect, useState} from "react";
 import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
 import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
 import List from "@/app/components/list";
-import Button, {ActionTypeEnum} from "@/app/components/Button";
+import {ActionTypeEnum} from "@/app/components/Button";
 import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Input from "@/app/components/Input";
@@ -24,12 +24,12 @@ import {RecursiveCategory} from "@/app/models/Category";
 import {Subcategory} from "@/app/models/Subcategory";
 import CategoryService from "@/app/service/categoryService";
 import SubcategoryService from "@/app/service/subCategoryService";
-import {AnimatePresence, motion} from "framer-motion";
 import {TutorialCard} from "@/app/components/tutorialCard";
 import {DisplayWebsite} from "@/app/models/DisplayWebsite";
 import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 import PageService from "@/app/service/pageService";
 import {Page} from "@/app/models/Page";
+import CategorySelection from "@/app/components/categorySelection";
 
 export default function SectionVisu() {
 
@@ -81,7 +81,7 @@ export default function SectionVisu() {
     const [newSubcategoryName, setNewSubcategoryName] = useState<string>('');
     const [newSubcategoryParentCategoryId, setNewSubcategoryParentCategoryId] = useState<number | null>(null);
 
-    const [subcategoriesToAdd, setSubcategoriesToAdd] = useState<Subcategory[]>([]);
+    const [selectedSubcategories, setSelectedSubcategories] = useState<Subcategory[]>([]);
 
     const router = useRouter();
     const {websiteId, pageId, sectionId} = useParams();
@@ -102,7 +102,9 @@ export default function SectionVisu() {
 
         async function loadCategories() {
             setAllRecursiveCategories(await CategoryService.getAllRecursiveCategories());
-            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
+            const sectionSubcats = await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string));
+            setSectionsSubcategories(sectionSubcats);
+            setSelectedSubcategories(sectionSubcats);
         }
 
         async function loadElements() {
@@ -338,6 +340,7 @@ export default function SectionVisu() {
             setShowPopup(true);
         } finally {
             setCategoriesLoading(false);
+            setShowPopupAddSubcategoryToSection(true)
         }
     }
 
@@ -376,44 +379,33 @@ export default function SectionVisu() {
             setShowPopup(true);
         } finally {
             setCategoriesLoading(false);
+            setShowPopupAddSubcategoryToSection(true)
         }
     }
 
     async function addSubcategoriesToSectionAction() {
         setShowPopupAddSubcategoryToSection(false);
         if (!section) return;
-        if (subcategoriesToAdd.length === 0) {
-            setPopupTitle("Aucune sous-catégorie sélectionnée");
-            setPopupText("Veuillez sélectionner au moins une sous-catégorie à ajouter à la section.");
-            setShowPopup(true);
+        if (selectedSubcategories === sectionsSubcategories) {
             return;
         }
 
         setCategoriesLoading(true);
 
         try {
-            for (const subcategory of subcategoriesToAdd) {
-                await SectionService.addSubcategory(section, subcategory);
+            for (const subcategory of selectedSubcategories) {
+                if (sectionsSubcategories.findIndex((s) => s.id === subcategory.id) === -1) {
+                    await SectionService.addSubcategory(section, subcategory);
+                }
             }
-            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
-            setSubcategoriesToAdd([]);
-        } catch (e) {
-            setPopupTitle("Une erreur s'est produite");
-            setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
-            setShowPopup(true);
-        } finally {
-            setCategoriesLoading(false);
-        }
-    }
-
-    async function removeSubcategoryFromSectionAction(subcategory: Subcategory) {
-        if (!section) return;
-
-        setCategoriesLoading(true);
-
-        try {
-            await SectionService.removeSubcategory(section, subcategory);
-            setSectionsSubcategories(await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string)));
+            for (const subcategory of sectionsSubcategories) {
+                if (selectedSubcategories.findIndex((s) => s.id === subcategory.id) === -1) {
+                    await SectionService.removeSubcategory(section, subcategory);
+                }
+            }
+            const updatedSubcategories = await SubcategoryService.getSubcategoriesFromSectionId(parseInt(sectionId as string));
+            setSectionsSubcategories(updatedSubcategories);
+            setSelectedSubcategories(updatedSubcategories);
         } catch (e) {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(typeof e === 'string' ? e : 'Erreur inconnue');
@@ -568,47 +560,25 @@ export default function SectionVisu() {
                          loading={categoriesLoading}
                          actions={[
                              {
-                                 text: "Ajouter",
+                                 text: "Modifier",
                                  onClick: () => setShowPopupAddSubcategoryToSection(true),
-                                 iconName: "add",
+                                 iconName: "edit",
                                  actionType: ActionTypeEnum.safe
                              }
                          ]}>
                 {
-                    allRecursiveCategories.length === 0 ?
-                    <div className={"flex gap-2 items-center"}>
-                        <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                        <p>Il n&apos;existe aucune catégories pour le moment.</p>
-                    </div> :
-                    sectionsSubcategories.length === 0 &&
-                        <div className={"flex gap-2 items-center"}>
-                            <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                            <p>Vous n&apos;avez pas encore selectionné de sous-catégories pour votre section.</p>
-                        </div>
-                }
-                {
-                    allRecursiveCategories.filter(cat => cat.subcategories.some(subcat => sectionsSubcategories.some(subcat2 => subcat2.id === subcat.id))).map((cat) => {
-                        return <div key={"cat" + cat.id} className={"flex flex-col gap-2 p-3 rounded-xl bg-onBackgroundHover"}>
-                            <h3>{cat.name}</h3>
-                            <div className={"flex gap-2 flex-wrap"}>
+                    allRecursiveCategories.length  === 0 ?
+                        <p>Il n&aps;éxiste aucune catégories pour le moment.</p> :
+                        sectionsSubcategories.length === 0 ?
+                            <p>Vous n&aps;avez encore ajouté aucune catégorie</p> :
+                            <div className={"flex flex-wrap gap-2"}>
                                 {
-                                    cat.subcategories.filter(sub1 => sectionsSubcategories.some(sub2 => sub2.id === sub1.id)).map((subcat) => {
-                                        return <div
-                                            onClick={() => removeSubcategoryFromSectionAction(subcat)}
-                                            key={"sub" + subcat.id}
-                                            className={`rounded-full relative overflow-hidden cursor-pointer pt-1 pb-1 pl-2 pr-2 flex gap-1 items-center justify-center bg-background md:hover:bg-onBackground active:bg-onBackground`}
-                                        >
-                                            <p>{subcat.name}</p>
-                                            <span className={"absolute top-0 left-0 w-full h-full bg-dangerous opacity-0 md:hover:opacity-80 active:opacity-100 flex items-center justify-center"}>
-                                                <img src={"/ico/trash.svg"} alt={"trash"} className={"invert w-4"}/>
-                                            </span>
-                                        </div>
+                                    sectionsSubcategories.map((subcat, index) => {
+                                        return <p className={"pb-1 pt-1 pl-2 pr-2 rounded-full bg-onBackgroundHover"} key={index}>{subcat.name}</p>
                                     })
                                 }
                             </div>
 
-                        </div>
-                    })
                 }
             </SectionElem>
 
@@ -703,78 +673,28 @@ export default function SectionVisu() {
                 <AdvancedPopup
                     icon={'add'}
                     show={showPopupAddSubcategoryToSection}
-                    message={"Selectionnez les sous-catégories à ajouter à cette section :"}
-                    title={'Ajouter des sous-catégorie'}
+                    message={"Sélectionnez ou désélectionnez les sous-catégories à associer à cette section :"}
+                    title={'Gérer les catégories'}
                     actions={[
-                        {
-                            text: "Créer une catégorie", iconName: "add", onClick: () => {
-                                setShowPopupAddSubcategoryToSection(false)
-                                setShowPopupNewCategory(true)
-                            }
-                        },
                         {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                     ]}
                     closePopup={() => setShowPopupAddSubcategoryToSection(false)}
                 >
-                    {
-                        allRecursiveCategories.length === 0 &&
-                        <div className={"flex gap-2 items-center"}>
-                            <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                            <p>Il n&apos;existe aucune catégories pour le moment.</p>
-                        </div>
-                    }
-                    {
-                        allRecursiveCategories.map((cat) => {
-                            return <div key={"cat" + cat.id} className={"flex flex-col gap-2 w-full p-3 rounded-xl bg-onBackgroundHover"}>
-                                <h3>{cat.name}</h3>
-                                {
-                                    cat.subcategories.length === 0 &&
-                                    <div className={"flex gap-2 items-center"}>
-                                        <img src={"/ico/info.svg"} alt={"info"} className={"w-8 invert"}/>
-                                        <p>Cette catégorie ne contient aucune sous-catégorie pour le moment.</p>
-                                    </div>
-                                }
-                                <div className={"flex gap-2 flex-wrap"}>
-                                    {
-                                        cat.subcategories.filter(sub1 => !sectionsSubcategories.some(sub2 => sub2.id === sub1.id)).map((subcat) => {
-                                            return <div key={"sub" + subcat.id}
-                                                className={`rounded-full cursor-pointer pt-1 pb-1 pl-2 pr-2 flex gap-1 items-center justify-center ${subcategoriesToAdd.includes(subcat) ? 'bg-safe md:hover:bg-safeHover active:bg-safeHover' : 'bg-background md:hover:bg-onBackground active:bg-onBackground'}`}
-                                                onClick={() => {
-                                                    if (subcategoriesToAdd.includes(subcat)) {
-                                                        setSubcategoriesToAdd(subcategoriesToAdd.filter((s) => s !== subcat));
-                                                    } else {
-                                                        setSubcategoriesToAdd([...subcategoriesToAdd, subcat]);
-                                                    }
-                                                }}
-                                            >
-                                                <p>{subcat.name}</p>
-                                                <AnimatePresence>
-                                                    {
-                                                        subcategoriesToAdd.includes(subcat) &&
-                                                        <motion.img
-                                                            initial={{opacity: 0, translateX: -10}}
-                                                            animate={{opacity: 1, translateX: 0}}
-                                                            exit={{opacity: 0, translateX: -10}}
-                                                            src={"/ico/check.svg"}
-                                                            alt={"check"}
-                                                            className={"w-4 invert"}/>
-                                                    }
-                                                </AnimatePresence>
-
-                                            </div>
-                                        })
-                                    }
-                                </div>
-
-                                <Button iconName={"add"} text={"Créer une sous-catégorie"} onClick={() => {
-                                    setNewSubcategoryParentCategoryId(cat.id)
-                                    setShowPopupAddSubcategoryToSection(false)
-                                    setShowPopupNewSubcategory(true)
-                                }}/>
-
-                            </div>
-                        })
-                    }
+                    <CategorySelection
+                        recursiveCategoryList={allRecursiveCategories}
+                        preSelectedSubcategories={sectionsSubcategories}
+                        onSelectSubcategoryAction={(subcat) => setSelectedSubcategories([...selectedSubcategories, subcat])}
+                        onDeselectSubcategoryAction={(subcat) => setSelectedSubcategories(selectedSubcategories.filter((s) => s.id !== subcat.id))}
+                        onCreateNewCategoryPressedAction={() => {
+                            setShowPopupAddSubcategoryToSection(false)
+                            setShowPopupNewCategory(true)
+                        } }
+                        onCreateSubcategoryPressedAction={(category) => {
+                            setShowPopupAddSubcategoryToSection(false)
+                            setNewSubcategoryParentCategoryId(category.id)
+                            setShowPopupNewSubcategory(true)
+                        }}
+                    />
                 </AdvancedPopup>
             </Form>
 
