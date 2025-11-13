@@ -6,7 +6,6 @@ import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
 import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
 import List from "@/app/components/list";
 import {ActionTypeEnum} from "@/app/components/Button";
-import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import Input from "@/app/components/Input";
 import {InsertableSection, Section} from "@/app/models/Section";
@@ -15,21 +14,16 @@ import {InsertablePage, Page} from "@/app/models/Page";
 import SectionService from "@/app/service/sectionService";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
 import {StringUtil} from "@/app/utils/stringUtil";
-import Form from "@/app/components/form";
 import Textarea from "@/app/components/textarea";
 import SvgFromString from "@/app/components/SvgFromString";
 import DropDown from "@/app/components/DropDown";
 import {TutorialCard} from "@/app/components/tutorialCard";
-import {DisplayWebsite} from "@/app/models/DisplayWebsite";
-import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 
 export default function PageVisu() {
 
     const [loading, setLoading] = useState(true);
-    const [loadingMessage, setLoadingMessage] = useState<string>("Chargement des informations de la page...");
     const [sectionsLoading, setSectionsLoading] = useState(true);
 
-    const [website, setWebsite] = useState<DisplayWebsite | null>(null);
     const [page, setPage] = useState<Page | null>(null);
     const [sectionTypes, setSectionTypes] = useState<string[]>([]);
     const [sections, setSections] = useState<Section[] | null>([]);
@@ -62,9 +56,6 @@ export default function PageVisu() {
 
     useEffect(() => {
         async function loadData() {
-            setLoadingMessage("Chargement du site...")
-            setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)))
-            setLoadingMessage("Chargement de la page...")
             const tmpPage: Page = await PageService.getPageById(parseInt(pageId as string))
             setPage(tmpPage)
             setNewTitle(tmpPage.title);
@@ -90,8 +81,8 @@ export default function PageVisu() {
     }, [websiteId, pageId]);
 
     function deletePageAction() {
+        setShowPopupDelete(false)
         setLoading(true);
-        setLoadingMessage("suppression de la page...");
         if (!page) return;
         PageService.deletePage(page).then(() => {
             router.push('/secure/' + page.website_id);
@@ -133,9 +124,7 @@ export default function PageVisu() {
         }
 
         setLoading(true);
-        setLoadingMessage("Mise à jour des données...");
         PageService.updatePage(updatedPage).then(async () => {
-            setLoadingMessage("Récuperation des informations...");
             const tmp = await PageService.getPageById(parseInt(pageId as string))
             setPage(tmp);
             setNewTitle(tmp.title);
@@ -168,9 +157,7 @@ export default function PageVisu() {
         }
 
         setLoading(true);
-        setLoadingMessage("Ajout de la section...");
         SectionService.insertSection(newSection).then(async () => {
-            setLoadingMessage("Chargement des sections...")
             setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
         }).catch((error) => {
             setPopupTitle("Erreur");
@@ -263,100 +250,93 @@ export default function PageVisu() {
         setSections(newSections);
     }
 
-    if (!page) {
-        return (
-            <div>
-                <LoadingPopup show={true} message={loadingMessage}/>
-            </div>
-        )
-    }
-
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart} title={StringUtil.truncateString(website?.title || "", 30)}>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"text-onForegroundHover"}>Gestion de votre page</p>
-                <h1>{page.title}</h1>
-                <p className={"text-onForegroundHover"}>Vous gérez ici la page accessible depuis {page.path}, sur votre site {website?.website_domain}.</p>
-            </div>
-            <TutorialCard
-                text={"Sur cette page, vous pouvez gérer les différentes sections de votre page, ainsi que ses informations principales comme le titre, le chemin d'accès, la description ou l'icône. N'hésitez pas à ajouter, modifier ou supprimer des sections pour personnaliser le contenu de votre page selon vos besoins."}
-                uniqueId={"page-visualization-tutorial"}
-            />
-            <SectionElem loading={sectionsLoading} title={"Contenue de votre page"} width={SectionWidth.FULL}
-                         actions={modifySectionOrder ? [
-                             {
-                                 text: "Annuler",
-                                 iconName: "close",
-                                 onClick: cancelModifySectionOrder,
-                                 actionType: ActionTypeEnum.dangerous
-                             },
-                             {
-                                 text: "Valider",
-                                 iconName: "check",
-                                 onClick: validateModifySectionOrder,
-                                 actionType: ActionTypeEnum.safe
-                             }
-                         ] : [
-                             {
-                                 text: "Réorganiser",
-                                 iconName: "order",
-                                 onClick: beginModifySectionOrder,
-                             },
-                             {
-                                 text: "Ajouter",
-                                 onClick: () => setShowPopupNewSection(true),
-                                 iconName: "add",
-                                 actionType: ActionTypeEnum.safe
-                             }
-                         ]}>
+        <>
+            <MainPage pageAlignment={PageAlignmentEnum.tileStart} loading={loading}>
+                <TutorialCard
+                    text={"Sur cette page, vous pouvez gérer les différentes sections de votre page, ainsi que ses informations principales comme le titre, le chemin d'accès, la description ou l'icône. N'hésitez pas à ajouter, modifier ou supprimer des sections pour personnaliser le contenu de votre page selon vos besoins."}
+                    uniqueId={"page-visualization-tutorial"}
+                />
+                <SectionElem loading={sectionsLoading} title={"Contenue de votre page"} width={SectionWidth.FULL}
+                             actions={modifySectionOrder ? [
+                                 {
+                                     text: "Annuler",
+                                     iconName: "close",
+                                     onClick: cancelModifySectionOrder,
+                                     actionType: ActionTypeEnum.dangerous
+                                 },
+                                 {
+                                     text: "Valider",
+                                     iconName: "check",
+                                     onClick: validateModifySectionOrder,
+                                     actionType: ActionTypeEnum.safe
+                                 }
+                             ] : [
+                                 {
+                                     text: "Réorganiser",
+                                     iconName: "order",
+                                     onClick: beginModifySectionOrder,
+                                 },
+                                 {
+                                     text: "Ajouter",
+                                     onClick: () => setShowPopupNewSection(true),
+                                     iconName: "add",
+                                     actionType: ActionTypeEnum.safe
+                                 }
+                             ]}>
 
-                <TutorialCard text={"Le contenu de votre page est séparé en plusieurs sections, vous pouvez les gérer ici."} uniqueId={"tips-sections-for-page"}/>
+                    <TutorialCard text={"Le contenu de votre page est séparé en plusieurs sections, vous pouvez les gérer ici."} uniqueId={"tips-sections-for-page"}/>
 
-                <List elements={sections?.map((sect) => {
-                    return {
-                        text: sect.title + " (" + sect.section_type + ")",
-                        onClick: () => router.push("/secure/" + page.website_id + "/" + pageId + "/" + sect.id),
-                        actions: modifySectionOrder ? [{
-                            iconName: "up",
-                            onClick: () => moveSectionUp(sect)
-                        }, {iconName: "down", onClick: () => moveSectionDown(sect)}] : undefined
+                    <List elements={sections?.map((sect) => {
+                        return {
+                            text: sect.title + " (" + sect.section_type + ")",
+                            onClick: () => router.push("/secure/" + page!.website_id + "/" + pageId + "/" + sect.id),
+                            actions: modifySectionOrder ? [{
+                                iconName: "up",
+                                onClick: () => moveSectionUp(sect)
+                            }, {iconName: "down", onClick: () => moveSectionDown(sect)}] : undefined
+                        }
+                    }) ?? []}/>
+
+                </SectionElem>
+
+                <SectionElem title={"Titre"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                    <p>{page?.title}</p>
+                </SectionElem>
+
+                <SectionElem title={"Chemin d'accès"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                    <p>{page?.path}</p>
+                </SectionElem>
+
+                <SectionElem title={"Description"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                    <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
+                </SectionElem>
+
+                <SectionElem title={"Icone"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                    {
+                        page?.icon_svg
+                            ? <SvgFromString svg={page!.icon_svg} alt="icone" className="w-12 h-12 invert" />
+                            : <p>Vous n&apos;avez pas d&apos;icône pour le moment.</p>
                     }
-                }) ?? []}/>
+                </SectionElem>
 
-            </SectionElem>
+                <SectionElem title={"Supprimer"} actions={[{
+                    text: "Supprimer",
+                    onClick: () => setShowPopupDelete(true),
+                    iconName: "trash",
+                    actionType: ActionTypeEnum.dangerous
+                }]}>
+                    <p>Supprimer la page entraine la perte de l&apos;intégralité de son contenu.</p>
+                </SectionElem>
 
-            <SectionElem title={"Titre"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
-                <p>{page?.title}</p>
-            </SectionElem>
 
-            <SectionElem title={"Chemin d'accès"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
-                <p>{page?.path}</p>
-            </SectionElem>
 
-            <SectionElem title={"Description"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
-                <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
-            </SectionElem>
 
-            <SectionElem title={"Icone"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
-                {
-                    page.icon_svg
-                        ? <SvgFromString svg={page.icon_svg} alt="icone" className="w-12 h-12 invert" />
-                        : <p>Vous n&apos;avez pas d&apos;icône pour le moment.</p>
-                }
-            </SectionElem>
-
-            <SectionElem title={"Supprimer"} actions={[{
-                text: "Supprimer",
-                onClick: () => setShowPopupDelete(true),
-                iconName: "trash",
-                actionType: ActionTypeEnum.dangerous
-            }]}>
-                <p>Supprimer la page entraine la perte de l&apos;intégralité de son contenu.</p>
-            </SectionElem>
+            </MainPage>
 
             <AdvancedPopup
                 show={showPopup}
@@ -375,103 +355,101 @@ export default function PageVisu() {
                 icon={"warning"}
                 show={showPopupDelete}
                 message={"Cette action est irreversible. Vous perdrez également les elements que cette page contient."}
-                title={`Voulez-vous vraiment supprimer la page "${page.title}" ?`}
+                title={`Voulez-vous vraiment supprimer la page "${page?.title}" ?`}
                 closePopup={() => setShowPopupDelete(false)}
             />
 
-            <Form onSubmitAction={updatePageAction}>
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditTitle}
-                    message={"Entrez le nouveau titre de la page :"}
-                    title={'Modifier le titre de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditTitle(false)}
-                >
-                    <Input placeholder={"Titre"} value={newTitle} setValueAction={setNewTitle}
-                           />
-                </AdvancedPopup>
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditPath}
-                    message={"Entrez le nouveau chemin d'accès de la page :"}
-                    title={'Modifier le chemin d\'accès de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditPath(false)}
-                >
-                    <Input validatorAction={StringUtil.pathStringValidator} placeholder={"Chemin d'accès"} value={newPath} setValueAction={setNewPath}
-                    />
-                </AdvancedPopup>
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditDescription}
-                    message={"Entrez la nouvelle description de la page :"}
-                    title={'Modifier la description de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditDescription(false)}
-                >
-                    <Textarea placeholder={"Description"} value={newDescription} onChangeAction={setNewDescription}
-                    />
-                </AdvancedPopup>
+            <AdvancedPopup
+                formAction={updatePageAction}
+                icon={'edit'}
+                show={showPopupEditTitle}
+                message={"Entrez le nouveau titre de la page :"}
+                title={'Modifier le titre de la page'}
+                actions={[
+                    {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                ]}
+                closePopup={() => setShowPopupEditTitle(false)}
+            >
+                <Input placeholder={"Titre"} value={newTitle} setValueAction={setNewTitle}
+                />
+            </AdvancedPopup>
+            <AdvancedPopup
+                formAction={updatePageAction}
+                icon={'edit'}
+                show={showPopupEditPath}
+                message={"Entrez le nouveau chemin d'accès de la page :"}
+                title={'Modifier le chemin d\'accès de la page'}
+                actions={[
+                    {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                ]}
+                closePopup={() => setShowPopupEditPath(false)}
+            >
+                <Input validatorAction={StringUtil.pathStringValidator} placeholder={"Chemin d'accès"} value={newPath} setValueAction={setNewPath}
+                />
+            </AdvancedPopup>
+            <AdvancedPopup
+                formAction={updatePageAction}
+                icon={'edit'}
+                show={showPopupEditDescription}
+                message={"Entrez la nouvelle description de la page :"}
+                title={'Modifier la description de la page'}
+                actions={[
+                    {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                ]}
+                closePopup={() => setShowPopupEditDescription(false)}
+            >
+                <Textarea placeholder={"Description"} value={newDescription} onChangeAction={setNewDescription}
+                />
+            </AdvancedPopup>
 
-                <AdvancedPopup
-                    icon={'edit'}
-                    show={showPopupEditIcon}
-                    message={"Entrez la nouvelle icone au format SVG :"}
-                    title={'Modifier l\'icone de la page'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupEditIcon(false)}
-                >
-                    <Textarea placeholder={"Icone au format SVG"} value={newIcon} onChangeAction={setNewIcon}
-                    />
-                    <div className={"flex gap-2 items-center"}>
-                        <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-6 h-6"}/>
-                        <p>Si vous ne savez pas où trouver d&apos;icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l&apos;icône de votre choix au format SVG et la coller ici.</p>
-                    </div>
-                </AdvancedPopup>
-            </Form>
+            <AdvancedPopup
+                formAction={updatePageAction}
+                icon={'edit'}
+                show={showPopupEditIcon}
+                message={"Entrez la nouvelle icone au format SVG :"}
+                title={'Modifier l\'icone de la page'}
+                actions={[
+                    {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                ]}
+                closePopup={() => setShowPopupEditIcon(false)}
+            >
+                <Textarea placeholder={"Icone au format SVG"} value={newIcon} onChangeAction={setNewIcon}
+                />
+                <div className={"flex gap-2 items-center"}>
+                    <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-6 h-6"}/>
+                    <p>Si vous ne savez pas où trouver d&apos;icône, vous pouvez vous rendre sur le site <a className={"text-blue-600 underline"} target={"_blank"} href={"https://heroicons.com/"}>Hero Icon</a>, copier l&apos;icône de votre choix au format SVG et la coller ici.</p>
+                </div>
+            </AdvancedPopup>
 
-            <Form onSubmitAction={addSectonAction}>
-                <AdvancedPopup
-                    icon={'add'}
-                    show={showPopupNewSection}
-                    message={"Le titre ne sera pas visible pour les utilisateurs, mais vous permettra de retrouver plus facilement la section lors de vos modifications."}
-                    title={'Créer une section'}
-                    actions={[
-                        {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
-                    ]}
-                    closePopup={() => setShowPopupNewSection(false)}
-                >
-                    <Input placeholder={"Titre"} value={newSectionTitle} setValueAction={setNewSectionTitle} />
+            <AdvancedPopup
+                formAction={addSectonAction}
+                icon={'add'}
+                show={showPopupNewSection}
+                message={"Le titre ne sera pas visible pour les utilisateurs, mais vous permettra de retrouver plus facilement la section lors de vos modifications."}
+                title={'Créer une section'}
+                actions={[
+                    {text: "Valider", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                ]}
+                closePopup={() => setShowPopupNewSection(false)}
+            >
+                <Input placeholder={"Titre"} value={newSectionTitle} setValueAction={setNewSectionTitle} />
 
-                    <DropDown items={sectionTypes} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
-                    <div className={"flex gap-4 items-center"}>
-                        <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
-                        {
-                            newSectionType === "classic" ?
-                                <p>Une section classique contenant divers éléments qui seront affichés les uns à la suite des autres.</p> :
-                                newSectionType === "develop" ?
-                                    <p>Ressemble à une section classique, à la différence que seul le titre est affiché par défaut. Il est nécessaire de cliquer dessus pour afficher le contenu au complet. Recommandé quand il y a beaucoup de contenu à afficher, pour éviter de surcharger la page.</p> :
-                                    newSectionType === "tile" ?
-                                        <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d&apos;une liste où les éléments sont affichés les un à la suite des autres et prennent tous l&apos;espace, les éléments sont des sortes de petit &apos;carrés&apos; avec une mise en page permettant d&apos;optimiser l&apos;espace.</p> :
-                                        <p>Type de section inconnu.</p>
-                        }                    </div>
+                <DropDown items={sectionTypes} selectedItem={newSectionType} setSelectedItemAction={setNewSectionType} />
+                <div className={"flex gap-4 items-center"}>
+                    <img src={"/ico/question.svg"} alt={"tip"} className={"invert w-10 h-10"}/>
+                    {
+                        newSectionType === "classic" ?
+                            <p>Une section classique contenant divers éléments qui seront affichés les uns à la suite des autres.</p> :
+                            newSectionType === "develop" ?
+                                <p>Ressemble à une section classique, à la différence que seul le titre est affiché par défaut. Il est nécessaire de cliquer dessus pour afficher le contenu au complet. Recommandé quand il y a beaucoup de contenu à afficher, pour éviter de surcharger la page.</p> :
+                                newSectionType === "tile" ?
+                                    <p>Similaire à une section à développer, mais la mise en forme par défaut change : au lieu d&apos;une liste où les éléments sont affichés les un à la suite des autres et prennent tous l&apos;espace, les éléments sont des sortes de petit &apos;carrés&apos; avec une mise en page permettant d&apos;optimiser l&apos;espace.</p> :
+                                    <p>Type de section inconnu.</p>
+                    }                    </div>
 
 
 
-                </AdvancedPopup>
-            </Form>
-
-            <LoadingPopup show={loading} message={loadingMessage}/>
-
-        </MainPage>
+            </AdvancedPopup>
+        </>
     );
 }

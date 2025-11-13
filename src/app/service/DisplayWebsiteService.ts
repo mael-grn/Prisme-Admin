@@ -1,4 +1,4 @@
-import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
+import {DisplayWebsite, InsertableDisplayWebsite, RecursiveWebsite} from "@/app/models/DisplayWebsite";
 import axios, {AxiosError} from "axios";
 import {StringUtil} from "@/app/utils/stringUtil";
 
@@ -43,6 +43,15 @@ export default class DisplayWebsiteService {
         try {
             const response = await axios.get(`/api/websites/${websiteId}`);
             return response.data.data as DisplayWebsite;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getRecursiveWebsiteById(websiteId: number): Promise<RecursiveWebsite> {
+        try {
+            const response = await axios.get(`/api/websites/${websiteId}?recursive=true`);
+            return response.data.data as RecursiveWebsite;
         } catch (e) {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }

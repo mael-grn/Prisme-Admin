@@ -4,14 +4,12 @@ import MainPage from "@/app/components/mainPage";
 import {useEffect, useState} from "react";
 import {User} from "@/app/models/User";
 import UserService from "@/app/service/UserService";
-import LoadingPopup from "@/app/components/loadingPopup";
 import AdvancedPopup from "@/app/components/advancedPopup";
 import SectionElem from "@/app/components/sectionElem";
 import List from "@/app/components/list";
 import {DisplayWebsite, InsertableDisplayWebsite} from "@/app/models/DisplayWebsite";
 import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 import {useRouter} from "next/navigation";
-import Form from "@/app/components/form";
 import Input from "../components/Input";
 import {StringUtil} from "@/app/utils/stringUtil";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
@@ -26,7 +24,6 @@ export default function Home() {
     const [user, setUser] = useState<User | null>(null);
     const [websites, setWebsites] = useState<DisplayWebsite[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [loadingMessage, setLoadingMessage] = useState<string>('Récupération des informations du profil...');
     const [websiteLoading, setWebsiteLoading] = useState<boolean>(true);
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
@@ -80,13 +77,10 @@ export default function Home() {
             return;
         }
         setLoading(true);
-        setLoadingMessage("Création de la page web...");
         if (newSelectedFileHeroImage) {
-            setLoadingMessage("Envoie de l'image...");
             displayWebsite.hero_image_url = await ImageUtil.uploadImage(newSelectedFileHeroImage) || undefined;
         }
 
-        setLoadingMessage("Création de la page web...");
         try {
             await DisplayWebsiteService.createNewWebsite(displayWebsite)
         } catch (e) {
@@ -103,93 +97,98 @@ export default function Home() {
     }
 
     return (
-        <MainPage title={user ? `Bonjour, ${user.first_name}` : "Accueil"}>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"text-onForegroundHover"}>Gestion de vos sites web</p>
-                <h1>Bienvenue !</h1>
-                <p className={"text-onForegroundHover"}>Vous voyez ici tous vos sites web créés sur notre
-                    plateforme.</p>
-            </div>
-            <TutorialCard
-                text={`
+        <>
+            <MainPage loading={loading}>
+                <div className={"w-full flex flex-col gap-4 items-center justify-center mb-12"}>
+                    <img src={"/img/icon.png"} alt={"icon"} className={"md:w-52 w-32"}/>
+                    <h1>Bonjour, {user?.first_name || "jeune inconnu"}</h1>
+                </div>
+                <TutorialCard
+                    text={`
                     Vous pouvez créer des sites internet personnalisées pour présenter vos projets, votre portfolio ou toute autre information que vous souhaitez partager en ligne. Utilisez le bouton "Ajouter une page web" pour commencer à créer votre première page !
                 `}
-                uniqueId={"welcome-page"}
-            />
-            <SectionElem title={"Vos sites internet"}
-                         loading={websiteLoading}
+                    uniqueId={"welcome-page"}
+                />
+                <SectionElem title={"Vos sites internet"}
+                             loading={websiteLoading}
 
-                         actions={[
-                             {
-                                 text: "Créer un site internet",
-                                 iconName: "add",
-                                 onClick: () => setShowPopupCreateWebsite(true),
-                                 actionType: ActionTypeEnum.safe
-                             },
-                         ]}
-            >
+                             actions={[
+                                 {
+                                     text: "Créer un site internet",
+                                     iconName: "add",
+                                     onClick: () => setShowPopupCreateWebsite(true),
+                                     actionType: ActionTypeEnum.safe
+                                 },
+                             ]}
+                >
 
-                <List elements={websites.map((website) => {
-                    return {
-                        actions: [{
-                            iconName: "redirect", type: ActionTypeEnum.safe, onClick: () => {
-                                if (website.website_domain) {
-                                    router.push("https://" + website.website_domain)
-                                } else {
-                                    router.push("https://prisme.maelg.fr/" + website.id)
+                    <List elements={websites.map((website) => {
+                        return {
+                            actions: [{
+                                iconName: "redirect", type: ActionTypeEnum.safe, onClick: () => {
+                                    if (website.website_domain) {
+                                        router.push("https://" + website.website_domain)
+                                    } else {
+                                        router.push("https://prisme.maelg.fr/" + website.id)
+                                    }
                                 }
-                            }
-                        }], text: `${website.title}`, onClick: () => router.push("/secure/" + website.id)
-                    }
-                })}/>
+                            }], text: `${website.title}`, onClick: () => router.push("/secure/" + website.id)
+                        }
+                    })}/>
 
-            </SectionElem>
-            <LoadingPopup show={loading} message={loadingMessage}/>
+                </SectionElem>
+
+
+
+
+
+            </MainPage>
+
             <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle}
                            message={popupText}/>
 
-            <Form onSubmitAction={createWebsite}>
-                <AdvancedPopup
-                    show={showPopupCreateWebsite}
-                    closePopup={() => setShowPopupCreateWebsite(false)}
-                    title={"Créer une nouvelle page web"}
-                    message={"Remplissez les informations ci-dessous pour créer une nouvelle page web."}
-                    actions={[
-                        {text: "Créer", isForm: true, iconName: "add", actionType: ActionTypeEnum.safe},
-                    ]}
-                >
+            <AdvancedPopup
+                formAction={createWebsite}
+                show={showPopupCreateWebsite}
+                closePopup={() => setShowPopupCreateWebsite(false)}
+                title={"Créer une nouvelle page web"}
+                message={"Remplissez les informations ci-dessous pour créer une nouvelle page web."}
+                actions={[
+                    {text: "Créer", isForm: true, iconName: "add", actionType: ActionTypeEnum.safe},
+                ]}
+            >
 
-                    <Input placeholder={"Nom du site"} value={websiteTitle} setValueAction={setWebsiteTitle}/>
+                <Input placeholder={"Nom du site"} value={websiteTitle} setValueAction={setWebsiteTitle}/>
 
-                    <div className={"flex gap-2 items-center"}>
-                        <p>Utiliser un domaine personalisé</p>
-                        <Toggle checked={usingCustomWebsiteDomain} onChangeAction={setUsingCustomWebsiteDomain}/>
-                    </div>
-
-
-                    {
-                        usingCustomWebsiteDomain && <>
-                            <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain}
-                                   setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.domainValidator}/>
-                            <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
-                                <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
-                                <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
-                                    faites, car celui-ci risque d&apos;être inaccessible.</p>
-                            </div>
-                        </>
-                    }
-
-                    <div
-                        className={"flex gap-4 flex-col justify-center w-full p-3 rounded-xl border-2 border-onBackgroundHover items-center"}>
-                        <h3>Contenu de la page d&apos;accueil</h3>
-                        <Input placeholder={"Titre"} value={newWebsiteHeroTitle}
-                               setValueAction={setNewWebsiteHeroTitle}/>
-                        <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
-                    </div>
+                <div className={"flex gap-2 items-center"}>
+                    <p>Utiliser un domaine personalisé</p>
+                    <Toggle checked={usingCustomWebsiteDomain} onChangeAction={setUsingCustomWebsiteDomain}/>
+                </div>
 
 
-                </AdvancedPopup>
-            </Form>
-        </MainPage>
+                {
+                    usingCustomWebsiteDomain && <>
+                        <Input placeholder={"Domaine"} iconName={"web"} value={newWebsiteDomain}
+                               setValueAction={setNewWebsiteDomain} validatorAction={StringUtil.domainValidator}/>
+                        <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
+                            <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
+                            <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
+                                faites, car celui-ci risque d&apos;être inaccessible.</p>
+                        </div>
+                    </>
+                }
+
+                <div
+                    className={"flex gap-4 flex-col justify-center w-full p-3 rounded-xl border-2 border-onBackgroundHover items-center"}>
+                    <h3>Contenu de la page d&apos;accueil</h3>
+                    <Input placeholder={"Titre"} value={newWebsiteHeroTitle}
+                           setValueAction={setNewWebsiteHeroTitle}/>
+                    <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
+                </div>
+
+
+            </AdvancedPopup>
+        </>
+
     )
 }

@@ -12,9 +12,7 @@ import {InsertablePage, Page} from "@/app/models/Page";
 import DisplayWebsiteService from "@/app/service/DisplayWebsiteService";
 import PageService from "@/app/service/pageService";
 import {FieldsUtil} from "@/app/utils/fieldsUtil";
-import Form from "@/app/components/form";
 import {StringUtil} from "@/app/utils/stringUtil";
-import LoadingPopup from "@/app/components/loadingPopup";
 import {ActionTypeEnum} from "@/app/components/Button";
 import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
@@ -73,7 +71,7 @@ export default function Pages() {
                 setPopupTitle("Une erreur s'est produite");
                 setPopupText(e);
                 setShowPopup(true);
-            }).finally(() => setLoading(false));
+            }).finally(() => setLoading(false   ));
 
         PageService.getMyPagesFromWebsite(parseInt(websiteId as string))
             .then((p) => setPages(p))
@@ -82,7 +80,7 @@ export default function Pages() {
                 setPopupText(e);
                 setShowPopup(true);
             }).finally(() => setPagesLoading(false));
-    }, []);
+    }, [websiteId]);
 
     async function deleteWebsiteAction() {
         setShowPopupDelete(false);
@@ -120,8 +118,7 @@ export default function Pages() {
             return;
         }
 
-        setLoadingMessage("Ajout de la nouvelle page...");
-        setLoading(true);
+        setPagesLoading(true);
 
         try {
             await PageService.insertPage(newPage)
@@ -305,97 +302,96 @@ export default function Pages() {
     }
 
     return (
-        <MainPage pageAlignment={PageAlignmentEnum.tileStart}
-                  title={StringUtil.truncateString(website?.title || "", 30)}>
-            <div className={"w-full flex flex-col gap-1"}>
-                <p className={"text-onForegroundHover"}>Gestion de votre site</p>
-                <h1>{website?.title}</h1>
-            </div>
-            <TutorialCard
-                text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
-                uniqueId={"gestion-website"}/>
-            <SectionElem
-                width={SectionWidth.FULL}
-                loading={pagesLoading}
-                title={"Pages de votre site"}
-                actions={
-                    modifyPageOrder ?
-                        [
-                            {
-                                text: "Annuler",
-                                iconName: "close",
-                                onClick: cancelModifyPageOrder,
-                                actionType: ActionTypeEnum.dangerous
-                            },
-                            {
-                                text: "Valider",
-                                iconName: "check",
-                                onClick: validateModifyPageOrder,
-                                actionType: ActionTypeEnum.safe
-                            }
-                        ] :
-                        [
+        <>
+            <MainPage pageAlignment={PageAlignmentEnum.tileStart} loading={loading} loadingMessage={loadingMessage}>
+                <TutorialCard
+                    text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
+                    uniqueId={"gestion-website"}/>
+                <SectionElem
+                    width={SectionWidth.FULL}
+                    loading={pagesLoading}
+                    title={"Pages de votre site"}
+                    actions={
+                        modifyPageOrder ?
+                            [
+                                {
+                                    text: "Annuler",
+                                    iconName: "close",
+                                    onClick: cancelModifyPageOrder,
+                                    actionType: ActionTypeEnum.dangerous
+                                },
+                                {
+                                    text: "Valider",
+                                    iconName: "check",
+                                    onClick: validateModifyPageOrder,
+                                    actionType: ActionTypeEnum.safe
+                                }
+                            ] :
+                            [
 
-                            {
-                                text: "Réorganiser",
-                                iconName: "order",
-                                onClick: beginModifyPageOrder,
-                            },
-                            {text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
-                        ]
-            }>
+                                {
+                                    text: "Réorganiser",
+                                    iconName: "order",
+                                    onClick: beginModifyPageOrder,
+                                },
+                                {text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
+                            ]
+                    }>
 
-                <List elements={pages.map((page) => {
-                    return {
-                        text: page.title,
-                        onClick: () => router.push(`/secure/${websiteId}/${page.id}`),
-                        actions: modifyPageOrder ? [{
-                            iconName: "up",
-                            onClick: () => movePageUp(page)
-                        }, {iconName: "down", onClick: () => movePageDown(page)}] : undefined
+                    <List elements={pages.map((page) => {
+                        return {
+                            text: page.title,
+                            onClick: () => router.push(`/secure/${websiteId}/${page.id}`),
+                            actions: modifyPageOrder ? [{
+                                iconName: "up",
+                                onClick: () => movePageUp(page)
+                            }, {iconName: "down", onClick: () => movePageDown(page)}] : undefined
+                        }
+                    })}/>
+
+                </SectionElem>
+
+                <SectionElem title={"Titre"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+
+                    <p>{website?.title}</p>
+                </SectionElem>
+
+                <SectionElem title={"Domaine"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+
+                    {
+                        website?.website_domain ?
+                            <p>{website?.website_domain}</p>
+                            :
+                            <p>Vous n&apos;avez pas spécifié de domaine personnalisé pour votre site</p>
                     }
-                })}/>
+                </SectionElem>
 
-            </SectionElem>
+                <SectionElem title={"Contenu de la page d'accueil"}
+                             actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
-            <SectionElem title={"Titre"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                    <p>{website?.hero_title}</p>
+                    {website?.hero_image_url ?
+                        <img src={website?.hero_image_url} alt={"Image de la landing page"}
+                             className={"max-w-full h-auto mb-4 rounded-lg"}/> :
+                        <p className={"text-onForeground italic"}>Aucune image</p>
+                    }
+                </SectionElem>
 
-                <p>{website?.title}</p>
-            </SectionElem>
+                <SectionElem title={"Supprimer le site"} actions={[{
+                    text: "Supprimer",
+                    onClick: () => setShowPopupDelete(true),
+                    iconName: "trash",
+                    actionType: ActionTypeEnum.dangerous
+                }]}>
+                    <p>Supprimer le site entraine la perte de l&apos;intégralité de son contenu.</p>
+                </SectionElem>
 
-            <SectionElem title={"Domaine"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
-                {
-                    website?.website_domain ?
-                        <p>{website?.website_domain}</p>
-                        :
-                        <p>Vous n&apos;avez pas spécifié de domaine personnalisé pour votre site</p>
-                }
-            </SectionElem>
 
-            <SectionElem title={"Contenu de la page d'accueil"}
-                         actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
-                <p>{website?.hero_title}</p>
-                {website?.hero_image_url ?
-                    <img src={website?.hero_image_url} alt={"Image de la landing page"}
-                         className={"max-w-full h-auto mb-4 rounded-lg"}/> :
-                    <p className={"text-onForeground italic"}>Aucune image</p>
-                }
-            </SectionElem>
-
-            <SectionElem title={"Supprimer le site"} actions={[{
-                text: "Supprimer",
-                onClick: () => setShowPopupDelete(true),
-                iconName: "trash",
-                actionType: ActionTypeEnum.dangerous
-            }]}>
-                <p>Supprimer le site entraine la perte de l&apos;intégralité de son contenu.</p>
-            </SectionElem>
-
-            <LoadingPopup show={loading} message={loadingMessage}/>
+            </MainPage>
 
             <AdvancedPopup show={showPopup} message={popupText} title={popupTitle}
                            closePopup={() => setShowPopup(false)}/>
@@ -415,86 +411,80 @@ export default function Pages() {
                 ]}
                 closePopup={() => setShowPopupDelete(false)}/>
 
-            <Form onSubmitAction={addPageAction}>
-                <AdvancedPopup show={showPopupForm}
-                               message={"Saisissez les informations requises ci-dessous afin d'ajouter une nouvelle page à votre site :"}
-                               title={"Créer une nouvelle page"}
-                               icon={"add"}
-                               actions={[
-                                   {text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
-                               ]}
-                               closePopup={() => setShowPopupForm(false)}>
-                    <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath}
-                           validatorAction={StringUtil.pathStringValidator}
-                           iconName={"globe"}/>
-                    <Input placeholder={"Titre"} value={newPageTitle} setValueAction={setNewPageTitle}/>
+            <AdvancedPopup show={showPopupForm}
+                           formAction={addPageAction}
+                           message={"Saisissez les informations requises ci-dessous afin d'ajouter une nouvelle page à votre site :"}
+                           title={"Créer une nouvelle page"}
+                           icon={"add"}
+                           actions={[
+                               {text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
+                           ]}
+                           closePopup={() => setShowPopupForm(false)}>
+                <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath}
+                       validatorAction={StringUtil.pathStringValidator}
+                       iconName={"globe"}/>
+                <Input placeholder={"Titre"} value={newPageTitle} setValueAction={setNewPageTitle}/>
 
-                    <Textarea value={newPageDescription} onChangeAction={setNewPageDescription}
-                              placeholder={"Description"}/>
+                <Textarea value={newPageDescription} onChangeAction={setNewPageDescription}
+                          placeholder={"Description"}/>
 
-                    <Textarea value={newPageIcon} onChangeAction={setNewPageIcon}
-                              placeholder={"Icone au format SVG (facultatif)"}/>
+                <Textarea value={newPageIcon} onChangeAction={setNewPageIcon}
+                          placeholder={"Icone au format SVG (facultatif)"}/>
 
-                </AdvancedPopup>
-            </Form>
+            </AdvancedPopup>
 
-            <Form onSubmitAction={editTitleAction}>
-                <AdvancedPopup icon={"edit"} show={showPopupEditTitle} title={"Modifier le nom du site"}
-                               message={"Saisissez le nouveau nom de votre site ci-dessous :"} actions={[{
-                    text: "Valider",
-                    isForm: true,
-                    iconName: "check",
-                    actionType: ActionTypeEnum.safe
-                }]} closePopup={() => setShowPopupEditTitle(false)}>
+            <AdvancedPopup icon={"edit"} show={showPopupEditTitle} title={"Modifier le nom du site"}
+                           formAction={editTitleAction}
+                           message={"Saisissez le nouveau nom de votre site ci-dessous :"} actions={[{
+                text: "Valider",
+                isForm: true,
+                iconName: "check",
+                actionType: ActionTypeEnum.safe
+            }]} closePopup={() => setShowPopupEditTitle(false)}>
 
-                    <Input
-                           placeholder={"Nouveau titre"} value={newWebsiteTitle}
-                           setValueAction={setNewWebsiteTitle}/>
-                </AdvancedPopup>
-            </Form>
+                <Input
+                    placeholder={"Nouveau titre"} value={newWebsiteTitle}
+                    setValueAction={setNewWebsiteTitle}/>
+            </AdvancedPopup>
 
-            <Form onSubmitAction={editDomainAction}>
-                <AdvancedPopup icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"}
-                               message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{
-                    text: "Valider",
-                    isForm: true,
-                    iconName: "check",
-                    actionType: ActionTypeEnum.safe
-                }]} closePopup={() => setShowPopupEditDomain(false)}>
+            <AdvancedPopup formAction={editDomainAction} icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"}
+                           message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{
+                text: "Valider",
+                isForm: true,
+                iconName: "check",
+                actionType: ActionTypeEnum.safe
+            }]} closePopup={() => setShowPopupEditDomain(false)}>
 
-                    <Input iconName={"globe"} validatorAction={StringUtil.emptyableDomainValidator}
-                           placeholder={"Nouveau domaine"} value={newWebsiteDomain || ""}
-                           setValueAction={setNewWebsiteDomain}/>
-                    {
-                        website?.website_domain ?
-                            <div className={"bg-onBackgroundHover rounded-xl p-3 flex gap-2 items-center"}>
-                                <img src={"/ico/info.svg"} alt={'info'} className={"invert w-12 h-fit"}/>
-                                <p>Vous pouvez supprimer le domaine, Votre site sera alors hébergé sur la plateforme Prisme.</p>
-                            </div> :
-                            <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
-                                <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
-                                <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
-                                    faites, car celui-ci risque d&apos;être inaccessible.</p>
-                            </div>
-                    }
+                <Input iconName={"globe"} validatorAction={StringUtil.emptyableDomainValidator}
+                       placeholder={"Nouveau domaine"} value={newWebsiteDomain || ""}
+                       setValueAction={setNewWebsiteDomain}/>
+                {
+                    website?.website_domain ?
+                        <div className={"bg-onBackgroundHover rounded-xl p-3 flex gap-2 items-center"}>
+                            <img src={"/ico/info.svg"} alt={'info'} className={"invert w-12 h-fit"}/>
+                            <p>Vous pouvez supprimer le domaine, Votre site sera alors hébergé sur la plateforme Prisme.</p>
+                        </div> :
+                        <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
+                            <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
+                            <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
+                                faites, car celui-ci risque d&apos;être inaccessible.</p>
+                        </div>
+                }
 
-                </AdvancedPopup>
-            </Form>
+            </AdvancedPopup>
 
-            <Form onSubmitAction={editHeroAction}>
-                <AdvancedPopup icon={"edit"} show={showPopupEditHero} title={"Modifier le contenu de la landing page"}
-                               message={"Saisissez le contenu de la landing page de votre site ci-dessous :"}
-                               actions={[{
-                                   text: "Valider",
-                                   isForm: true,
-                                   iconName: "check",
-                                   actionType: ActionTypeEnum.safe
-                               }]} closePopup={() => setShowPopupEditHero(false)}>
-                    <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
-                    <ImageInput setFileAction={setNewWebsiteHeroFile}/>
-                </AdvancedPopup>
-            </Form>
+            <AdvancedPopup icon={"edit"} formAction={editHeroAction} show={showPopupEditHero} title={"Modifier le contenu de la landing page"}
+                           message={"Saisissez le contenu de la landing page de votre site ci-dessous :"}
+                           actions={[{
+                               text: "Valider",
+                               isForm: true,
+                               iconName: "check",
+                               actionType: ActionTypeEnum.safe
+                           }]} closePopup={() => setShowPopupEditHero(false)}>
+                <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
+                <ImageInput setFileAction={setNewWebsiteHeroFile}/>
+            </AdvancedPopup>
+        </>
 
-        </MainPage>
     )
 }

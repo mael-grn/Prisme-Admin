@@ -64,7 +64,7 @@ export default function Home() {
               </SectionElem>
           </Form>
 
-          <LoadingPopup show={initialLoading} message={"Verification des accès..."}/>
+          <LoadingPopup show={initialLoading}/>
           <AdvancedPopup show={showPopup} closePopup={() => setShowPopup(false)} title={popupTitle} message={popupText}/>
       </div>
   );

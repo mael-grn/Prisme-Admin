@@ -1,21 +1,34 @@
 import {AnimatePresence, motion} from "framer-motion";
 import Button, { ButtonProps} from "@/app/components/Button";
+import {FormEvent, useRef} from "react";
 
-export default function AdvancedPopup({show, icon="info", title, message, closePopup, actions, children} : {show: boolean, icon?: string, message: string, title: string, closePopup: () => void, actions?: ButtonProps[], children?: React.ReactNode}) {
+export default function AdvancedPopup({show, icon="info", title, message, closePopup, actions, children, formAction} : {show: boolean, icon?: string, message: string, title: string, closePopup: () => void, actions?: ButtonProps[], children?: React.ReactNode, formAction?: () => void}) {
+
+    const formRef = useRef<HTMLFormElement>(null);
+
+    const onSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        if (formAction) {
+            formAction();
+        }
+    }
+
     return (
         <AnimatePresence>
             {
-                show && <motion.div
+                show && <motion.form
                     className={"fixed top-0 left-0 w-full h-full flex items-center justify-center bg-background-opacity backdrop-blur z-50"}
                     initial={{opacity: 0}}
                     animate={{opacity: 1}}
                     exit={{opacity: 0}}
+                    ref={formRef}
+                    onSubmit={onSubmit}
                 >
                     <motion.div
                         className={"bg-onBackground border-2 border-onBackgroundHover rounded-2xl md:w-1/2 max-h-[80vh] overflow-y-auto"}
-                        initial={{transform: "scale(0.5)"}}
-                        animate={{transform: "scale(1)"}}
-                        exit={{transform: "scale(0.5)"}}
+                        initial={{transform: "scale(0.8)", filter: "blur(10px)"}}
+                        animate={{transform: "scale(1)", filter: "blur(0px)"}}
+                        exit={{transform: "scale(0.8)", filter: "blur(10px)"}}
                     >
                         <div className={"flex flex-col items-center justify-center gap-4 p-6"}>
                             <img src={`/ico/${icon}.svg`} alt={"popup"} className={"w-16 invert"} />
@@ -43,7 +56,7 @@ export default function AdvancedPopup({show, icon="info", title, message, closeP
                             }
                         </div>
                     </motion.div>
-                </motion.div>
+                </motion.form>
             }
         </AnimatePresence>
     );

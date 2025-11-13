@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from "react";
+import {AnimatePresence, motion} from "framer-motion";
 
 export default function DropDown({
                                      items,
@@ -22,26 +23,33 @@ export default function DropDown({
                 {selectedItem}
                 <img src={"/ico/down.svg"} alt={"drown-down"} className={"h-4 w-4 invert"}/>
             </div>
-            {
-                showItems &&(
-                    <ul className={"top-0 z-10 left-0 rounded-lg absolute bg-onBackground w-fit h-fit p-2 flex flex-col gap-2 border-2 border-onBackgroundHover"}>
-                        {
-                            items.map((item, index) => (
-                                <li
-                                    key={index}
-                                    className={`p-2 rounded-lg cursor-pointer  ${selectedItem === item ? "bg-foreground text-background" : "md:hover:bg-onBackgroundHover"}`}
-                                    onMouseUp={() => {
-                                        setSelectedItemAction(item);
-                                        setShowItems(false);
-                                    }}
-                                >
-                                    {item}
-                                </li>
-                            ))
-                        }
-                    </ul>
-                )
-            }
+            <AnimatePresence>
+                {
+                    showItems &&(
+                        <motion.ul
+                            initial={{opacity: 0, transform: "scaleY(0)", transformOrigin: "top"}}
+                            animate={{opacity: 1, transform: "scaleY(1)", transformOrigin: "top"}}
+                            exit={{opacity: 0, transform: "scaleY(0)", transformOrigin: "top"}}
+                            className={"top-0 z-10 left-0 w-full rounded-lg absolute bg-onBackground min-w-fit h-fit p-2 flex flex-col gap-2 border-2 border-onBackgroundHover"}>
+                            {
+                                items.map((item, index) => (
+                                    <li
+                                        key={index}
+                                        className={`p-2 rounded-lg cursor-pointer  ${selectedItem === item ? "bg-foreground text-background" : "md:hover:bg-onBackgroundHover"}`}
+                                        onMouseUp={() => {
+                                            setSelectedItemAction(item);
+                                            setShowItems(false);
+                                        }}
+                                    >
+                                        {item}
+                                    </li>
+                                ))
+                            }
+                        </motion.ul>
+                    )
+                }
+            </AnimatePresence>
+
         </div>
 
 

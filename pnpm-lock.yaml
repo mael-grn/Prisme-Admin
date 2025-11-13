@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@lordicon/element':
+        specifier: ^2.0.1
+        version: 2.0.1
+      '@lordicon/react':
+        specifier: ^1.11.0
+        version: 1.11.0(lottie-web@5.13.0)(react@19.1.1)
       '@neondatabase/serverless':
         specifier: ^0.10.4
         version: 0.10.4
@@ -29,6 +35,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      lottie-web:
+        specifier: ^5.13.0
+        version: 5.13.0
       next:
         specifier: 15.1.7
         version: 15.1.7(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -288,6 +297,30 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.30':
     resolution: {integrity: sha512-GQ7Nw5G2lTu/BtHTKfXhKHok2WGetd4XYcVKGx00SjAk8GMwgJM3zr6zORiPGuOE+/vkc90KtTosSSvaCjKb2Q==}
+
+  '@lordicon/element@2.0.1':
+    resolution: {integrity: sha512-jPW7NauDi6QoLEMHZRu9Za/08wsQEC5grV7yo7QBzQZCtmTbAf78pIiK/bWtsbkClfyetpeozRK+Fr8DS1UVEA==}
+
+  '@lordicon/helpers@1.11.0':
+    resolution: {integrity: sha512-ambh76d15jAdGaKYXBCjR9AlTJUB6aGx4H8vlradyfT37GbLlwiG+HfC8MTq9RTM08pBHRKFPWnWOxa34NUIAw==}
+
+  '@lordicon/react@1.11.0':
+    resolution: {integrity: sha512-DAxjxr0aSHfdTWxCzeQMf5rnr/rpN0qjnLC9fAePgF0GXOXZpvsVDddi1wfgTYWTWM6iRFc5dDOC7twP24nf3g==}
+    peerDependencies:
+      lottie-react-native: '*'
+      lottie-web: '*'
+      react: '*'
+      react-native: '*'
+    peerDependenciesMeta:
+      lottie-react-native:
+        optional: true
+      lottie-web:
+        optional: true
+      react-native:
+        optional: true
+
+  '@lordicon/web@1.0.0':
+    resolution: {integrity: sha512-ffFZGtMpAJiYjFYiWOoPMCZt5Toacu7cvycC9yk8wDhc5WtXxnzhjaxHlZ3qM5PLYJlAF2dYeIUqcJCkH2f+dw==}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -1678,6 +1711,9 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
+  lottie-web@5.13.0:
+    resolution: {integrity: sha512-+gfBXl6sxXMPe8tKQm7qzLnUy5DUPJPKIyRHwtpCpyUEYjHYRJC/5gjUvdkuO2c3JllrPtHXH5UJJK8LRYl5yQ==}
+
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
@@ -2720,6 +2756,21 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@lordicon/element@2.0.1':
+    dependencies:
+      '@lordicon/web': 1.0.0
+
+  '@lordicon/helpers@1.11.0': {}
+
+  '@lordicon/react@1.11.0(lottie-web@5.13.0)(react@19.1.1)':
+    dependencies:
+      '@lordicon/helpers': 1.11.0
+      react: 19.1.1
+    optionalDependencies:
+      lottie-web: 5.13.0
+
+  '@lordicon/web@1.0.0': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
@@ -4323,6 +4374,8 @@ snapshots:
   loose-envify@1.4.0:
     dependencies:
       js-tokens: 4.0.0
+
+  lottie-web@5.13.0: {}
 
   lru-cache@10.4.3: {}
 

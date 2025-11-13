@@ -4,6 +4,7 @@
 import Button, {ActionTypeEnum, ButtonProps} from "@/app/components/Button";
 import {AnimatePresence, motion} from "framer-motion";
 import {useEffect, useState} from "react";
+import LoadingIcon from "@/app/components/LoadingIcon";
 
 export enum SectionWeight {
     LIGHT = 1,
@@ -45,9 +46,9 @@ export default function SectionElem({title, actions, loading=false, children, we
                             initial={{opacity: 0}}
                             animate={{opacity: 1}}
                             exit={{opacity: 0}}
-                            className={"backdrop-blur absolute w-full h-full top-0 left-0 z-10 flex justify-center items-center"}
+                            className={"backdrop-blur bg-backgroundOpacity absolute w-full h-full top-0 left-0 z-10 flex justify-center items-center"}
                         >
-                            <img src={"/ico/loader-light.gif"} alt={"loading"} className={"w-10"}/>
+                            <LoadingIcon/>
                         </motion.div>
                     }
                 </AnimatePresence>
