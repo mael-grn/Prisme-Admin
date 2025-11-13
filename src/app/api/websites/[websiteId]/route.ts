@@ -31,10 +31,15 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
                               FROM display_websites
                               WHERE id = ${id}
                               LIMIT 1`;
-        } else {
+        } else if ((websiteId as string).includes(".")) {
             [res] = await sql`SELECT *
                               FROM display_websites
                               WHERE website_domain = ${websiteId}
+                              LIMIT 1`;
+        } else {
+            [res] = await sql`SELECT *
+                              FROM display_websites
+                              WHERE title = ${(websiteId as string).replaceAll('%20', ' ')}
                               LIMIT 1`;
         }
 
