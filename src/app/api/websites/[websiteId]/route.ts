@@ -26,12 +26,14 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
         const sql = SqlUtil.getSql();
         let res;
         if (StringUtil.isInteger(websiteId)) {
+
             const id = Number(websiteId);
             [res] = await sql`SELECT *
                               FROM display_websites
                               WHERE id = ${id}
                               LIMIT 1`;
         } else if ((websiteId as string).includes(".")) {
+
             [res] = await sql`SELECT *
                               FROM display_websites
                               WHERE website_domain = ${websiteId}
@@ -39,7 +41,7 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
         } else {
             [res] = await sql`SELECT *
                               FROM display_websites
-                              WHERE title = ${(websiteId as string).replaceAll('%20', ' ')}
+                              WHERE title ilike ${(websiteId as string).replaceAll('%20', ' ')}
                               LIMIT 1`;
         }
 
