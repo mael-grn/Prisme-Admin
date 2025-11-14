@@ -129,7 +129,7 @@ export default function Home() {
                                     if (website.website_domain) {
                                         router.push("https://" + website.website_domain)
                                     } else {
-                                        router.push("https://prisme.maelg.fr/" + website.id)
+                                        router.push("https://prisme.maelg.fr/" + website.title.replace(" ", "%20"))
                                     }
                                 }
                             }], text: `${website.title}`, onClick: () => router.push("/secure/" + website.id)
