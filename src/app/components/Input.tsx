@@ -32,7 +32,7 @@ export default function Input({
                 {showDetails && <p>{validatorAction(value) ? (validatorAction(value)) : placeholder}</p>}
             </div>
             <input
-                className={"p-3 rounded-lg md:hover:bg-onBackgroundHover bg-background target:bg-onBackgroundHover outline-none target:outline-none w-full h-12"}
+                className={"p-3 rounded-lg md:hover:border-foreground bg-background focus:border-onForegroundHover border-2 border-background outline-none target:outline-none w-full h-12"}
                 type={type || "text"}
                 value={value}
                 onChange={(e) => setValueAction(e.target.value)}

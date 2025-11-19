@@ -7,6 +7,7 @@ import {InsertableElement} from "@/app/models/Element";
 import {InsertableCategory} from "@/app/models/Category";
 import {InsertableSubcategory} from "@/app/models/Subcategory";
 import {InvalidFieldsError} from "@/app/errors/InvalidFieldsError";
+import {InsertableWebsiteColors} from "@/app/models/WebsiteColors";
 
 export type ValidationResult = { valid: boolean; errors: string[] };
 
@@ -17,6 +18,13 @@ export class FieldsUtil {
 
     private static isInteger(v: unknown) {
         return typeof v === "number" && Number.isInteger(v);
+    }
+
+    private static isHexColor(v: unknown) {
+        if (typeof v !== "string") return false;
+        // accepte #RRGGBB ou #RGB
+        const re = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
+        return re.test(v);
     }
 
     private static isPositiveInteger(v: unknown) {
@@ -43,6 +51,46 @@ export class FieldsUtil {
         } catch {
             return false;
         }
+    }
+
+    public static checkWebsiteColors(colors: InsertableWebsiteColors): ValidationResult {
+        const errors: string[] = [];
+        if (!colors) {
+            return {valid: false, errors: ["les couleurs sont requises"]};
+        }
+
+        if (!this.isHexColor(colors.primary_color)) {
+            errors.push("La couleur primaire n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.primary_variant)) {
+            errors.push("La variante de la couleur primaire n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.secondary_color)) {
+            errors.push("La couleur secondaire n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.secondary_variant)) {
+            errors.push("La variante de la couleur secondaire n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.background_color)) {
+            errors.push("La couleur de fond n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.background_variant)) {
+            errors.push("La variante de la couleur de fond n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.background_variant_variant)) {
+            errors.push("La seconde variante de la couleur de fond n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.text_color)) {
+            errors.push("La couleur du texte n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.text_variant)) {
+            errors.push("La variante de la couleur du texte n'est pas un code hexadécimal valide");
+        }
+        if (!this.isHexColor(colors.text_variant_variant)) {
+            errors.push("La seconde variante de la couleur du texte n'est pas un code hexadécimal valide");
+        }
+
+        return {valid: errors.length === 0, errors};
     }
 
     public static checkUser(user: InsertableUser): ValidationResult {

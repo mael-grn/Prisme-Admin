@@ -1,5 +1,8 @@
 'use client';
 
+import LoadingIcon from "@/app/components/LoadingIcon";
+import {AnimatePresence, motion} from "framer-motion";
+
 export interface ButtonProps {
     iconName: string;
     text: string;
@@ -27,9 +30,18 @@ export default function Button({iconName, text, onClick, actionType = ActionType
             onClick={onClick}
         >
             <>
-                {
-                    isLoading ? <img src={"/ico/loader-dark.gif"} alt={"loader-light"} className={"w-6"} /> : <img src={`/ico/${iconName}.svg`} alt={iconName} className={`w-5 ${isSecondary && "invert"}`} />
-                }
+                <AnimatePresence>
+                    {
+                        isLoading ? <LoadingIcon small={true} dark={true}/>
+                            :
+                            <motion.img
+                                initial={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}
+                                animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }}
+                                exit={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}
+                                src={`/ico/${iconName}.svg`} alt={iconName} className={`w-5 ${isSecondary && "invert"}`} />
+                    }
+                </AnimatePresence>
+
 
                 {text}
             </>

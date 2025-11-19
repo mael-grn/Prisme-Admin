@@ -73,6 +73,12 @@ export class StringUtil {
         return null;
     }
 
+    static hexColorValidator(color: string): string | null {
+        const hexColorRegex = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$/;
+        if (!hexColorRegex.test(color)) return "Le code couleur HEX n'est pas valide.";
+        return null;
+    }
+
     static truncateString(str: string, num: number): string {
         if (str.length <= num) {
             return str;

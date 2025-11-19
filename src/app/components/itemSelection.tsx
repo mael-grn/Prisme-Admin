@@ -26,9 +26,9 @@ export default function ItemSelection({selectedItem, setSelectedItemAction, item
                 {
                     isOpen &&
                     <motion.div
-                        initial={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0}}
-                        animate={{transformOrigin: "top", transform: "scaleY(1)", opacity: 1}}
-                        exit={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0}}
+                        initial={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0, filter: "blur(10px)"}}
+                        animate={{transformOrigin: "top", transform: "scaleY(1)", opacity: 1, filter: "blur(0px)"}}
+                        exit={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0, filter: "blur(10px)"}}
                         onClick={(e) => e.stopPropagation()}
                         className={"bg-onBackground h-fit border-2 border-onBackgroundHover cursor-pointer rounded-lg absolute top-full left-0 mt-2 w-full z-10 flex flex-col overflow-hidden"}
                     >

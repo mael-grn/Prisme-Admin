@@ -24,6 +24,13 @@ export default function PageVisu() {
     const [loading, setLoading] = useState(true);
     const [sectionsLoading, setSectionsLoading] = useState(true);
 
+    const [editTitleLoading, setEditTitleLoading] = useState(false);
+    const [editPathLoading, setEditPathLoading] = useState(false);
+    const [editDescriptionLoading, setEditDescriptionLoading] = useState(false);
+    const [editIconLoading, setEditIconLoading] = useState(false);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [addSectionLoading, setAddSectionLoading] = useState(false);
+
     const [page, setPage] = useState<Page | null>(null);
     const [sectionTypes, setSectionTypes] = useState<string[]>([]);
     const [sections, setSections] = useState<Section[] | null>([]);
@@ -82,7 +89,7 @@ export default function PageVisu() {
 
     function deletePageAction() {
         setShowPopupDelete(false)
-        setLoading(true);
+        setDeleteLoading(true);
         if (!page) return;
         PageService.deletePage(page).then(() => {
             router.push('/secure/' + page.website_id);
@@ -91,12 +98,17 @@ export default function PageVisu() {
             setPopupText(e);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setDeleteLoading(false);
         })
     }
 
 
     function updatePageAction() {
+        const editingTitle = showPopupEditTitle;
+        const editingPath = showPopupEditPath;
+        const editingDescription = showPopupEditDescription;
+        const editingIcon = showPopupEditIcon;
+
         setShowPopupEditTitle(false);
         setShowPopupEditPath(false);
         setShowPopupEditDescription(false);
@@ -123,7 +135,10 @@ export default function PageVisu() {
             id: page.id
         }
 
-        setLoading(true);
+        setEditTitleLoading(editingTitle);
+        setEditPathLoading(editingPath);
+        setEditDescriptionLoading(editingDescription);
+        setEditIconLoading(editingIcon);
         PageService.updatePage(updatedPage).then(async () => {
             const tmp = await PageService.getPageById(parseInt(pageId as string))
             setPage(tmp);
@@ -136,7 +151,10 @@ export default function PageVisu() {
             setPopupText(error);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setEditTitleLoading(false);
+            setEditPathLoading(false);
+            setEditDescriptionLoading(false);
+            setEditIconLoading(false);
         })
     }
 
@@ -156,7 +174,7 @@ export default function PageVisu() {
             return;
         }
 
-        setLoading(true);
+        setAddSectionLoading(true);
         SectionService.insertSection(newSection).then(async () => {
             setSections(await SectionService.getSectionsForPageId(parseInt(pageId as string)));
         }).catch((error) => {
@@ -164,7 +182,7 @@ export default function PageVisu() {
             setPopupText(error);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setAddSectionLoading(false);
         })
     }
 
@@ -279,6 +297,7 @@ export default function PageVisu() {
                                  },
                                  {
                                      text: "Ajouter",
+                                     isLoading: addSectionLoading,
                                      onClick: () => setShowPopupNewSection(true),
                                      iconName: "add",
                                      actionType: ActionTypeEnum.safe
@@ -301,22 +320,22 @@ export default function PageVisu() {
                 </SectionElem>
 
                 <SectionElem title={"Titre"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: editTitleLoading, text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                     <p>{page?.title}</p>
                 </SectionElem>
 
                 <SectionElem title={"Chemin d'accès"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: editPathLoading, text: "Modifier", onClick: () => setShowPopupEditPath(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                     <p>{page?.path}</p>
                 </SectionElem>
 
                 <SectionElem title={"Description"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{ isLoading: editDescriptionLoading, text: "Modifier", onClick: () => setShowPopupEditDescription(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                     <p>{page?.description || "Vous n'avez pas de description pour le moment."}</p>
                 </SectionElem>
 
                 <SectionElem title={"Icone"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: editIconLoading, text: "Modifier", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                     {
                         page?.icon_svg
                             ? <SvgFromString svg={page!.icon_svg} alt="icone" className="w-12 h-12 invert" />
@@ -325,6 +344,7 @@ export default function PageVisu() {
                 </SectionElem>
 
                 <SectionElem title={"Supprimer"} actions={[{
+                    isLoading: deleteLoading,
                     text: "Supprimer",
                     onClick: () => setShowPopupDelete(true),
                     iconName: "trash",

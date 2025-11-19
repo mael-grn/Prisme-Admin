@@ -60,3 +60,18 @@ create table elements(
     content text not null,
     position int not null
 );
+
+create table website_colors(
+    id serial primary key,
+    website_id integer unique references display_websites(id) ON DELETE CASCADE,
+    primary_color varchar not null,
+    primary_variant varchar not null,
+    secondary_color varchar not null,
+    secondary_variant varchar not null,
+    background_color varchar not null,
+    background_variant varchar not null,
+    background_variant_variant varchar not null,
+    text_color varchar not null,
+    text_variant varchar not null,
+    text_variant_variant varchar not null
+);

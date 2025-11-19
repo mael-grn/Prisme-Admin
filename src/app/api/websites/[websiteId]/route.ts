@@ -8,6 +8,7 @@ import type {Element} from "@/app/models/Element";
 import type {RecursiveCategory} from "@/app/models/Category";
 import type {Subcategory} from "@/app/models/Subcategory";
 import {StringUtil} from "@/app/utils/stringUtil";
+import {WebsiteColors} from "@/app/models/WebsiteColors";
 
 interface SectionsCategoryRow {
     section_id: number;
@@ -169,6 +170,12 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
             position: p.position
         }));
 
+        // Recuperation des couleurs
+        const [colors] = await sql`SELECT *
+                                   FROM website_colors
+                                   WHERE website_id = ${res.id}
+                                   LIMIT 1`;
+
         const recursiveWebsite: RecursiveWebsite = {
             id: res.id,
             owner_id: res.owner_id,
@@ -177,7 +184,8 @@ export async function GET(request: Request, {params}: { params: Promise<{ websit
             auth_token: res.auth_token,
             hero_image_url: res.hero_image_url,
             hero_title: res.hero_title,
-            pages: recursivePages
+            pages: recursivePages,
+            colors: colors as WebsiteColors
         };
 
         return ApiUtil.getSuccessNextResponse<RecursiveWebsite>(recursiveWebsite);

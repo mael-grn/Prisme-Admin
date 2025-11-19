@@ -47,7 +47,7 @@ export default function ImageInput({setFileAction}: {setFileAction: (file: File)
             <label htmlFor={"file-input"}>
                 <div
 
-                    className={`h-fit w-full relative p-3 rounded-lg flex justify-center items-center gap-3 cursor-pointer hover:bg-onBackgroundHover ${isDragging ? "bg-onBackgroundHover pt-10 pb-10" : "bg-background"}`}>
+                    className={`h-fit w-full relative p-3 rounded-lg flex bg-background justify-center items-center gap-3 cursor-pointer border-2 border-background hover:border-foreground ${isDragging ? "border-foreground pt-10 pb-10" : "border-background"}`}>
 
                     {
                         newFile ?

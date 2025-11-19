@@ -29,6 +29,9 @@ export default function SectionVisu() {
 
     const [loading, setLoading] = useState(true);
     const [elementsLoading, setElementsLoading] = useState(true);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [addingElementLoading, setAddingElementLoading] = useState(false);
+    const [titleAndTypeLoading, setTitleAndTypeLoading] = useState(false);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
 
 
@@ -125,7 +128,8 @@ export default function SectionVisu() {
     }, [websiteId, pageId, sectionId]);
 
     function deleteSectionAction() {
-        setLoading(true);
+        setShowPopupDelete(false)
+        setDeleteLoading(true);
         if (!section) return;
         SectionService.deleteSection(section).then(() => {
             router.push('/secure/' + websiteId + '/' + pageId);
@@ -134,7 +138,7 @@ export default function SectionVisu() {
             setPopupText(e);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setDeleteLoading(false);
         })
     }
 
@@ -161,7 +165,7 @@ export default function SectionVisu() {
             id: section.id
         }
 
-        setLoading(true);
+        setTitleAndTypeLoading(true);
         SectionService.updateSection(updatedSection).then(async () => {
             const tmp = await SectionService.getSectionById(parseInt(sectionId as string))
             setSection(tmp);
@@ -171,7 +175,7 @@ export default function SectionVisu() {
             setPopupText(error);
             setShowPopup(true);
         }).finally(() => {
-            setLoading(false);
+            setTitleAndTypeLoading(false);
         })
     }
 
@@ -194,7 +198,7 @@ export default function SectionVisu() {
             return;
         }
 
-        setElementsLoading(true);
+        setAddingElementLoading(true);
 
         if (newElementType === 'image') {
             if (newElementFile) {
@@ -214,7 +218,7 @@ export default function SectionVisu() {
             setPopupText(error);
             setShowPopup(true);
         }).finally(() => {
-            setElementsLoading(false);
+            setAddingElementLoading(false);
         })
     }
 
@@ -495,6 +499,7 @@ export default function SectionVisu() {
                                      onClick: beginModifyElementOrder,
                                  },
                                  {
+                                     isLoading: addingElementLoading,
                                      text: "Ajouter",
                                      onClick: () => setShowPopupNewElement(true),
                                      iconName: "add",
@@ -546,9 +551,9 @@ export default function SectionVisu() {
                              ]}>
                     {
                         allRecursiveCategories.length  === 0 ?
-                            <p>Il n&aps;éxiste aucune catégories pour le moment.</p> :
+                            <p>Il n&apos;éxiste aucune catégories pour le moment.</p> :
                             sectionsSubcategories.length === 0 ?
-                                <p>Vous n&aps;avez encore ajouté aucune catégorie</p> :
+                                <p>Vous n&apos;avez encore ajouté aucune catégorie</p> :
                                 <div className={"flex flex-wrap gap-2"}>
                                     {
                                         sectionsSubcategories.map((subcat, index) => {
@@ -562,6 +567,7 @@ export default function SectionVisu() {
 
                 <SectionElem title={"Titre & Type"}
                              actions={[{
+                                 isLoading: titleAndTypeLoading,
                                  text: "Modifier",
                                  onClick: () => setShowPopupEditSectionType(true),
                                  iconName: "edit",
@@ -572,6 +578,7 @@ export default function SectionVisu() {
                 </SectionElem>
 
                 <SectionElem title={"Supprimer"} actions={[{
+                    isLoading: deleteLoading,
                     text: "Supprimer",
                     onClick: () => setShowPopupDelete(true),
                     iconName: "trash",

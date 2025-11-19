@@ -1,6 +1,7 @@
 import {DisplayWebsite, InsertableDisplayWebsite, RecursiveWebsite} from "@/app/models/DisplayWebsite";
 import axios, {AxiosError} from "axios";
 import {StringUtil} from "@/app/utils/stringUtil";
+import {InsertableWebsiteColors, WebsiteColors} from "@/app/models/WebsiteColors";
 
 export default class DisplayWebsiteService {
 
@@ -56,4 +57,31 @@ export default class DisplayWebsiteService {
             throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
         }
     }
+
+    static async insertColors(websiteId: number, colors: InsertableWebsiteColors): Promise<void> {
+        try {
+            await axios.post(`/api/websites/${websiteId}/colors`, colors);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async updateColors(websiteId: number, colors: InsertableWebsiteColors): Promise<void> {
+        try {
+            await axios.put(`/api/websites/${websiteId}/colors`, colors);
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+    static async getColors(websiteId: number): Promise<WebsiteColors> {
+        try {
+            const response = await axios.get(`/api/websites/${websiteId}/colors`);
+            return response.data.data as WebsiteColors;
+        } catch (e) {
+            throw StringUtil.getErrorMessageFromStatus((e as AxiosError).status || -1)
+        }
+    }
+
+
 }

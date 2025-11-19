@@ -18,15 +18,24 @@ import Textarea from "@/app/components/textarea";
 import ImageInput from "@/app/components/imageInput";
 import {ImageUtil} from "@/app/utils/ImageUtil";
 import {TutorialCard} from "@/app/components/tutorialCard";
+import { getDefaultColors, InsertableWebsiteColors, WebsiteColors} from "@/app/models/WebsiteColors";
+import ColorItem from "@/app/components/ColorItem";
+import ColorUtil from "@/app/utils/colorUtil";
 
 export default function Pages() {
 
     const [pages, setPages] = useState<Page[]>([]);
     const [website, setWebsite] = useState<DisplayWebsite | null>(null);
+    const [colors, setColors] = useState<WebsiteColors | null>(null);
 
     const [loading, setLoading] = useState<boolean>(true);
-    const [loadingMessage, setLoadingMessage] = useState<string>("Chargement de votre site...");
     const [pagesLoading, setPagesLoading] = useState<boolean>(true);
+    const [addPageLoading, setAddPageLoading] = useState<boolean>(false);
+    const [titleLoading, setTitleLoading] = useState<boolean>(false);
+    const [domainLoading, setDomainLoading] = useState<boolean>(false);
+    const [heroLoading, setHeroLoading] = useState<boolean>(false);
+    const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+    const [colorsLoading, setColorsLoading] = useState<boolean>(true);
 
     const [showPopupForm, setShowPopupForm] = useState<boolean>(false);
 
@@ -37,6 +46,9 @@ export default function Pages() {
     const [showPopupEditDomain, setShowPopupEditDomain] = useState<boolean>(false);
 
     const [showPopupEditHero, setShowPopupEditHero] = useState<boolean>(false);
+
+    const [showPopupEditColors, setShowPopupEditColors] = useState<boolean>(false);
+
 
     const [showPopup, setShowPopup] = useState<boolean>(false);
     const [popupText, setPopupText] = useState<string>('');
@@ -52,6 +64,8 @@ export default function Pages() {
 
     const [newWebsiteHeroTitle, setNewWebsiteHeroTitle] = useState<string>('');
     const [newWebsiteHeroFile, setNewWebsiteHeroFile] = useState<File | null>(null);
+
+    const [newColors, setNewColors] = useState<InsertableWebsiteColors | null>(null);
 
     const [modifyPageOrder, setModifyPageOrder] = useState<boolean>(false);
     const [modifiedPages, setModifiedPages] = useState<number[]>([]);
@@ -73,6 +87,17 @@ export default function Pages() {
                 setShowPopup(true);
             }).finally(() => setLoading(false   ));
 
+        DisplayWebsiteService.getColors(parseInt(websiteId as string))
+            .then((c) => {
+                setColors(c);
+                setNewColors(c)
+            })
+            .catch((e) => {
+                console.log(e);
+                setColors(null);
+                setNewColors(() => getDefaultColors(parseInt(websiteId as string)));
+            }).finally(() => setColorsLoading(false));
+
         PageService.getMyPagesFromWebsite(parseInt(websiteId as string))
             .then((p) => setPages(p))
             .catch((e) => {
@@ -85,8 +110,7 @@ export default function Pages() {
     async function deleteWebsiteAction() {
         setShowPopupDelete(false);
 
-        setLoadingMessage("Suppression du site...");
-        setLoading(true);
+        setDeleteLoading(true);
 
         try {
             await DisplayWebsiteService.deleteWebsite(parseInt(websiteId as string))
@@ -118,18 +142,18 @@ export default function Pages() {
             return;
         }
 
-        setPagesLoading(true);
+        setAddPageLoading(true);
 
         try {
             await PageService.insertPage(newPage)
             setLoading(false);
-            setPagesLoading(true);
             setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)))
-            setPagesLoading(false)
         } catch (error) {
             setPopupTitle("Une erreur s'est produite");
             setPopupText(String(error));
             setShowPopup(true);
+        } finally {
+            setAddPageLoading(false);
         }
 
     }
@@ -137,8 +161,7 @@ export default function Pages() {
     const editTitleAction = async () => {
         setShowPopupEditTitle(false);
         if (!newWebsiteTitle || newWebsiteTitle.length === 0) return;
-        setLoadingMessage("Modification du titre...");
-        setLoading(true);
+        setTitleLoading(true);
 
         try {
             const newWebsite: DisplayWebsite = {...website!, title: newWebsiteTitle};
@@ -149,7 +172,7 @@ export default function Pages() {
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
-            setLoading(false);
+            setTitleLoading(false);
         }
     }
 
@@ -161,8 +184,7 @@ export default function Pages() {
             setPopupText("Le domaine saisi n'est pas valide.");
             return;
         }
-        setLoadingMessage("Modification du domaine...");
-        setLoading(true);
+        setDomainLoading(true);
 
         try {
             const newWebsite: DisplayWebsite = {...website!, website_domain: newWebsiteDomain || undefined};
@@ -173,7 +195,7 @@ export default function Pages() {
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
-            setLoading(false);
+            setDomainLoading(false);
         }
     }
 
@@ -189,10 +211,9 @@ export default function Pages() {
 
         const newWebsite: DisplayWebsite = {...website!, hero_title: newWebsiteHeroTitle};
 
-        setLoading(true);
+        setHeroLoading(true);
 
         if (newWebsiteHeroFile) {
-            setLoadingMessage("Upload de l'image...");
             newWebsite.hero_image_url = await ImageUtil.uploadImage(newWebsiteHeroFile)
         }
 
@@ -205,7 +226,6 @@ export default function Pages() {
             return;
         }
 
-        setLoadingMessage("Modification de la landing page...");
 
         try {
             await DisplayWebsiteService.updateWebsite(newWebsite)
@@ -215,7 +235,45 @@ export default function Pages() {
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
-            setLoading(false);
+            setHeroLoading(false);
+        }
+    }
+
+    async function editWebsiteColorsAction() {
+        setShowPopupEditColors(false);
+        if (!newColors)  {
+            setShowPopup(true)
+            setPopupTitle("Données invalides");
+            setPopupText("Les couleurs spécifiées sont invalides.");
+            return;
+        }
+        const validation = FieldsUtil.checkWebsiteColors(newColors)
+        if (!validation.valid) {
+            setShowPopup(true)
+            setPopupTitle("Les couleurs spécifiées sont invalides");
+            setPopupText(validation.errors.join(", "));
+            return;
+        }
+
+        setColorsLoading(true);
+
+        newColors.website_id = parseInt(websiteId as string);
+
+        try {
+            if (colors) {
+                await DisplayWebsiteService.updateColors(website!.id, newColors);
+            } else {
+                await DisplayWebsiteService.insertColors(website!.id, newColors);
+            }
+            const updatedColors = await DisplayWebsiteService.getColors(parseInt(websiteId as string));
+            setColors(updatedColors);
+            setNewColors(updatedColors);
+        } catch (error) {
+            setPopupTitle("Une erreur s'est produite");
+            setPopupText(String(error));
+            setShowPopup(true);
+        } finally {
+            setColorsLoading(false);
         }
     }
 
@@ -303,7 +361,7 @@ export default function Pages() {
 
     return (
         <>
-            <MainPage pageAlignment={PageAlignmentEnum.tileStart} loading={loading} loadingMessage={loadingMessage}>
+            <MainPage pageAlignment={PageAlignmentEnum.tileStart} loading={loading}>
                 <TutorialCard
                     text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
                     uniqueId={"gestion-website"}/>
@@ -334,7 +392,7 @@ export default function Pages() {
                                     iconName: "order",
                                     onClick: beginModifyPageOrder,
                                 },
-                                {text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
+                                {isLoading: addPageLoading, text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
                             ]
                     }>
 
@@ -352,13 +410,13 @@ export default function Pages() {
                 </SectionElem>
 
                 <SectionElem title={"Titre"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: titleLoading, text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     <p>{website?.title}</p>
                 </SectionElem>
 
                 <SectionElem title={"Domaine"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: domainLoading, text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     {
                         website?.website_domain ?
@@ -369,7 +427,7 @@ export default function Pages() {
                 </SectionElem>
 
                 <SectionElem title={"Contenu de la page d'accueil"}
-                             actions={[{text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: heroLoading, text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     <p>{website?.hero_title}</p>
                     {website?.hero_image_url ?
@@ -379,7 +437,33 @@ export default function Pages() {
                     }
                 </SectionElem>
 
+                <SectionElem title={"Couleurs"}
+                             loading={colorsLoading}
+                             actions={[{isLoading: colorsLoading, text: colors ? "Modifier" : "Créer", onClick: () => setShowPopupEditColors(true), iconName: colors ? "edit" : "add", actionType: ActionTypeEnum.safe}]}>
+
+                    {
+                        colors ?
+                            <>
+                                <ColorItem colorHexCode={colors.primary_color} colorName={"Primaire"} />
+                                <ColorItem colorHexCode={colors.primary_variant} colorName={"Primaire 2"} />
+                                <ColorItem colorHexCode={colors.secondary_color} colorName={"Secondaire"} />
+                                <ColorItem colorHexCode={colors.secondary_variant} colorName={"Secondaire 2"} />
+                                <ColorItem colorHexCode={colors.background_color} colorName={"Arrière plan"} />
+                                <ColorItem colorHexCode={colors.background_variant} colorName={"Arrière plan 2"} />
+                                <ColorItem colorHexCode={colors.background_variant_variant} colorName={"Arrière plan 3"} />
+                                <ColorItem colorHexCode={colors.text_color} colorName={"Texte"} />
+                                <ColorItem colorHexCode={colors.text_variant} colorName={"Texte 2"} />
+                                <ColorItem colorHexCode={colors.text_variant_variant} colorName={"Texte 3"} />
+                            </> :
+                            <div className={"flex gap-2 justify-center flex-col items-center"}>
+                                <img src={"/ico/question.svg"} alt={"interrogation"} className={"w-6 invert"}/>
+                                <p>Vous n&apos;avez défini aucune couleurs pour l&apos;instant.</p>
+                            </div>
+                    }
+                </SectionElem>
+
                 <SectionElem title={"Supprimer le site"} actions={[{
+                    isLoading: deleteLoading,
                     text: "Supprimer",
                     onClick: () => setShowPopupDelete(true),
                     iconName: "trash",
@@ -483,6 +567,33 @@ export default function Pages() {
                            }]} closePopup={() => setShowPopupEditHero(false)}>
                 <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
                 <ImageInput setFileAction={setNewWebsiteHeroFile}/>
+            </AdvancedPopup>
+
+            <AdvancedPopup icon={colors ? "edit" : "add"} formAction={editWebsiteColorsAction} show={showPopupEditColors} title={"Modifier les couleurs de votre site"}
+                           message={"Selectionnez les couleurs utilisées sur votre site ci-dessous :"}
+                           actions={[{
+                               text: "Valider",
+                               isForm: true,
+                               iconName: "check",
+                               actionType: ActionTypeEnum.safe
+                           }]} closePopup={() => setShowPopupEditColors(false)}>
+                <ColorItem colorHexCode={newColors?.primary_color} colorName={"Primaire"} onChangeAction={(newColor) => {
+                    setNewColors(ColorUtil.setPrimaryColorAuto(newColors!, newColor))
+                }}/>
+                <ColorItem colorHexCode={newColors?.secondary_color} colorName={"Secondaire"} onChangeAction={(newColor) => {
+                    setNewColors(ColorUtil.setSecondaryColorAuto(newColors!, newColor))
+                }}/>
+                <ColorItem colorHexCode={newColors?.background_color} colorName={"Arrière-plan"} onChangeAction={(newColor) => {
+                    setNewColors(ColorUtil.setBackgroundColorAuto(newColors!, newColor))
+                }}/>
+                <ColorItem colorHexCode={newColors?.text_color} colorName={"Texte"} onChangeAction={(newColor) => {
+                    setNewColors(ColorUtil.setTextColorAuto(newColors!, newColor))
+                }}/>
+
+                <div className={"flex gap-2 items-center"}>
+                    <img src={"/ico/question.svg"} alt={"question"} className={"w-8 invert"}/>
+                    <p>Des variantes des couleurs sélectionnées seront automatiquement générées.</p>
+                </div>
             </AdvancedPopup>
         </>
 
