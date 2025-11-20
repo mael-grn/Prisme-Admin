@@ -39,7 +39,7 @@ function ListElement({props, isFirst, isLast}: { props: ListElementProps, isFirs
                 </div>
             }
             <div
-                className={` flex justify-between w-full p-4 rounded-lg ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""} ${props.onClick && "md:hover:bg-onBackgroundHover active:rounded-3xl active:bg-onBackgroundHover cursor-pointer"}  bg-background`}
+                className={` flex justify-between w-full p-4 rounded-lg ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""} ${props.onClick && "md:hover:bg-onBackgroundHover active:bg-onBackgroundHover active:opacity-70 cursor-pointer"}  bg-background`}
                 onClick={props.onClick}>
                 {
                     props.isImage ?

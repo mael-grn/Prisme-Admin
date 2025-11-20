@@ -120,7 +120,8 @@ export async function PUT(request: Request, {params}: { params: Promise<{ sectio
         FieldsUtil.checkFieldsOrThrow<InsertableSection>(FieldsUtil.checkSection, insertableSection);
 
         await sql`UPDATE sections
-                  SET section_type      = ${insertableSection.section_type}
+                  SET title        = ${insertableSection.title},
+                      section_type = ${insertableSection.section_type}
                   WHERE id = ${sectionId}`;
 
         return ApiUtil.getSuccessNextResponse();
