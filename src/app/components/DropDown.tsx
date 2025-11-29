@@ -27,6 +27,7 @@ export default function DropDown({
                 {
                     showItems &&(
                         <motion.ul
+                            key={selectedItem}
                             initial={{opacity: 0, transform: "scaleY(0)", transformOrigin: "top"}}
                             animate={{opacity: 1, transform: "scaleY(1)", transformOrigin: "top"}}
                             exit={{opacity: 0, transform: "scaleY(0)", transformOrigin: "top"}}

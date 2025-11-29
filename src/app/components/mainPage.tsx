@@ -115,11 +115,13 @@ export default function MainPage({children, pageAlignment = PageAlignmentEnum.st
     return (
         <main className={`flex items-start justify-start flex-col gap-6 md:pb-6 pb-3 md:pl-6 pl-3 md:pr-6 pr-3 mb-20`}>
             <div
+                style={{transition: "all .4s ease"}}
                 className={`flex flex-col ${scrolled ? "gap-4 pt-4" : "gap-4 pt-4 md:gap-6 md:pt-6"} sticky w-full top-0 left-0 z-40 bg-backgroundOpacity backdrop-blur`}>
                 <div className="flex gap-4 items-center justify-between w-full">
                     <div className="flex gap-2 items-start flex-col justify-center">
                         <div className={`flex gap-4 items-center min-w-0 ${scrolled ? "scale-90" : "scale-100"}`}>
                             <motion.img
+                                key={"home-logo"}
                                 src="/img/icon.png"
                                 alt="logo"
                                 className="w-12 cursor-pointer will-change-transform"
@@ -248,6 +250,7 @@ export default function MainPage({children, pageAlignment = PageAlignmentEnum.st
                 <AnimatePresence>
                     {!loading && allItemsLoaded &&
                         <motion.div
+                            key={"main-page-content"}
                             className={`md:p-3 p-1 w-full relative flex gap-5 ${pageAlignment === PageAlignmentEnum.center ? 'justify-center items-center flex-col' : pageAlignment === PageAlignmentEnum.start ? 'justify-start  items-stretch flex-col' : pageAlignment === PageAlignmentEnum.tileCenter ? 'justify-center  items-stretch flex-wrap flex-col md:flex-row' : 'justify-start  items-stretch flex-wrap md:flex-row'}`}
                             initial={{ filter: "blur(20px)", transform: "scale(.9)"}}
                             animate={{ filter: "blur(0px)", transform: "scale(1)"}}

@@ -43,6 +43,7 @@ export default function SectionElem({title, actions, loading=false, children, we
                     {
                         loading &&
                         <motion.div
+                            key={"section-loading-"+title}
                             initial={{opacity: 0}}
                             animate={{opacity: 1}}
                             exit={{opacity: 0}}

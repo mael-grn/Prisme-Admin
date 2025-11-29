@@ -111,6 +111,7 @@ import { RecursiveCategory } from "@/app/models/Category";
                                                                                     {
                                                                                         category.subcategories.length === 0 ?
                                                                                             <motion.div
+                                                                                                key={`catselect-${category.id}`}
                                                                                                 variants={itemVariants}
                                                                                                 className={"flex gap-2 items-center"}
                                                                                             >

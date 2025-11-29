@@ -20,7 +20,6 @@
 
 * {
   box-sizing: border-box;
-  transition: all .4s ease;
   font-family: "Lexend", sans-serif;
   user-select: none;
   -webkit-tap-highlight-color: transparent;

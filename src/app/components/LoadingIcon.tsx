@@ -13,6 +13,7 @@ export default function LoadingIcon({small = false, dark = false} : {small?: boo
 
     return (
         <motion.span
+            key={"loading-icon"}
             initial={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}
             animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }}
             exit={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}

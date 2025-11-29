@@ -35,6 +35,7 @@ export default function Button({iconName, text, onClick, actionType = ActionType
                         isLoading ? <LoadingIcon small={true} dark={true}/>
                             :
                             <motion.img
+                                key={text + iconName}
                                 initial={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}
                                 animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)" }}
                                 exit={{ opacity: 0, transform: "scale(.5)", filter: "blur(10px)" }}

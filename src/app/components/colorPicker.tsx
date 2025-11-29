@@ -98,6 +98,7 @@ export default function ColorPicker({ color, onChangeAction }: Props) {
 
     return (
         <motion.div
+            key={"color-picker-container" + localColor}
             variants={containerVariants}
             initial="hidden"
             animate="visible"

@@ -7,6 +7,7 @@ export default function LoadingPopup({show} : {show: boolean}) {
             {
                 show &&
                 <motion.div
+                    key={"loading-popup"}
                     initial={{ opacity: 0}}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

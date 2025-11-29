@@ -28,6 +28,7 @@ export default function ColorItem({ colorHexCode, colorName, onChangeAction }: {
                 {
                     showColorPicker && onChangeAction &&
                     <motion.div
+                        key={"color-picker" + newColor}
                         initial={{ opacity: 0, transform: "scale(.6)", filter: "blur(10px)", transformOrigin: "top left" }}
                         animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)", transformOrigin: "top left" }}
                         exit={{ opacity: 0, transform: "scale(.6)", filter: "blur(10px)", transformOrigin: "top left" }}

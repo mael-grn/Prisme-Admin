@@ -17,6 +17,7 @@ export default function AdvancedPopup({show, icon="info", title, message, closeP
         <AnimatePresence>
             {
                 show && <motion.form
+                    key={"popup-bg"+title}
                     className={"fixed top-0 left-0 w-full h-full flex items-center justify-center bg-background-opacity backdrop-blur z-50"}
                     initial={{opacity: 0}}
                     animate={{opacity: 1}}
@@ -25,10 +26,11 @@ export default function AdvancedPopup({show, icon="info", title, message, closeP
                     onSubmit={onSubmit}
                 >
                     <motion.div
+                        key={"popup"+title}
                         className={"bg-onBackground border-2 border-onBackgroundHover rounded-2xl md:w-1/2 max-h-[80vh] overflow-y-auto"}
-                        initial={{transform: "scale(0.8)", filter: "blur(10px)"}}
-                        animate={{transform: "scale(1)", filter: "blur(0px)"}}
-                        exit={{transform: "scale(0.8)", filter: "blur(10px)"}}
+                        initial={{scale: 0.8, filter: "blur(10px)"}}
+                        animate={{scale: 1, filter: "blur(0px)"}}
+                        exit={{scale: 0.8, filter: "blur(10px)"}}
                     >
                         <div className={"flex flex-col items-center justify-center gap-4 p-6"}>
                             <img src={`/ico/${icon}.svg`} alt={"popup"} className={"w-16 invert"} />

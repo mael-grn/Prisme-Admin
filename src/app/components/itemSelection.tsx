@@ -26,6 +26,7 @@ export default function ItemSelection({selectedItem, setSelectedItemAction, item
                 {
                     isOpen &&
                     <motion.div
+                        key={"item-selection-"+selectedItem}
                         initial={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0, filter: "blur(10px)"}}
                         animate={{transformOrigin: "top", transform: "scaleY(1)", opacity: 1, filter: "blur(0px)"}}
                         exit={{transformOrigin: "top", transform: "scaleY(0)", opacity: 0, filter: "blur(10px)"}}
