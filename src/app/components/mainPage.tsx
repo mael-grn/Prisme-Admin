@@ -223,20 +223,20 @@ export default function MainPage({children, pageAlignment = PageAlignmentEnum.st
                     <div className="flex gap-4 items-center">
 
                         <button
-                            className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex transition flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={() => router.push("/secure")}
                         >
                             <img src="/ico/home.svg" alt="power" className="w-4 invert"/>
-                            <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Accueil</span>
+                            <span className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Home</span>
                         </button>
 
                         <button
-                            className={`flex flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
+                            className={`flex transition flex-shrink-0 ${scrolled ? "gap-0" : "gap-0 md:gap-2"} items-center justify-center border-1 border-on-background-hover pl-4 pr-4 pt-2 pb-2 bg-onBackground rounded-lg md:hover:bg-onBackgroundHover active:bg-onBackgroundHover cursor-pointer`}
                             onClick={logout}
                         >
                             <img src="/ico/power.svg" alt="power" className="w-4 invert"/>
                             <span
-                                className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Déconnexion</span>
+                                className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Log out</span>
                         </button>
                     </div>
 

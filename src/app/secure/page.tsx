@@ -37,7 +37,7 @@ export default function Home() {
         UserService.getMyUser().then((user) => {
             setUser(user);
         }).catch((e) => {
-            setPopupTitle("Une erreur s'est produite lors de la récupération de votre profil");
+            setPopupTitle("Something went wrong while fetching your user data");
             setPopupText(e);
             setShowPopup(true);
         }).finally(() => setLoading(false));
@@ -45,7 +45,7 @@ export default function Home() {
         DisplayWebsiteService.getMyWebsites().then((websites) => {
             setWebsites(websites);
         }).catch((e) => {
-            setPopupTitle("Une erreur s'est produite lors de la récupération de vos pages web");
+            setPopupTitle("Something went wrong while fetching your websites");
             setPopupText(e);
             setShowPopup(true);
         }).finally(() => setWebsiteLoading(false));
@@ -67,7 +67,7 @@ export default function Home() {
 
         const validation = FieldsUtil.checkDisplayWebsite(displayWebsite);
         if (!validation.valid) {
-            setPopupTitle("Erreur lors de la saisie des informations");
+            setPopupTitle("Wrong input data");
             setPopupText(validation.errors.join(", "));
             setShowPopup(true);
             return;
@@ -80,8 +80,8 @@ export default function Home() {
         try {
             await DisplayWebsiteService.createNewWebsite(displayWebsite)
         } catch (e) {
-            setPopupTitle("Une erreur s'est produite lors de la création de votre pages web");
-            setPopupText(e as string || "Pas de détails disponibles.");
+            setPopupTitle("Something went wrong while creating your website");
+            setPopupText(e as string || "No additional information.");
             setShowPopup(true);
         } finally {
             setLoading(false);
@@ -97,20 +97,21 @@ export default function Home() {
             <MainPage loading={loading}>
                 <div className={"w-full flex flex-col gap-4 items-center justify-center mb-12"}>
                     <img src={"/img/icon.png"} alt={"icon"} className={"md:w-52 w-32"}/>
-                    <h1>Bonjour, {user?.first_name || "jeune inconnu"}</h1>
+                    <h1>Welcome, {user?.first_name || "young fella"}</h1>
                 </div>
                 <TutorialCard
                     text={`
-                    Vous pouvez créer des sites internet personnalisées pour présenter vos projets, votre portfolio ou toute autre information que vous souhaitez partager en ligne. Utilisez le bouton "Ajouter une page web" pour commencer à créer votre première page !
+                    Here, you can manage your websites. You can create new websites, and edit existing ones.
+                    Just click on "Create a website" to get started!
                 `}
                     uniqueId={"welcome-page"}
                 />
-                <SectionElem title={"Vos sites internet"}
+                <SectionElem title={"Your websites"}
                              loading={websiteLoading}
 
                              actions={[
                                  {
-                                     text: "Créer un site internet",
+                                     text: "Create",
                                      iconName: "add",
                                      onClick: () => setShowPopupCreateWebsite(true),
                                      actionType: ActionTypeEnum.safe
@@ -147,14 +148,14 @@ export default function Home() {
                 formAction={createWebsite}
                 show={showPopupCreateWebsite}
                 closePopup={() => setShowPopupCreateWebsite(false)}
-                title={"Créer une nouvelle page web"}
-                message={"Remplissez les informations ci-dessous pour créer une nouvelle page web."}
+                title={"Create a new website"}
+                message={"Please fill in the details below to create your new website."}
                 actions={[
-                    {text: "Créer", isForm: true, iconName: "add", actionType: ActionTypeEnum.safe},
+                    {text: "Create", isForm: true, iconName: "add", actionType: ActionTypeEnum.safe},
                 ]}
             >
 
-                <Input placeholder={"Nom du site"} value={websiteTitle} setValueAction={setWebsiteTitle}/>
+                <Input placeholder={"Website name"} value={websiteTitle} setValueAction={setWebsiteTitle}/>
 
                 <div
                     className={"flex gap-4 flex-col justify-center w-fit p-5 px-10 rounded-xl bg-onBackgroundHover mt-8 items-center"}>

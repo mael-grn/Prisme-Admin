@@ -19,9 +19,9 @@ export default class ElementService {
 
     static getElementTypes() : string[] {
         return [
-            "titre",
-            "texte",
-            "lien",
+            "title",
+            "text",
+            "link",
             "image"
         ]
     }

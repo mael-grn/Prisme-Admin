@@ -82,7 +82,7 @@ export default function Pages() {
                 setNewWebsiteTitle(website.title)
                 setNewWebsiteHeroTitle(website.hero_title)
             }).catch((e) => {
-                setPopupTitle("Une erreur s'est produite");
+                setPopupTitle("Something went wrong");
                 setPopupText(e);
                 setShowPopup(true);
             }).finally(() => setLoading(false   ));
@@ -101,7 +101,7 @@ export default function Pages() {
         PageService.getMyPagesFromWebsite(parseInt(websiteId as string))
             .then((p) => setPages(p))
             .catch((e) => {
-                setPopupTitle("Une erreur s'est produite");
+                setPopupTitle("Something went wrong");
                 setPopupText(e);
                 setShowPopup(true);
             }).finally(() => setPagesLoading(false));
@@ -116,7 +116,7 @@ export default function Pages() {
             await DisplayWebsiteService.deleteWebsite(parseInt(websiteId as string))
             router.push("/secure");
         } catch (e) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(e));
             setShowPopup(true);
         } finally {
@@ -137,7 +137,7 @@ export default function Pages() {
         const validation = FieldsUtil.checkPage(newPage)
         if (!validation.valid) {
             setShowPopup(true)
-            setPopupTitle("La nouvelle page n'est pas valide");
+            setPopupTitle("Page information are not valid");
             setPopupText(validation.errors.join(", "));
             return;
         }
@@ -149,7 +149,7 @@ export default function Pages() {
             setLoading(false);
             setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)))
         } catch (error) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
@@ -168,7 +168,7 @@ export default function Pages() {
             await DisplayWebsiteService.updateWebsite(newWebsite)
             setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
         } catch (error) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
@@ -180,8 +180,8 @@ export default function Pages() {
         setShowPopupEditDomain(false);
         if (newWebsiteDomain&&StringUtil.domainValidator(newWebsiteDomain)) {
             setShowPopup(true);
-            setPopupTitle("Domaine invalide");
-            setPopupText("Le domaine saisi n'est pas valide.");
+            setPopupTitle("Invalid domain");
+            setPopupText("Please enter a valid domain.");
             return;
         }
         setDomainLoading(true);
@@ -191,7 +191,7 @@ export default function Pages() {
             await DisplayWebsiteService.updateWebsite(newWebsite)
             setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
         } catch (error) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
@@ -204,8 +204,8 @@ export default function Pages() {
 
         if (!newWebsiteHeroTitle || newWebsiteHeroTitle.length === 0) {
             setShowPopup(true);
-            setPopupTitle("Informations manquantes");
-            setPopupText("Veuillez renseigner un titre et une image pour la landing page.");
+            setPopupTitle("Missing information");
+            setPopupText("Please provide a title for the homepage.");
             return;
         }
 
@@ -220,7 +220,7 @@ export default function Pages() {
         const validation = FieldsUtil.checkDisplayWebsite(newWebsite)
         if (!validation.valid) {
             setShowPopup(true)
-            setPopupTitle("Le contenu de la landing page n'est pas valide");
+            setPopupTitle("The landing page information are not valid");
             setPopupText(validation.errors.join(", "));
             setLoading(false);
             return;
@@ -231,7 +231,7 @@ export default function Pages() {
             await DisplayWebsiteService.updateWebsite(newWebsite)
             setWebsite(await DisplayWebsiteService.getWebsiteById(parseInt(websiteId as string)));
         } catch (error) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
@@ -243,14 +243,14 @@ export default function Pages() {
         setShowPopupEditColors(false);
         if (!newColors)  {
             setShowPopup(true)
-            setPopupTitle("Données invalides");
-            setPopupText("Les couleurs spécifiées sont invalides.");
+            setPopupTitle("Invalid colors");
+            setPopupText("Specified colors are invalid.");
             return;
         }
         const validation = FieldsUtil.checkWebsiteColors(newColors)
         if (!validation.valid) {
             setShowPopup(true)
-            setPopupTitle("Les couleurs spécifiées sont invalides");
+            setPopupTitle("Specified colors are not valid");
             setPopupText(validation.errors.join(", "));
             return;
         }
@@ -269,7 +269,7 @@ export default function Pages() {
             setColors(updatedColors);
             setNewColors(updatedColors);
         } catch (error) {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(String(error));
             setShowPopup(true);
         } finally {
@@ -303,7 +303,7 @@ export default function Pages() {
                     } catch (e) {
                         setPages(await PageService.getMyPagesFromWebsite(parseInt(websiteId as string)));
                         setPagesLoading(false);
-                        setPopupTitle("Une erreur s'est produite");
+                        setPopupTitle("Something went wrong");
                         setPopupText(String(e));
                         setShowPopup(true);
                         break;
@@ -363,23 +363,23 @@ export default function Pages() {
         <>
             <MainPage pageAlignment={PageAlignmentEnum.tileStart} loading={loading}>
                 <TutorialCard
-                    text={"Vous pouvez ici gérer votre site internet. Ajoutez, modifiez ou réorganisez les pages de votre site facilement via cette interface. Vous pouvez également modifier le domaine et le contenu de la page d'accueil de votre site."}
+                    text={"Here you can manage your website. Easily add, edit, or rearrange your site's pages through this interface. You can also change your site's domain and homepage content."}
                     uniqueId={"gestion-website"}/>
                 <SectionElem
                     width={SectionWidth.FULL}
                     loading={pagesLoading}
-                    title={"Pages de votre site"}
+                    title={"Pages from your website"}
                     actions={
                         modifyPageOrder ?
                             [
                                 {
-                                    text: "Annuler",
+                                    text: "Cancel",
                                     iconName: "close",
                                     onClick: cancelModifyPageOrder,
                                     actionType: ActionTypeEnum.dangerous
                                 },
                                 {
-                                    text: "Valider",
+                                    text: "Validate",
                                     iconName: "check",
                                     onClick: validateModifyPageOrder,
                                     actionType: ActionTypeEnum.safe
@@ -388,11 +388,11 @@ export default function Pages() {
                             [
 
                                 {
-                                    text: "Réorganiser",
+                                    text: "Reorder",
                                     iconName: "order",
                                     onClick: beginModifyPageOrder,
                                 },
-                                {isLoading: addPageLoading, text: "Ajouter", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
+                                {isLoading: addPageLoading, text: "Create", onClick: () => setShowPopupForm(true), iconName: "add", actionType: ActionTypeEnum.safe},
                             ]
                     }>
 
@@ -409,67 +409,67 @@ export default function Pages() {
 
                 </SectionElem>
 
-                <SectionElem title={"Titre"}
-                             actions={[{isLoading: titleLoading, text: "Modifier", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                <SectionElem title={"Title"}
+                             actions={[{isLoading: titleLoading, text: "Edit", onClick: () => setShowPopupEditTitle(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     <p>{website?.title}</p>
                 </SectionElem>
 
-                <SectionElem title={"Domaine"}
-                             actions={[{isLoading: domainLoading, text: "Modifier", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                <SectionElem title={"Domain"}
+                             actions={[{isLoading: domainLoading, text: "Edit", onClick: () => setShowPopupEditDomain(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     {
                         website?.website_domain ?
                             <p>{website?.website_domain}</p>
                             :
-                            <p>Vous n&apos;avez pas spécifié de domaine personnalisé pour votre site</p>
+                            <p>Your website doesn't have any custom domain for the moment.</p>
                     }
                 </SectionElem>
 
-                <SectionElem title={"Contenu de la page d'accueil"}
-                             actions={[{isLoading: heroLoading, text: "Modifier", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                <SectionElem title={"Landing page's content"}
+                             actions={[{isLoading: heroLoading, text: "edit", onClick: () => setShowPopupEditHero(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
 
                     <p>{website?.hero_title}</p>
                     {website?.hero_image_url ?
                         <img src={website?.hero_image_url} alt={"Image de la landing page"}
                              className={"max-w-full h-auto mb-4 rounded-lg"}/> :
-                        <p className={"text-onForeground italic"}>Aucune image</p>
+                        <p className={"text-onForeground italic"}>No image</p>
                     }
                 </SectionElem>
 
-                <SectionElem title={"Couleurs"}
+                <SectionElem title={"Colors"}
                              loading={colorsLoading}
-                             actions={[{isLoading: colorsLoading, text: colors ? "Modifier" : "Créer", onClick: () => setShowPopupEditColors(true), iconName: colors ? "edit" : "add", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: colorsLoading, text: colors ? "Edit" : "Create", onClick: () => setShowPopupEditColors(true), iconName: colors ? "edit" : "add", actionType: ActionTypeEnum.safe}]}>
 
                     {
                         colors ?
                             <>
-                                <ColorItem colorHexCode={colors.primary_color} colorName={"Primaire"} />
-                                <ColorItem colorHexCode={colors.primary_variant} colorName={"Primaire 2"} />
-                                <ColorItem colorHexCode={colors.secondary_color} colorName={"Secondaire"} />
-                                <ColorItem colorHexCode={colors.secondary_variant} colorName={"Secondaire 2"} />
-                                <ColorItem colorHexCode={colors.background_color} colorName={"Arrière plan"} />
-                                <ColorItem colorHexCode={colors.background_variant} colorName={"Arrière plan 2"} />
-                                <ColorItem colorHexCode={colors.background_variant_variant} colorName={"Arrière plan 3"} />
-                                <ColorItem colorHexCode={colors.text_color} colorName={"Texte"} />
-                                <ColorItem colorHexCode={colors.text_variant} colorName={"Texte 2"} />
-                                <ColorItem colorHexCode={colors.text_variant_variant} colorName={"Texte 3"} />
+                                <ColorItem colorHexCode={colors.primary_color} colorName={"Primary"} />
+                                <ColorItem colorHexCode={colors.primary_variant} colorName={"Primary 2"} />
+                                <ColorItem colorHexCode={colors.secondary_color} colorName={"Secondary"} />
+                                <ColorItem colorHexCode={colors.secondary_variant} colorName={"Secondary 2"} />
+                                <ColorItem colorHexCode={colors.background_color} colorName={"Background"} />
+                                <ColorItem colorHexCode={colors.background_variant} colorName={"Background 2"} />
+                                <ColorItem colorHexCode={colors.background_variant_variant} colorName={"Background 3"} />
+                                <ColorItem colorHexCode={colors.text_color} colorName={"Text"} />
+                                <ColorItem colorHexCode={colors.text_variant} colorName={"Text 2"} />
+                                <ColorItem colorHexCode={colors.text_variant_variant} colorName={"Text 3"} />
                             </> :
                             <div className={"flex gap-2 justify-center flex-col items-center"}>
                                 <img src={"/ico/question.svg"} alt={"interrogation"} className={"w-6 invert"}/>
-                                <p>Vous n&apos;avez défini aucune couleurs pour l&apos;instant.</p>
+                                <p>You haven't selected any custom colors for the moment.</p>
                             </div>
                     }
                 </SectionElem>
 
-                <SectionElem title={"Supprimer le site"} actions={[{
+                <SectionElem title={"Delete this website"} actions={[{
                     isLoading: deleteLoading,
-                    text: "Supprimer",
+                    text: "Delete",
                     onClick: () => setShowPopupDelete(true),
                     iconName: "trash",
                     actionType: ActionTypeEnum.dangerous
                 }]}>
-                    <p>Supprimer le site entraine la perte de l&apos;intégralité de son contenu.</p>
+                    <p>Deleting this website will cause the lost of all linked data.</p>
                 </SectionElem>
 
 
@@ -482,12 +482,12 @@ export default function Pages() {
 
             <AdvancedPopup
                 show={showPopupDelete}
-                message={"L'entièreté de son contenu sera également supprimé."}
-                title={"Voulez-vous vraiment supprimer ce site ?"}
+                message={"The content of this site will be permanently deleted. This action cannot be undone."}
+                title={"Do you really want to delete this website ?"}
                 icon={"trash"}
                 actions={[
                     {
-                        text: "Supprimer",
+                        text: "Delete",
                         actionType: ActionTypeEnum.dangerous,
                         iconName: "trash",
                         onClick: deleteWebsiteAction
@@ -497,102 +497,101 @@ export default function Pages() {
 
             <AdvancedPopup show={showPopupForm}
                            formAction={addPageAction}
-                           message={"Saisissez les informations requises ci-dessous afin d'ajouter une nouvelle page à votre site :"}
-                           title={"Créer une nouvelle page"}
+                           message={"Enter the information of the new page below :"}
+                           title={"Créer a new page"}
                            icon={"add"}
                            actions={[
-                               {text: "Valider", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
+                               {text: "Create", isForm: true, iconName: "check", actionType: ActionTypeEnum.safe}
                            ]}
                            closePopup={() => setShowPopupForm(false)}>
-                <Input placeholder={"Chemin de la page"} value={newPagePath} setValueAction={setNewPagePath}
+                <Input placeholder={"path"} value={newPagePath} setValueAction={setNewPagePath}
                        validatorAction={StringUtil.pathStringValidator}
                        iconName={"globe"}/>
-                <Input placeholder={"Titre"} value={newPageTitle} setValueAction={setNewPageTitle}/>
+                <Input placeholder={"title"} value={newPageTitle} setValueAction={setNewPageTitle}/>
 
                 <Textarea value={newPageDescription} onChangeAction={setNewPageDescription}
-                          placeholder={"Description"}/>
+                          placeholder={"description"}/>
 
                 <Textarea value={newPageIcon} onChangeAction={setNewPageIcon}
-                          placeholder={"Icone au format SVG (facultatif)"}/>
+                          placeholder={"svg icon (not necessary)"}/>
 
             </AdvancedPopup>
 
-            <AdvancedPopup icon={"edit"} show={showPopupEditTitle} title={"Modifier le nom du site"}
+            <AdvancedPopup icon={"edit"} show={showPopupEditTitle} title={"Edit website title"}
                            formAction={editTitleAction}
-                           message={"Saisissez le nouveau nom de votre site ci-dessous :"} actions={[{
-                text: "Valider",
+                           message={"Enter the new title"} actions={[{
+                text: "Edit",
                 isForm: true,
                 iconName: "check",
                 actionType: ActionTypeEnum.safe
             }]} closePopup={() => setShowPopupEditTitle(false)}>
 
                 <Input
-                    placeholder={"Nouveau titre"} value={newWebsiteTitle}
+                    placeholder={"new title"} value={newWebsiteTitle}
                     setValueAction={setNewWebsiteTitle}/>
             </AdvancedPopup>
 
-            <AdvancedPopup formAction={editDomainAction} icon={"edit"} show={showPopupEditDomain} title={"Modifier le domaine du site"}
-                           message={"Saisissez le nouveau domaine de votre site ci-dessous :"} actions={[{
-                text: "Valider",
+            <AdvancedPopup formAction={editDomainAction} icon={"edit"} show={showPopupEditDomain} title={"Edit website domain"}
+                           message={"Enter the new domain"} actions={[{
+                text: "Edit",
                 isForm: true,
                 iconName: "check",
                 actionType: ActionTypeEnum.safe
             }]} closePopup={() => setShowPopupEditDomain(false)}>
 
                 <Input iconName={"globe"} validatorAction={StringUtil.emptyableDomainValidator}
-                       placeholder={"Nouveau domaine"} value={newWebsiteDomain || ""}
+                       placeholder={"new domain"} value={newWebsiteDomain || ""}
                        setValueAction={setNewWebsiteDomain}/>
                 {
                     website?.website_domain ?
                         <div className={"bg-onBackgroundHover rounded-xl p-3 flex gap-2 items-center"}>
                             <img src={"/ico/info.svg"} alt={'info'} className={"invert w-12 h-fit"}/>
-                            <p>Vous pouvez supprimer le domaine, Votre site sera alors hébergé sur la plateforme Prisme.</p>
+                            <p>If you enter an empty domain, your website will still be accessible through prism&apos;s domain.</p>
                         </div> :
                         <div className={"bg-dangerous rounded-xl p-3 flex gap-2 items-center"}>
                             <img src={"/ico/warning.svg"} alt={'warning'} className={"invert w-12 h-fit"}/>
-                            <p>Attention, ne modifiez le domaine de votre site seulement si vous savez ce que vous
-                                faites, car celui-ci risque d&apos;être inaccessible.</p>
+                            <p>Careful, you need to have properly configured your project to use a custom domain.</p>
                         </div>
                 }
 
             </AdvancedPopup>
 
-            <AdvancedPopup icon={"edit"} formAction={editHeroAction} show={showPopupEditHero} title={"Modifier le contenu de la landing page"}
-                           message={"Saisissez le contenu de la landing page de votre site ci-dessous :"}
+            <AdvancedPopup icon={"edit"} formAction={editHeroAction} show={showPopupEditHero} title={"Edit landing page content"}
+                           message={"Enter the new information for your landing page below :"}
                            actions={[{
-                               text: "Valider",
+                               text: "Edit",
                                isForm: true,
                                iconName: "check",
                                actionType: ActionTypeEnum.safe
                            }]} closePopup={() => setShowPopupEditHero(false)}>
-                <Input placeholder={"Titre"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
+                <Input placeholder={"title"} value={newWebsiteHeroTitle} setValueAction={setNewWebsiteHeroTitle}/>
                 <ImageInput setFileAction={setNewWebsiteHeroFile}/>
             </AdvancedPopup>
 
-            <AdvancedPopup icon={colors ? "edit" : "add"} formAction={editWebsiteColorsAction} show={showPopupEditColors} title={"Modifier les couleurs de votre site"}
-                           message={"Selectionnez les couleurs utilisées sur votre site ci-dessous :"}
+            <AdvancedPopup icon={colors ? "edit" : "add"} formAction={editWebsiteColorsAction} show={showPopupEditColors} title={"Edit website colors"}
+                           message={"You can select the main colors of your website below :"}
                            actions={[{
-                               text: "Valider",
+                               text: "Validate",
                                isForm: true,
                                iconName: "check",
                                actionType: ActionTypeEnum.safe
                            }]} closePopup={() => setShowPopupEditColors(false)}>
-                <ColorItem colorHexCode={newColors?.primary_color} colorName={"Primaire"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.primary_color} colorName={"Primary"} onChangeAction={(newColor) => {
                     setNewColors(ColorUtil.setPrimaryColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.secondary_color} colorName={"Secondaire"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.secondary_color} colorName={"Secondary"} onChangeAction={(newColor) => {
                     setNewColors(ColorUtil.setSecondaryColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.background_color} colorName={"Arrière-plan"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.background_color} colorName={"Background"} onChangeAction={(newColor) => {
                     setNewColors(ColorUtil.setBackgroundColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.text_color} colorName={"Texte"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.text_color} colorName={"Text"} onChangeAction={(newColor) => {
                     setNewColors(ColorUtil.setTextColorAuto(newColors!, newColor))
                 }}/>
 
                 <div className={"flex gap-2 items-center"}>
                     <img src={"/ico/question.svg"} alt={"question"} className={"w-8 invert"}/>
-                    <p>Des variantes des couleurs sélectionnées seront automatiquement générées.</p>
+                    <p>Variants will be automatically generated.</p>
                 </div>
             </AdvancedPopup>
         </>

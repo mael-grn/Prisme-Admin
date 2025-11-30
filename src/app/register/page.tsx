@@ -34,14 +34,14 @@ export default function Home() {
             last_name: lastName
         }
         UserService.insertUser(userToInsert).then(() => {
-            setPopupTitle("Inscription réussie");
-            setPopupText("Votre compte a bien été créé. Vous pouvez maintenant vous connecter.");
+            setPopupTitle("Welcome, new member!");
+            setPopupText("Your account has been successfully created. You may now log in.");
             setPopupIconName("check");
-            setPopupActions([{text: "Connexion", iconName: "redirect", actionType: ActionTypeEnum.safe, onClick: () => router.push("/")}]);
+            setPopupActions([{text: "Log in", iconName: "redirect", actionType: ActionTypeEnum.safe, onClick: () => router.push("/")}]);
             setShowPopup(true);
 
         }).catch((errorMsg) => {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(errorMsg);
             setPopupIconName("warning");
             setPopupActions([])
@@ -54,14 +54,14 @@ export default function Home() {
         <div className={"flex items-center justify-center min-h-screen"}>
             <Form onSubmitAction={onClickRegister}>
 
-                <SectionElem title="Créer un compte" actions={[
-                    {text: "Déjà un compte ?", iconName: "lock", onClick: () => router.push("/"), isSecondary: true },
-                    {text: "S'enregistrer", iconName: "add", isLoading: loading, isForm: true}
+                <SectionElem title="Register" actions={[
+                    {text: "Already have an account ?", iconName: "lock", onClick: () => router.push("/"), isSecondary: true },
+                    {text: "Register", iconName: "add", isLoading: loading, isForm: true}
                 ]}>
-                    <Input iconName={"user"} type={"text"} placeholder={"Nom"} value={lastName} setValueAction={setLastName} />
-                    <Input iconName={"user"} type={"text"} placeholder={"Prénom"} value={firstName} setValueAction={setFirstName} />
-                    <Input validatorAction={StringUtil.emailStringValidator} iconName={"mail"} type={"email"} placeholder={"Adresse mail"} value={email} setValueAction={setEmail}/>
-                    <Input validatorAction={StringUtil.passwordStringValidator} iconName={"lock"} type={"password"} placeholder={"Mot de passe"} value={password} setValueAction={setPassword}/>
+                    <Input iconName={"user"} type={"text"} placeholder={"first name"} value={firstName} setValueAction={setFirstName} />
+                    <Input iconName={"user"} type={"text"} placeholder={"last name"} value={lastName} setValueAction={setLastName} />
+                    <Input validatorAction={StringUtil.emailStringValidator} iconName={"mail"} type={"email"} placeholder={"email"} value={email} setValueAction={setEmail}/>
+                    <Input validatorAction={StringUtil.passwordStringValidator} iconName={"lock"} type={"password"} placeholder={"password"} value={password} setValueAction={setPassword}/>
                 </SectionElem>
             </Form>
 

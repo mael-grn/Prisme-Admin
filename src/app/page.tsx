@@ -41,7 +41,7 @@ export default function Home() {
             router.push("/secure/");
 
         }).catch((errorMsg) => {
-            setPopupTitle("Une erreur s'est produite");
+            setPopupTitle("Something went wrong");
             setPopupText(errorMsg);
             setShowPopup(true);
         }).finally(() => {
@@ -55,12 +55,12 @@ export default function Home() {
           <img src={"/img/icon.png"} alt={"icon"} className={"h-36 w-fit"}/>
           <h1 className={"mb-10"}>Prisme</h1>
           <Form onSubmitAction={onClickLogin}>
-              <SectionElem title="Connexion" actions={[
-                  {text: "Pas encore de compte ?", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },
-                  {text: "Connexion", iconName: "key", isLoading: loading, isForm: true}
+              <SectionElem title="Log in" actions={[
+                  {text: "Create an account", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },
+                  {text: "Log in", iconName: "key", isLoading: loading, isForm: true}
               ]}>
-                  <Input iconName={"mail"} type={"email"} placeholder={"adresse mail"} value={email} setValueAction={setEmail}/>
-                  <Input iconName={"lock"} type={"password"} placeholder={"mot de passe"} value={password} setValueAction={setPassword}/>
+                  <Input iconName={"mail"} type={"email"} placeholder={"email"} value={email} setValueAction={setEmail}/>
+                  <Input iconName={"lock"} type={"password"} placeholder={"password"} value={password} setValueAction={setPassword}/>
               </SectionElem>
           </Form>
 
