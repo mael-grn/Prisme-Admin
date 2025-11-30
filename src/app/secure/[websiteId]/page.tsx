@@ -422,7 +422,7 @@ export default function Pages() {
                         website?.website_domain ?
                             <p>{website?.website_domain}</p>
                             :
-                            <p>Your website doesn't have any custom domain for the moment.</p>
+                            <p>Your website doesn&apos;t have any custom domain for the moment.</p>
                     }
                 </SectionElem>
 
@@ -457,7 +457,7 @@ export default function Pages() {
                             </> :
                             <div className={"flex gap-2 justify-center flex-col items-center"}>
                                 <img src={"/ico/question.svg"} alt={"interrogation"} className={"w-6 invert"}/>
-                                <p>You haven't selected any custom colors for the moment.</p>
+                                <p>You haven&apos;t selected any custom colors for the moment.</p>
                             </div>
                     }
                 </SectionElem>

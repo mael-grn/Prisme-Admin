@@ -1,8 +1,6 @@
 "use client"
 
-import {useParams, useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
-import MainPage, {PageAlignmentEnum} from "@/app/components/mainPage";
 import SectionElem, {SectionWidth} from "@/app/components/sectionElem";
 import List from "@/app/components/list";
 import {ActionTypeEnum} from "@/app/components/Button";
@@ -84,7 +82,6 @@ export default function SectionAsPopup({section, updateSectionAction, deleteSect
 
     const [selectedSubcategories, setSelectedSubcategories] = useState<Subcategory[]>([]);
 
-    const router = useRouter();
 
     useEffect(() => {
         if (!section) return;
