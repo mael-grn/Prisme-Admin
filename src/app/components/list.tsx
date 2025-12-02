@@ -43,7 +43,7 @@ function ListElement({props, isFirst, isLast}: { props: ListElementProps, isFirs
                 onClick={props.onClick}>
                 {
                     props.isImage ?
-                        <img src={props.text} alt={"image"} className={"max-h-52 w-fit rounded-lg"}/> :
+                        <img src={props.text} alt={"image"} className={"max-h-52 max-w-fit object-contain w-fit rounded-lg"}/> :
                         <p>{props.text}</p>
                 }
 
