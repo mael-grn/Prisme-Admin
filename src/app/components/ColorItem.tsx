@@ -5,7 +5,7 @@ import { HexColorPicker } from "react-colorful";
 import Input from "@/app/components/Input";
 import {StringUtil} from "@/app/utils/stringUtil";
 
-export default function ColorItem({ colorHexCode, colorName, onChangeAction }: { colorHexCode?: string, colorName?: string, onChangeAction?: (c:string) => void }) {
+export default function ColorItem({ colorHexCode, colorName, changeColorAction }: { colorHexCode?: string, colorName?: string, changeColorAction?: (c:string) => void }) {
 
     const [showColorPicker, setShowColorPicker] = useState(false);
     const [newColor, setNewColor] = useState(colorHexCode || "");
@@ -16,19 +16,19 @@ export default function ColorItem({ colorHexCode, colorName, onChangeAction }: {
 
     return (
         <div className="relative">
-            <div className={`flex gap-2 item-center p-1 pr-3 rounded-xl ${onChangeAction ? 'cursor-pointer border-2 border-background bg-background md:hover:border-foreground active:border-foreground' : ''}`} onClick={() => onChangeAction && setShowColorPicker(!showColorPicker)} >
+            <div className={`flex gap-2 item-center p-1 pr-3 rounded-xl ${changeColorAction ? 'cursor-pointer border-2 border-background bg-background md:hover:border-foreground active:border-foreground' : ''}`} onClick={() => changeColorAction && setShowColorPicker(!showColorPicker)} >
                 <div style={{backgroundColor: newColor || colorHexCode || "black"}} className={`w-6 min-w-6 h-6 min-h-6 rounded-lg flex items-center justify-center`}>
                     {!colorHexCode && <p>?</p>}
                 </div>
-                <p className={"flex items-center justify-center"}>{colorName || colorHexCode || "Aucune couleur"}</p>
+                <p className={"flex items-center justify-center"}>{colorName || colorHexCode || "No color"}</p>
 
 
             </div>
             <AnimatePresence>
                 {
-                    showColorPicker && onChangeAction &&
+                    showColorPicker && changeColorAction &&
                     <motion.div
-                        key={"color-picker" + newColor}
+                        key={"color-picker"}
                         initial={{ opacity: 0, transform: "scale(.6)", filter: "blur(10px)", transformOrigin: "top left" }}
                         animate={{ opacity: 1, transform: "scale(1)", filter: "blur(0px)", transformOrigin: "top left" }}
                         exit={{ opacity: 0, transform: "scale(.6)", filter: "blur(10px)", transformOrigin: "top left" }}
@@ -39,8 +39,8 @@ export default function ColorItem({ colorHexCode, colorName, onChangeAction }: {
                             <Input validatorAction={StringUtil.hexColorValidator} iconName={"paint"} placeholder={"Couleur au format HEX"} value={newColor} setValueAction={setNewColor}/>
                         </div>
                         <div className={"flex justify-end items-center p-2 border-t-2 border-onBackgroundHover gap-2"}>
-                            <Button iconName={"close"} text={"Annuler"} onClick={() => {setShowColorPicker(false); setNewColor(colorHexCode || "black")}}/>
-                            <Button actionType={ActionTypeEnum.safe} iconName={"check"} text={"Valider"} onClick={() => { onChangeAction(newColor); setShowColorPicker(false); }} />
+                            <Button iconName={"close"} text={"Cancel"} onClick={() => {setShowColorPicker(false); setNewColor(colorHexCode || "black")}}/>
+                            <Button actionType={ActionTypeEnum.safe} iconName={"check"} text={"Done"} onClick={() => { changeColorAction(newColor); setShowColorPicker(false); }} />
                         </div>
                     </motion.div>
                 }

@@ -576,16 +576,16 @@ export default function Pages() {
                                iconName: "check",
                                actionType: ActionTypeEnum.safe
                            }]} closePopup={() => setShowPopupEditColors(false)}>
-                <ColorItem colorHexCode={newColors?.primary_color} colorName={"Primary"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.primary_color} colorName={"Primary"} changeColorAction={(newColor) => {
                     setNewColors(ColorUtil.setPrimaryColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.secondary_color} colorName={"Secondary"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.secondary_color} colorName={"Secondary"} changeColorAction={(newColor) => {
                     setNewColors(ColorUtil.setSecondaryColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.background_color} colorName={"Background"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.background_color} colorName={"Background"} changeColorAction={(newColor) => {
                     setNewColors(ColorUtil.setBackgroundColorAuto(newColors!, newColor))
                 }}/>
-                <ColorItem colorHexCode={newColors?.text_color} colorName={"Text"} onChangeAction={(newColor) => {
+                <ColorItem colorHexCode={newColors?.text_color} colorName={"Text"} changeColorAction={(newColor) => {
                     setNewColors(ColorUtil.setTextColorAuto(newColors!, newColor))
                 }}/>
 
