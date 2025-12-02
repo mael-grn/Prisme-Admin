@@ -379,7 +379,7 @@ export default function Pages() {
                                     actionType: ActionTypeEnum.dangerous
                                 },
                                 {
-                                    text: "Validate",
+                                    text: "Done",
                                     iconName: "check",
                                     onClick: validateModifyPageOrder,
                                     actionType: ActionTypeEnum.safe
@@ -571,7 +571,7 @@ export default function Pages() {
             <AdvancedPopup icon={colors ? "edit" : "add"} formAction={editWebsiteColorsAction} show={showPopupEditColors} title={"Edit website colors"}
                            message={"You can select the main colors of your website below :"}
                            actions={[{
-                               text: "Validate",
+                               text: "Done",
                                isForm: true,
                                iconName: "check",
                                actionType: ActionTypeEnum.safe

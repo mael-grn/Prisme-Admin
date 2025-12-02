@@ -162,7 +162,7 @@ import { RecursiveCategory } from "@/app/models/Category";
                                                                                         variants={itemVariants}
                                                                                     >
                                                                                         <img src={"/ico/add.svg"} alt={"add"} className={"invert w-5"} />
-                                                                                        <p>Ajouter une sous-catégorie</p>
+                                                                                        <p>New subcategory</p>
                                                                                     </motion.button>
                                                                                 </motion.div>
                                                                             }
@@ -173,7 +173,7 @@ import { RecursiveCategory } from "@/app/models/Category";
                                                             }
                                                             <button type={"button"} className={"border-2 border-onBackgroundHover mt-6 bg-transparent md:hover:bg-onBackgroundHover active:bg-onBackgroundHover active:scale-90 rounded-lg flex pt-2 pb-2 pl-3 pr-3 justify-center items-center gap-3 w-full"} onClick={onCreateNewCategoryPressedAction}>
                                                                 <img src={"/ico/add.svg"} alt={"add"} className={"invert w-5"} />
-                                                                <p>Créer une catégorie</p>
+                                                                <p>New Category</p>
                                                             </button>
                                                         </div>
                                                     );

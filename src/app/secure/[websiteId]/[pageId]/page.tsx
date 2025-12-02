@@ -312,7 +312,7 @@ export default function PageVisu() {
                                      actionType: ActionTypeEnum.dangerous
                                  },
                                  {
-                                     text: "Validate",
+                                     text: "Done",
                                      iconName: "check",
                                      onClick: validateModifySectionOrder,
                                      actionType: ActionTypeEnum.safe
@@ -363,7 +363,7 @@ export default function PageVisu() {
                 </SectionElem>
 
                 <SectionElem title={"Icon"}
-                             actions={[{isLoading: editIconLoading, text: "Edi ", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
+                             actions={[{isLoading: editIconLoading, text: "Edit", onClick: () => setShowPopupEditIcon(true), iconName: "edit", actionType: ActionTypeEnum.safe}]}>
                     {
                         page?.icon_svg
                             ? <SvgFromString svg={page!.icon_svg} alt="icone" className="w-12 h-12 invert" />

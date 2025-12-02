@@ -469,6 +469,7 @@ export default function SectionAsPopup({section, updateSectionAction, deleteSect
         <>
 
             <AdvancedPopup
+                fullWidth={true}
                 icon={"section"}
                 show={section !== null}
                 closePopup={setSectionNullAction}
@@ -498,7 +499,7 @@ export default function SectionAsPopup({section, updateSectionAction, deleteSect
                                      actionType: ActionTypeEnum.dangerous
                                  },
                                  {
-                                     text: "Validate",
+                                     text: "Done",
                                      iconName: "check",
                                      onClick: validateModifyElementOrder,
                                      actionType: ActionTypeEnum.safe
@@ -668,7 +669,7 @@ export default function SectionAsPopup({section, updateSectionAction, deleteSect
                 message={"Select or deselect the subcategories to associate with this section:"}
                 title={'Manage categories'}
                 actions={[
-                    {text: "Validate", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
+                    {text: "Done", iconName: "check", isForm: true, actionType: ActionTypeEnum.safe},
                 ]}
                 closePopup={() => setShowPopupAddSubcategoryToSection(false)}
             >

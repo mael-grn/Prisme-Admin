@@ -55,7 +55,7 @@ export default function Home() {
             <Form onSubmitAction={onClickRegister}>
 
                 <SectionElem title="Register" actions={[
-                    {text: "Already have an account ?", iconName: "lock", onClick: () => router.push("/"), isSecondary: true },
+                    {text: "Login", iconName: "lock", onClick: () => router.push("/"), isSecondary: true },
                     {text: "Register", iconName: "add", isLoading: loading, isForm: true}
                 ]}>
                     <Input iconName={"user"} type={"text"} placeholder={"first name"} value={firstName} setValueAction={setFirstName} />

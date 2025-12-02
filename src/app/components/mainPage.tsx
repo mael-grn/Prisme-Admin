@@ -236,7 +236,7 @@ export default function MainPage({children, pageAlignment = PageAlignmentEnum.st
                         >
                             <img src="/ico/power.svg" alt="power" className="w-4 invert"/>
                             <span
-                                className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Log out</span>
+                                className={`${scrolled ? "text-[0px]" : "text-[0px] md:text-[15px]"}`}>Logout</span>
                         </button>
                     </div>
 

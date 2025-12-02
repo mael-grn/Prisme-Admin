@@ -62,7 +62,7 @@ export default function ImageInput({setFileAction}: {setFileAction: (file: File)
 
                             <>
                                 <img className={"invert w-6 h-6"} src={"/ico/cloud.svg"} alt={"cloud"}/>
-                                <p>Choisir une image</p>
+                                <p>Choose a picture</p>
                             </>
 
 

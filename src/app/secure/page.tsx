@@ -159,8 +159,8 @@ export default function Home() {
 
                 <div
                     className={"flex gap-4 flex-col justify-center w-fit p-5 px-10 rounded-xl bg-onBackgroundHover mt-8 items-center"}>
-                    <h3>Contenu de la page d&apos;accueil</h3>
-                    <Input placeholder={"Titre"} value={newWebsiteHeroTitle}
+                    <h3>Home page&apos;s content</h3>
+                    <Input placeholder={"title"} value={newWebsiteHeroTitle}
                            setValueAction={setNewWebsiteHeroTitle}/>
                     <ImageInput setFileAction={setNewSelectedFileHeroImage}/>
                 </div>

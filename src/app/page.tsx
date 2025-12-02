@@ -55,9 +55,9 @@ export default function Home() {
           <img src={"/img/icon.png"} alt={"icon"} className={"h-36 w-fit"}/>
           <h1 className={"mb-10"}>Prisme</h1>
           <Form onSubmitAction={onClickLogin}>
-              <SectionElem title="Log in" actions={[
-                  {text: "Create an account", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },
-                  {text: "Log in", iconName: "key", isLoading: loading, isForm: true}
+              <SectionElem title="Login" actions={[
+                  {text: "Register", iconName: "add", onClick: () => router.push("/register"), isSecondary: true },
+                  {text: "Login", iconName: "key", isLoading: loading, isForm: true}
               ]}>
                   <Input iconName={"mail"} type={"email"} placeholder={"email"} value={email} setValueAction={setEmail}/>
                   <Input iconName={"lock"} type={"password"} placeholder={"password"} value={password} setValueAction={setPassword}/>
